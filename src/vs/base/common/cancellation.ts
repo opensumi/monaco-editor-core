@@ -87,8 +87,8 @@ class MutableToken implements CancellationToken {
 
 export class CancellationTokenSource {
 
-	private _token?: CancellationToken = undefined;
-	private _parentListener?: IDisposable = undefined;
+	public _token?: CancellationToken = undefined;
+	public _parentListener?: IDisposable = undefined;
 
 	constructor(parent?: CancellationToken) {
 		this._parentListener = parent && parent.onCancellationRequested(this.cancel, this);

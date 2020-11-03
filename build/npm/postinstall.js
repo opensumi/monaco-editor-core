@@ -6,7 +6,7 @@
 const cp = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const yarn = process.platform === 'win32' ? 'yarn.cmd' : 'yarn';
+const yarn = process.platform === 'win32' ? 'yarn.cmd' : 'tnpm';
 
 /**
  * @param {string} location
@@ -18,9 +18,9 @@ function yarnInstall(location, opts) {
 	opts.stdio = 'inherit';
 
 	const raw = process.env['npm_config_argv'] || '{}';
-	const argv = JSON.parse(raw);
-	const original = argv.original || [];
-	const args = original.filter(arg => arg === '--ignore-optional' || arg === '--frozen-lockfile');
+	// const argv = JSON.parse(raw);
+	// const original = argv.original || [];
+	const args = ['install'];
 
 	console.log(`Installing dependencies in ${location}...`);
 	console.log(`$ yarn ${args.join(' ')}`);

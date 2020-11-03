@@ -110,7 +110,7 @@ export function shake(options: ITreeShakingOptions): ITreeShakingResult {
 
 	markNodes(languageService, options);
 
-	return generateResult(languageService, options.shakeLevel);
+	return generateResult(languageService);
 }
 
 //#region Discovery, LanguageService & Setup
@@ -358,14 +358,6 @@ function markNodes(languageService: ts.LanguageService, options: ITreeShakingOpt
 		});
 	}
 
-	function enqueue_gray(node: ts.Node): void {
-		if (nodeOrParentIsBlack(node) || getColor(node) === NodeColor.Gray) {
-			return;
-		}
-		setColor(node, NodeColor.Gray);
-		gray_queue.push(node);
-	}
-
 	function enqueue_black(node: ts.Node): void {
 		const previousColor = getColor(node);
 
@@ -410,28 +402,28 @@ function markNodes(languageService: ts.LanguageService, options: ITreeShakingOpt
 		setColor(node, NodeColor.Black);
 		black_queue.push(node);
 
-		if (options.shakeLevel === ShakeLevel.ClassMembers && (ts.isMethodDeclaration(node) || ts.isMethodSignature(node) || ts.isPropertySignature(node) || ts.isGetAccessor(node) || ts.isSetAccessor(node))) {
-			const references = languageService.getReferencesAtPosition(node.getSourceFile().fileName, node.name.pos + node.name.getLeadingTriviaWidth());
-			if (references) {
-				for (let i = 0, len = references.length; i < len; i++) {
-					const reference = references[i];
-					const referenceSourceFile = program!.getSourceFile(reference.fileName);
-					if (!referenceSourceFile) {
-						continue;
-					}
+		// if (options.shakeLevel === ShakeLevel.ClassMembers && (ts.isMethodDeclaration(node) || ts.isMethodSignature(node) || ts.isPropertySignature(node) || ts.isGetAccessor(node) || ts.isSetAccessor(node))) {
+		// 	const references = languageService.getReferencesAtPosition(node.getSourceFile().fileName, node.name.pos + node.name.getLeadingTriviaWidth());
+		// 	if (references) {
+		// 		for (let i = 0, len = references.length; i < len; i++) {
+		// 			const reference = references[i];
+		// 			const referenceSourceFile = program!.getSourceFile(reference.fileName);
+		// 			if (!referenceSourceFile) {
+		// 				continue;
+		// 			}
 
-					const referenceNode = getTokenAtPosition(referenceSourceFile, reference.textSpan.start, false, false);
-					if (
-						ts.isMethodDeclaration(referenceNode.parent)
-						|| ts.isPropertyDeclaration(referenceNode.parent)
-						|| ts.isGetAccessor(referenceNode.parent)
-						|| ts.isSetAccessor(referenceNode.parent)
-					) {
-						enqueue_gray(referenceNode.parent);
-					}
-				}
-			}
-		}
+		// 			const referenceNode = getTokenAtPosition(referenceSourceFile, reference.textSpan.start, false, false);
+		// 			if (
+		// 				ts.isMethodDeclaration(referenceNode.parent)
+		// 				|| ts.isPropertyDeclaration(referenceNode.parent)
+		// 				|| ts.isGetAccessor(referenceNode.parent)
+		// 				|| ts.isSetAccessor(referenceNode.parent)
+		// 			) {
+		// 				enqueue_gray(referenceNode.parent);
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}
 
 	function enqueueFile(filename: string): void {
@@ -510,35 +502,35 @@ function markNodes(languageService: ts.LanguageService, options: ITreeShakingOpt
 						continue;
 					}
 
-					if (options.shakeLevel === ShakeLevel.ClassMembers && (ts.isClassDeclaration(declaration) || ts.isInterfaceDeclaration(declaration))) {
-						enqueue_black(declaration.name!);
+					// if (options.shakeLevel === ShakeLevel.ClassMembers && (ts.isClassDeclaration(declaration) || ts.isInterfaceDeclaration(declaration))) {
+					// 	enqueue_black(declaration.name!);
 
-						for (let j = 0; j < declaration.members.length; j++) {
-							const member = declaration.members[j];
-							const memberName = member.name ? member.name.getText() : null;
-							if (
-								ts.isConstructorDeclaration(member)
-								|| ts.isConstructSignatureDeclaration(member)
-								|| ts.isIndexSignatureDeclaration(member)
-								|| ts.isCallSignatureDeclaration(member)
-								|| memberName === 'toJSON'
-								|| memberName === 'toString'
-								|| memberName === 'dispose'// TODO: keeping all `dispose` methods
-								|| /^_(.*)Brand$/.test(memberName || '') // TODO: keeping all members ending with `Brand`...
-							) {
-								enqueue_black(member);
-							}
-						}
+					// 	for (let j = 0; j < declaration.members.length; j++) {
+					// 		const member = declaration.members[j];
+					// 		const memberName = member.name ? member.name.getText() : null;
+					// 		if (
+					// 			ts.isConstructorDeclaration(member)
+					// 			|| ts.isConstructSignatureDeclaration(member)
+					// 			|| ts.isIndexSignatureDeclaration(member)
+					// 			|| ts.isCallSignatureDeclaration(member)
+					// 			|| memberName === 'toJSON'
+					// 			|| memberName === 'toString'
+					// 			|| memberName === 'dispose'// TODO: keeping all `dispose` methods
+					// 			|| /^_(.*)Brand$/.test(memberName || '') // TODO: keeping all members ending with `Brand`...
+					// 		) {
+					// 			enqueue_black(member);
+					// 		}
+					// 	}
 
-						// queue the heritage clauses
-						if (declaration.heritageClauses) {
-							for (let heritageClause of declaration.heritageClauses) {
-								enqueue_black(heritageClause);
-							}
-						}
-					} else {
-						enqueue_black(declaration);
-					}
+					// 	// queue the heritage clauses
+					// 	if (declaration.heritageClauses) {
+					// 		for (let heritageClause of declaration.heritageClauses) {
+					// 			enqueue_black(heritageClause);
+					// 		}
+					// 	}
+					// } else {
+					// }
+					enqueue_black(declaration);
 				}
 			}
 			node.forEachChild(loop);
@@ -562,7 +554,7 @@ function nodeIsInItsOwnDeclaration(nodeSourceFile: ts.SourceFile, node: ts.Node,
 	return false;
 }
 
-function generateResult(languageService: ts.LanguageService, shakeLevel: ShakeLevel): ITreeShakingResult {
+function generateResult(languageService: ts.LanguageService): ITreeShakingResult {
 	const program = languageService.getProgram();
 	if (!program) {
 		throw new Error('Could not get program from language service');
@@ -646,21 +638,21 @@ function generateResult(languageService: ts.LanguageService, shakeLevel: ShakeLe
 				}
 			}
 
-			if (shakeLevel === ShakeLevel.ClassMembers && (ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node)) && nodeOrChildIsBlack(node)) {
-				let toWrite = node.getFullText();
-				for (let i = node.members.length - 1; i >= 0; i--) {
-					const member = node.members[i];
-					if (getColor(member) === NodeColor.Black || !member.name) {
-						// keep method
-						continue;
-					}
+			// if (shakeLevel === ShakeLevel.ClassMembers && (ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node)) && nodeOrChildIsBlack(node)) {
+			// 	let toWrite = node.getFullText();
+			// 	for (let i = node.members.length - 1; i >= 0; i--) {
+			// 		const member = node.members[i];
+			// 		if (getColor(member) === NodeColor.Black || !member.name) {
+			// 			// keep method
+			// 			continue;
+			// 		}
 
-					let pos = member.pos - node.pos;
-					let end = member.end - node.pos;
-					toWrite = toWrite.substring(0, pos) + toWrite.substring(end);
-				}
-				return write(toWrite);
-			}
+			// 		let pos = member.pos - node.pos;
+			// 		let end = member.end - node.pos;
+			// 		toWrite = toWrite.substring(0, pos) + toWrite.substring(end);
+			// 	}
+			// 	return write(toWrite);
+			// }
 
 			if (ts.isFunctionDeclaration(node)) {
 				// Do not go inside functions if they haven't been marked
@@ -814,29 +806,6 @@ function getRealNodeSymbol(checker: ts.TypeChecker, node: ts.Node): [ts.Symbol |
 	}
 
 	return [null, null];
-}
-
-/** Get the token whose text contains the position */
-function getTokenAtPosition(sourceFile: ts.SourceFile, position: number, allowPositionInLeadingTrivia: boolean, includeEndPosition: boolean): ts.Node {
-	let current: ts.Node = sourceFile;
-	outer: while (true) {
-		// find the child that contains 'position'
-		for (const child of current.getChildren()) {
-			const start = allowPositionInLeadingTrivia ? child.getFullStart() : child.getStart(sourceFile, /*includeJsDoc*/ true);
-			if (start > position) {
-				// If this child begins after position, then all subsequent children will as well.
-				break;
-			}
-
-			const end = child.getEnd();
-			if (position < end || (position === end && (child.kind === ts.SyntaxKind.EndOfFileToken || includeEndPosition))) {
-				current = child;
-				continue outer;
-			}
-		}
-
-		return current;
-	}
 }
 
 //#endregion

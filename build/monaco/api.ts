@@ -69,22 +69,28 @@ function visitTopLevelDeclarations(sourceFile: ts.SourceFile, visitor: (node: TS
 function getAllTopLevelDeclarations(sourceFile: ts.SourceFile): TSTopLevelDeclare[] {
 	let all: TSTopLevelDeclare[] = [];
 	visitTopLevelDeclarations(sourceFile, (node) => {
-		if (node.kind === ts.SyntaxKind.InterfaceDeclaration || node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.ModuleDeclaration) {
-			let interfaceDeclaration = <ts.InterfaceDeclaration>node;
-			let triviaStart = interfaceDeclaration.pos;
-			let triviaEnd = interfaceDeclaration.name.pos;
-			let triviaText = getNodeText(sourceFile, { pos: triviaStart, end: triviaEnd });
+		all.push(node);
+		return true;
+		/** ======================================== 去掉  @internal 限制，将私有 API 暴露出来 ======================================== */
 
-			if (triviaText.indexOf('@internal') === -1) {
-				all.push(node);
-			}
-		} else {
-			let nodeText = getNodeText(sourceFile, node);
-			if (nodeText.indexOf('@internal') === -1) {
-				all.push(node);
-			}
-		}
-		return false /*continue*/;
+		// if (node.kind === ts.SyntaxKind.InterfaceDeclaration || node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.ModuleDeclaration) {
+		// 	// let interfaceDeclaration = <ts.InterfaceDeclaration>node;
+		// 	// let triviaStart = interfaceDeclaration.pos;
+		// 	// let triviaEnd = interfaceDeclaration.name.pos;
+		// 	// let triviaText = getNodeText(sourceFile, { pos: triviaStart, end: triviaEnd });
+
+		// 	all.push(node);
+		// 	// if (triviaText.indexOf('@internal') === -1) {
+		// 	// }
+		// } else {
+		// 	// let nodeText = getNodeText(sourceFile, node);
+		// 	// if (nodeText.indexOf('@internal') === -1) {
+		// 		all.push(node);
+		// 	// }
+		// }
+		// return false /*continue*/;
+
+		/** ======================================== 去掉  @internal 限制，将私有 API 暴露出来 ======================================== */
 	});
 	return all;
 }
@@ -162,17 +168,15 @@ function getMassagedTopLevelDeclarationText(sourceFile: ts.SourceFile, declarati
 		const members: ts.NodeArray<ts.ClassElement | ts.TypeElement> = interfaceDeclaration.members;
 		members.forEach((member) => {
 			try {
-				let memberText = getNodeText(sourceFile, member);
-				if (memberText.indexOf('@internal') >= 0 || memberText.indexOf('private') >= 0) {
-					result = result.replace(memberText, '');
+				/** ======================================== 显式声明 @internal API ======================================== */
+				const memberName = (<ts.Identifier | ts.StringLiteral>member.name).text;
+				const memberAccess = (memberName.indexOf('.') >= 0 ? `['${memberName}']` : `.${memberName}`);
+				if (isStatic(member)) {
+					usage.push(`a = ${staticTypeName}${memberAccess};`);
 				} else {
-					const memberName = (<ts.Identifier | ts.StringLiteral>member.name).text;
-					if (isStatic(member)) {
-						usage.push(`a = ${staticTypeName}.${memberName};`);
-					} else {
-						usage.push(`a = (<${instanceTypeName}>b).${memberName};`);
-					}
+					usage.push(`a = (<${instanceTypeName}>b)${memberAccess};`);
 				}
+				/** ======================================== 显式声明 @internal API ======================================== */
 			} catch (err) {
 				// life..
 			}
