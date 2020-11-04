@@ -1,12 +1,15 @@
 {
   "name": "monaco-editor-core",
   "private": true,
-  "version": "0.20.0",
+  "version": "0.20.1-patch.1",
   "description": "A browser based code editor",
   "author": "Microsoft Corporation",
   "license": "MIT",
   "typings": "./esm/vs/editor/editor.api.d.ts",
   "module": "./esm/vs/editor/editor.main.js",
+  "publishConfig": {
+    "registry": "https://registry.npm.alibaba-inc.com"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Microsoft/vscode"
