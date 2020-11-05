@@ -327,6 +327,13 @@ const finalEditorResourcesTask = task.define('final-editor-resources', () => {
 	);
 });
 
+const monacodtsTask = task.define('monacodts', () => {
+	const result = monacoapi.execute();
+	fs.writeFileSync(result.filePath, result.content);
+	fs.writeFileSync(path.join(root, 'src/vs/editor/common/standalone/standaloneEnums.ts'), result.enums);
+	return Promise.resolve(true);
+});
+
 gulp.task('editor-distro',
 	task.series(
 		task.parallel(
@@ -338,6 +345,7 @@ gulp.task('editor-distro',
 			util.rimraf('out-editor-min')
 		),
 		extractEditorSrcTask,
+		monacodtsTask,
 		task.parallel(
 			task.series(
 				compileEditorAMDTask,
@@ -353,12 +361,7 @@ gulp.task('editor-distro',
 	)
 );
 
-gulp.task('monacodts', task.define('monacodts', () => {
-	const result = monacoapi.execute();
-	fs.writeFileSync(result.filePath, result.content);
-	fs.writeFileSync(path.join(root, 'src/vs/editor/common/standalone/standaloneEnums.ts'), result.enums);
-	return Promise.resolve(true);
-}));
+gulp.task('monacodts', monacodtsTask);
 
 //#region monaco type checking
 

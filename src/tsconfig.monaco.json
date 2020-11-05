@@ -11,7 +11,7 @@
 		"target": "es5",
 		"sourceMap": false,
 		"declaration": true,
-		"stripInternal": true
+		"stripInternal": false
 	},
 	"include": [
 		"typings/require.d.ts",

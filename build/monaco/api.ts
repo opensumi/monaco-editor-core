@@ -69,28 +69,36 @@ function visitTopLevelDeclarations(sourceFile: ts.SourceFile, visitor: (node: TS
 function getAllTopLevelDeclarations(sourceFile: ts.SourceFile): TSTopLevelDeclare[] {
 	let all: TSTopLevelDeclare[] = [];
 	visitTopLevelDeclarations(sourceFile, (node) => {
-		all.push(node);
-		return true;
-		/** ======================================== 去掉  @internal 限制，将私有 API 暴露出来 ======================================== */
+		if (node.kind === ts.SyntaxKind.InterfaceDeclaration || node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.ModuleDeclaration) {
+			let interfaceDeclaration = <ts.InterfaceDeclaration>node;
+			let triviaStart = interfaceDeclaration.pos;
+			let triviaEnd = interfaceDeclaration.name.pos;
+			let triviaText = getNodeText(sourceFile, { pos: triviaStart, end: triviaEnd });
 
-		// if (node.kind === ts.SyntaxKind.InterfaceDeclaration || node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.ModuleDeclaration) {
-		// 	// let interfaceDeclaration = <ts.InterfaceDeclaration>node;
-		// 	// let triviaStart = interfaceDeclaration.pos;
-		// 	// let triviaEnd = interfaceDeclaration.name.pos;
-		// 	// let triviaText = getNodeText(sourceFile, { pos: triviaStart, end: triviaEnd });
-
-		// 	all.push(node);
-		// 	// if (triviaText.indexOf('@internal') === -1) {
-		// 	// }
-		// } else {
-		// 	// let nodeText = getNodeText(sourceFile, node);
-		// 	// if (nodeText.indexOf('@internal') === -1) {
-		// 		all.push(node);
-		// 	// }
-		// }
-		// return false /*continue*/;
-
-		/** ======================================== 去掉  @internal 限制，将私有 API 暴露出来 ======================================== */
+			if (triviaText.indexOf('@internal') === -1 || node.kind === ts.SyntaxKind.InterfaceDeclaration) {
+				/** 标记为 @internal 的 class 和 interface 不需要暴露 */
+				/** 标记为 @internal 的 class 和 interface 不需要暴露 */
+				all.push(node);
+			}
+		} else {
+			let nodeText = getNodeText(sourceFile, node);
+			if (nodeText.indexOf('@internal') === -1) {
+				/** 标记为 @internal 的顶层声明不需要导出 */
+				/**
+				 * @example
+				 * ```ts
+				 * export const a = 'test';
+				 * export function foo() {
+				 * };
+				 * ```
+				 */
+				all.push(node);
+				/** 标记为 @internal 的顶层声明不需要导出 */
+			} else if(node.kind === ts.SyntaxKind.EnumDeclaration) {
+				// all.push(node);
+			}
+		}
+		return false /*continue*/;
 	});
 	return all;
 }
@@ -137,6 +145,22 @@ function isStatic(member: ts.ClassElement | ts.TypeElement): boolean {
 	return hasModifier(member.modifiers, ts.SyntaxKind.StaticKeyword);
 }
 
+function isPrivate(member: ts.ClassElement | ts.TypeElement): boolean {
+	return hasModifier(member.modifiers, ts.SyntaxKind.PrivateKeyword);
+}
+
+function isProtected(member: ts.ClassElement | ts.TypeElement): boolean {
+	return hasModifier(member.modifiers, ts.SyntaxKind.ProtectedKeyword);
+}
+
+function isAbstractClass(member: ts.ClassDeclaration): boolean {
+	return hasModifier(member.modifiers, ts.SyntaxKind.AbstractKeyword);
+}
+
+// function isInternalClassOrInterface(sourceFile: ts.SourceFile, node: ts.ClassDeclaration | ts.InterfaceDeclaration): boolean {
+// 	return getNodeText(sourceFile, node).indexOf('@internal') > -1;
+// }
+
 function isDefaultExport(declaration: ts.InterfaceDeclaration | ts.ClassDeclaration): boolean {
 	return (
 		hasModifier(declaration.modifiers, ts.SyntaxKind.DefaultKeyword)
@@ -147,40 +171,69 @@ function isDefaultExport(declaration: ts.InterfaceDeclaration | ts.ClassDeclarat
 function getMassagedTopLevelDeclarationText(sourceFile: ts.SourceFile, declaration: TSTopLevelDeclare, importName: string, usage: string[], enums: IEnumEntry[]): string {
 	let result = getNodeText(sourceFile, declaration);
 	if (declaration.kind === ts.SyntaxKind.InterfaceDeclaration || declaration.kind === ts.SyntaxKind.ClassDeclaration) {
-		let interfaceDeclaration = <ts.InterfaceDeclaration | ts.ClassDeclaration>declaration;
 
-		const staticTypeName = (
-			isDefaultExport(interfaceDeclaration)
-				? `${importName}.default`
-				: `${importName}.${declaration.name!.text}`
-		);
+		/**
+		 * 不要将标记为 @internal 的 class 和 interface 暴露出来
+		 * 这里仅需要公开 API 的私有属性
+		 */
+		if(!isAbstractClass(<ts.ClassDeclaration>declaration)) {
+			let interfaceDeclaration = <ts.InterfaceDeclaration | ts.ClassDeclaration>declaration;
 
-		let instanceTypeName = staticTypeName;
-		const typeParametersCnt = (interfaceDeclaration.typeParameters ? interfaceDeclaration.typeParameters.length : 0);
-		if (typeParametersCnt > 0) {
-			let arr: string[] = [];
-			for (let i = 0; i < typeParametersCnt; i++) {
-				arr.push('any');
-			}
-			instanceTypeName = `${instanceTypeName}<${arr.join(',')}>`;
-		}
+			const staticTypeName = (
+				isDefaultExport(interfaceDeclaration)
+					? `${importName}.default`
+					: `${importName}.${declaration.name!.text}`
+			);
 
-		const members: ts.NodeArray<ts.ClassElement | ts.TypeElement> = interfaceDeclaration.members;
-		members.forEach((member) => {
-			try {
-				/** ======================================== 显式声明 @internal API ======================================== */
-				const memberName = (<ts.Identifier | ts.StringLiteral>member.name).text;
-				const memberAccess = (memberName.indexOf('.') >= 0 ? `['${memberName}']` : `.${memberName}`);
-				if (isStatic(member)) {
-					usage.push(`a = ${staticTypeName}${memberAccess};`);
-				} else {
-					usage.push(`a = (<${instanceTypeName}>b)${memberAccess};`);
+
+			let instanceTypeName = staticTypeName;
+			const typeParametersCnt = (interfaceDeclaration.typeParameters ? interfaceDeclaration.typeParameters.length : 0);
+			if (typeParametersCnt > 0) {
+				let arr: string[] = [];
+				for (let i = 0; i < typeParametersCnt; i++) {
+					arr.push('any');
 				}
-				/** ======================================== 显式声明 @internal API ======================================== */
-			} catch (err) {
-				// life..
+				instanceTypeName = `${instanceTypeName}<${arr.join(',')}>`;
 			}
-		});
+
+			const members: ts.NodeArray<ts.ClassElement | ts.TypeElement> = interfaceDeclaration.members;
+			members.forEach((member) => {
+				try {
+					/** ------------------------ 这段是原始代码，主要内容是过滤掉了 class 的 private 成员与注释为 @internal 的成员 ------------------------ */
+					// let memberText = getNodeText(sourceFile, member);
+					// if (memberText.indexOf('@internal') >= 0 || memberText.indexOf('private') >= 0) {
+					// 	result = result.replace(memberText, '');
+					// } else {
+						// const memberName = (<ts.Identifier | ts.StringLiteral>member.name).text;
+						// if (isStatic(member)) {
+						// 	usage.push(`a = ${staticTypeName}.${memberName};`);
+						// } else {
+						// 	usage.push(`a = (<${instanceTypeName}>b).${memberName};`);
+						// }
+					// }
+					/** ------------------------ 这段是原始代码，主要内容是过滤掉了 class 的 private 成员与注释为 @internal 的成员 ------------------------ */
+
+					/** ------------------------ 这段是修改后的代码，主要内容是过滤掉 private 及 protected 成员，但保留了 @internal 成员 ------------------------  */
+					if (!isPrivate(member) && !isProtected(member)) {
+						// console.log('usage class or interface member', (<ts.Identifier | ts.StringLiteral>member.name).text);
+						const memberName = (<ts.Identifier | ts.StringLiteral>member.name).text;
+						if (isStatic(member)) {
+							usage.push(`a = ${staticTypeName}.${memberName};`);
+						} else {
+							const memberText = getNodeText(sourceFile, member);
+							if(memberText.indexOf('@internal') >= 0) {
+								// result = result.replace(memberText, '');
+							} else {
+							}
+							usage.push(`a = (<${instanceTypeName}>b).${memberName};`);
+						}
+					}
+					/** ------------------------ 这段是修改后的代码，主要内容是过滤掉 private 及 protected 成员，但保留了 @internal 成员 ------------------------  */
+				} catch (err) {
+					// life..
+				}
+			});
+		}
 	} else if (declaration.kind === ts.SyntaxKind.VariableStatement) {
 		const jsDoc = result.substr(0, declaration.getLeadingTriviaWidth(sourceFile));
 		if (jsDoc.indexOf('@monacodtsreplace') >= 0) {
@@ -382,6 +435,7 @@ function createReplacer(data: string): (str: string) => string {
 
 		findStr = findStr.replace(/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g, '\\$&');
 		findStr = '\\b' + findStr + '\\b';
+		console.log('replacer =======>', findStr, replaceStr);
 		directives.push([new RegExp(findStr, 'g'), replaceStr]);
 	});
 
