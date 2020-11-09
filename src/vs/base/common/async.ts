@@ -52,8 +52,8 @@ export function createCancelablePromise<T>(callback: (token: CancellationToken) 
 
 export function raceCancellation<T>(promise: Promise<T>, token: CancellationToken): Promise<T | undefined>;
 export function raceCancellation<T>(promise: Promise<T>, token: CancellationToken, defaultValue: T): Promise<T>;
-export function raceCancellation<T>(promise: Promise<T>, token: CancellationToken, defaultValue?: T): Promise<T> {
-	return Promise.race([promise, new Promise<T>(resolve => token.onCancellationRequested(() => resolve(defaultValue)))]);
+export function raceCancellation<T>(promise: Promise<T>, token: CancellationToken, defaultValue?: T): Promise<T | undefined> {
+	return Promise.race([promise, new Promise<T | undefined>(resolve => token.onCancellationRequested(() => resolve(defaultValue)))]);
 }
 
 export function asPromise<T>(callback: () => T | Thenable<T>): Promise<T> {
@@ -616,6 +616,14 @@ export class RunOnceScheduler {
 	schedule(delay = this.timeout): void {
 		this.cancel();
 		this.timeoutToken = setTimeout(this.timeoutHandler, delay);
+	}
+
+	get delay(): number {
+		return this.timeout;
+	}
+
+	set delay(value: number) {
+		this.timeout = value;
 	}
 
 	/**
