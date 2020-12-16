@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createESMSourcesAndResources2 = exports.extractEditor = void 0;
 const ts = require("typescript");
 const fs = require("fs");
 const path = require("path");
@@ -39,7 +40,7 @@ function extractEditor(options) {
     tsConfig.compilerOptions = compilerOptions;
     compilerOptions.noEmit = false;
     compilerOptions.noUnusedLocals = false;
-    compilerOptions.preserveConstEnums = false;
+    compilerOptions.preserveConstEnums = true;
     compilerOptions.declaration = true;
     compilerOptions.moduleResolution = ts.ModuleResolutionKind.Classic;
     options.compilerOptions = compilerOptions;
