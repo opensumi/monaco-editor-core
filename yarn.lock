@@ -6216,10 +6216,10 @@ nice-try@^1.0.4:
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.4.tgz#d93962f6c52f2c1558c0fbda6d512819f1efe1c4"
   integrity sha512-2NpiFHqC87y/zFke0fC0spBXL3bBsoh/p5H1EFhshxjCR5+0g2d6BiXbUFz9v1sAcxsk2htp2eQnNIci2dIYcA==
 
-node-abi@^2.7.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-2.9.0.tgz#ae4075b298dab2d92dd1e22c48ccc7ffd7f06200"
-  integrity sha512-jmEOvv0eanWjhX8dX1pmjb7oJl1U1oR4FOh0b2GnvALwSYoOdU7sj+kLDSAyjo4pfC9aj/IxkloxdLJQhSSQBA==
+node-abi@^2.19.2, node-abi@^2.7.0:
+  version "2.19.2"
+  resolved "https://registry.npm.alibaba-inc.com/node-abi/download/node-abi-2.19.2.tgz#e691a3b3bbbe27207841a1bb08684ec294e6e338"
+  integrity sha1-5pGjs7u+JyB4QaG7CGhOwpTm4zg=
   dependencies:
     semver "^5.4.1"
 
