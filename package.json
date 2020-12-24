@@ -169,5 +169,8 @@
     "windows-foreground-love": "0.2.0",
     "windows-mutex": "0.3.0",
     "windows-process-tree": "0.2.4"
+  },
+  "resolutions": {
+    "node-abi": "^2.19.2"
   }
 }
