@@ -455,11 +455,9 @@ class RenderedViewLine implements IRenderedViewLine {
 		if (!this.domNode) {
 			return 0;
 		}
-		if (this._cachedWidth === -1) {
-			// 在某些特殊情况下，这里的 offsetWidth 可能为 0
-			setTimeout(() => {
-				this._cachedWidth = this._getReadingTarget(this.domNode!).offsetWidth;
-			}, 0);
+		if (this._cachedWidth <= 0) {
+			// 在某些特殊情况下，这里的 offsetWidth 可能为 0, 所以当小于 0 时更新 cachedWidth
+			this._cachedWidth = this._getReadingTarget(this.domNode!).offsetWidth;
 		}
 		return this._cachedWidth;
 	}

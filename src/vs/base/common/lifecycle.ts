@@ -113,7 +113,7 @@ export class DisposableStore implements IDisposable {
 	 * Dispose of all registered disposables but do not mark this object as disposed.
 	 */
 	public clear(): void {
-		this._toDispose.forEach(item => item.dispose());
+		this._toDispose.forEach(item => item.dispose && item.dispose());
 		this._toDispose.clear();
 	}
 
