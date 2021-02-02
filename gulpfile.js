@@ -17,14 +17,14 @@ const { monacoTypecheckTask/* , monacoTypecheckWatchTask */ } = require('./build
 const { compileExtensionsTask, watchExtensionsTask } = require('./build/gulpfile.extensions');
 
 // Fast compile for development time
-const compileClientTask = task.define('compile-client', task.series(util.rimraf('out'), compilation.compileTask('src', 'out', false)));
+const compileClientTask = task.define('compile-client', task.series(util.rimraf('out'), compilation.compileTask('src', 'out', true)));
 gulp.task(compileClientTask);
 
 const watchClientTask = task.define('watch-client', task.series(util.rimraf('out'), compilation.watchTask('out', false)));
 gulp.task(watchClientTask);
 
 // All
-const compileTask = task.define('compile', task.parallel(monacoTypecheckTask, compileClientTask, compileExtensionsTask));
+const compileTask = task.define('compile', task.parallel(monacoTypecheckTask, compileClientTask));
 gulp.task(compileTask);
 
 gulp.task(task.define('watch', task.parallel(/* monacoTypecheckWatchTask, */ watchClientTask, watchExtensionsTask)));

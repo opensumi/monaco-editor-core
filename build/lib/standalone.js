@@ -4,7 +4,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createESMSourcesAndResources2 = exports.extractEditor = void 0;
 const ts = require("typescript");
 const fs = require("fs");
 const path = require("path");
@@ -177,8 +176,6 @@ function createESMSourcesAndResources2(options) {
             fileContents = fileContents.replace(/import ([a-zA-z0-9]+) = require\(('[^']+')\);/g, function (_, m1, m2) {
                 return `import * as ${m1} from ${m2};`;
             });
-            const destPath = getDestAbsoluteFilePath(file);
-            console.log('do write', destPath);
             write(getDestAbsoluteFilePath(file), fileContents);
             continue;
         }

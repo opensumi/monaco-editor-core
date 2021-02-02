@@ -24,11 +24,14 @@ const watch = require('./watch');
 
 const reporter = createReporter();
 
-function getTypeScriptCompilerOptions(src: string): ts.CompilerOptions {
+function getTypeScriptCompilerOptions(src: string, module?: ts.ModuleKind): ts.CompilerOptions {
 	const rootDir = path.join(__dirname, `../../${src}`);
 	let options: ts.CompilerOptions = {};
 	options.verbose = false;
 	options.sourceMap = true;
+	if (module) {
+		options.module = module;
+	}
 	if (process.env['VSCODE_NO_SOURCEMAP']) { // To be used by developers in a hurry
 		options.sourceMap = false;
 	}
@@ -39,9 +42,9 @@ function getTypeScriptCompilerOptions(src: string): ts.CompilerOptions {
 	return options;
 }
 
-function createCompile(src: string, build: boolean, emitError?: boolean) {
+function createCompile(src: string, build: boolean, emitError?: boolean, module?: ts.ModuleKind) {
 	const projectPath = path.join(__dirname, '../../', src, 'tsconfig.json');
-	const overrideOptions = { ...getTypeScriptCompilerOptions(src), inlineSources: Boolean(build) };
+	const overrideOptions = { ...getTypeScriptCompilerOptions(src, module), inlineSources: Boolean(build),  };
 
 	const compilation = tsb.create(projectPath, overrideOptions, false, err => reporter(err));
 
@@ -78,10 +81,10 @@ function createCompile(src: string, build: boolean, emitError?: boolean) {
 	return pipeline;
 }
 
-export function compileTask(src: string, out: string, build: boolean): () => NodeJS.ReadWriteStream {
+export function compileTask(src: string, out: string, build: boolean, module?: ts.ModuleKind): () => NodeJS.ReadWriteStream {
 
 	return function () {
-		const compile = createCompile(src, build, true);
+		const compile = createCompile(src, build, true, module);
 		const srcPipe = gulp.src(`${src}/**`, { base: `${src}` });
 		let generator = new MonacoGenerator(false);
 		if (src === 'src') {

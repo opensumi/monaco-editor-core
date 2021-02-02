@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.submitAllStats = exports.createStatsStream = void 0;
 const es = require("event-stream");
 const fancyLog = require("fancy-log");
 const ansiColors = require("ansi-colors");

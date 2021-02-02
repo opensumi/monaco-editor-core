@@ -56,5 +56,6 @@
   },
   "dependencies": {
     "@azure/cosmos": "^3.4.0"
-  }
+  },
+  "__npminstall_done": false
 }

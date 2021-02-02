@@ -83,6 +83,7 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
 });
 
 const compileEditorAMDTask = task.define('compile-editor-amd', compilation.compileTask('out-editor-src', 'out-editor-build', true));
+const compileEditorEsmTask = task.define('compile-editor-esm-core', compilation.compileTask('out-editor-esm', 'out-monaco-editor-core/esm', true, 5 /** es2015 */));
 
 const optimizeEditorAMDTask = task.define('optimize-editor-amd', common.optimizeTask({
 	src: 'out-editor-build',
@@ -113,6 +114,12 @@ const createESMSourcesAndResourcesTask = task.define('extract-editor-esm', () =>
 		ignores: [
 			'inlineEntryPoint:0.ts',
 			'inlineEntryPoint:1.ts',
+			'inlineEntryPoint:0.js',
+			'inlineEntryPoint:1.js',
+			'inlineEntryPoint:0.js.map',
+			'inlineEntryPoint:1.js.map',
+			'inlineEntryPoint:0.d.ts',
+			'inlineEntryPoint:1.d.ts',
 			'vs/loader.js',
 			'vs/nls.ts',
 			'vs/nls.build.js',
@@ -128,6 +135,9 @@ const createESMSourcesAndResourcesTask = task.define('extract-editor-esm', () =>
 	});
 });
 
+/**
+ * @deprecated in monaco-editor-core
+ */
 const compileEditorESMTask = task.define('compile-editor-esm', () => {
 	console.log(`Launching the TS compiler at ${path.join(__dirname, '../out-editor-esm')}...`);
 	let result;
@@ -354,7 +364,7 @@ gulp.task('editor-distro',
 			),
 			task.series(
 				createESMSourcesAndResourcesTask,
-				compileEditorESMTask
+				compileEditorEsmTask
 			)
 		),
 		finalEditorResourcesTask

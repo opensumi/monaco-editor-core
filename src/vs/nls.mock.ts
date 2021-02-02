@@ -3,24 +3,67 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/* ---------------------------------------------------------------------------------------------
+ * 本文件用于为 esm 版本的 monaco-editor 提供 nls 多语言支持
+ * 不适用于其他版本 (dev/min)
+ *---------------------------------------------------------------------------------------------*/
+
+let CURRENT_LOCALE_DATA: { [prop: string]: string[] } | null = null;
+
 export interface ILocalizeInfo {
 	key: string;
 	comment: string[];
 }
 
-function _format(message: string, args: any[]): string {
+function _format(message: string, args: (string | number | boolean | undefined | null)[]): string {
 	let result: string;
+
 	if (args.length === 0) {
 		result = message;
 	} else {
-		result = message.replace(/\{(\d+)\}/g, function (match, rest) {
-			const index = rest[0];
-			return typeof args[index] !== 'undefined' ? args[index] : match;
+		result = message.replace(/\{(\d+)\}/g, (match, rest) => {
+			let index = rest[0];
+			let arg = args[index];
+			let result = match;
+			if (typeof arg === 'string') {
+				result = arg;
+			} else if (typeof arg === 'number' || typeof arg === 'boolean' || arg === void 0 || arg === null) {
+				result = String(arg);
+			}
+			return result;
 		});
 	}
+
 	return result;
 }
 
-export function localize(data: ILocalizeInfo | string, message: string, ...args: any[]): string {
-	return _format(message, args);
+export function loadBundle(url: string) {
+	fetch(url)
+		.then((res) => res.json)
+		.then((res) => {
+			console.log(res);
+		});
+}
+
+/**
+ * 这里的类型注释本质是为了让编译时类型校验能通过
+ * @param data
+ * @param message
+ *
+ * 在编译后，localize 调用方式为
+ * localize('path/to/file', index, defaultMessage, ...args);
+ */
+export function localize(data: string | ILocalizeInfo, message: string, ...args: any[]): string;
+export function localize(path: string | ILocalizeInfo, index: number | string, ...args: any[]): string {
+	if (typeof path === 'string') {
+		if (!CURRENT_LOCALE_DATA || !CURRENT_LOCALE_DATA[path]) {
+			const [defaultMessage, ...otherArgs] = args;
+			return _format(defaultMessage, otherArgs);
+		}
+		const dataBundle = CURRENT_LOCALE_DATA[path];
+
+		const [defaultMessage, ...otherArgs] = args;
+		return _format(dataBundle[index as unknown as number] || defaultMessage, otherArgs);
+	}
+	return _format(index as unknown as string, args);
 }
