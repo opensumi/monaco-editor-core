@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.watchTask = exports.compileTask = void 0;
 const es = require("event-stream");
 const fs = require("fs");
 const gulp = require("gulp");
@@ -20,11 +19,14 @@ const fancyLog = require("fancy-log");
 const ansiColors = require("ansi-colors");
 const watch = require('./watch');
 const reporter = reporter_1.createReporter();
-function getTypeScriptCompilerOptions(src) {
+function getTypeScriptCompilerOptions(src, module) {
     const rootDir = path.join(__dirname, `../../${src}`);
     let options = {};
     options.verbose = false;
     options.sourceMap = true;
+    if (module) {
+        options.module = module;
+    }
     if (process.env['VSCODE_NO_SOURCEMAP']) { // To be used by developers in a hurry
         options.sourceMap = false;
     }
@@ -34,9 +36,9 @@ function getTypeScriptCompilerOptions(src) {
     options.newLine = /\r\n/.test(fs.readFileSync(__filename, 'utf8')) ? 0 : 1;
     return options;
 }
-function createCompile(src, build, emitError) {
+function createCompile(src, build, emitError, module) {
     const projectPath = path.join(__dirname, '../../', src, 'tsconfig.json');
-    const overrideOptions = Object.assign(Object.assign({}, getTypeScriptCompilerOptions(src)), { inlineSources: Boolean(build) });
+    const overrideOptions = Object.assign(Object.assign({}, getTypeScriptCompilerOptions(src, module)), { inlineSources: Boolean(build) });
     const compilation = tsb.create(projectPath, overrideOptions, false, err => reporter(err));
     function pipeline(token) {
         const utf8Filter = util.filter(data => /(\/|\\)test(\/|\\).*utf8/.test(data.path));
@@ -67,9 +69,9 @@ function createCompile(src, build, emitError) {
     };
     return pipeline;
 }
-function compileTask(src, out, build) {
+function compileTask(src, out, build, module) {
     return function () {
-        const compile = createCompile(src, build, true);
+        const compile = createCompile(src, build, true, module);
         const srcPipe = gulp.src(`${src}/**`, { base: `${src}` });
         let generator = new MonacoGenerator(false);
         if (src === 'src') {

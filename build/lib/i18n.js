@@ -4,7 +4,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.prepareIslFiles = exports.prepareI18nPackFiles = exports.pullI18nPackFiles = exports.prepareI18nFiles = exports.pullSetupXlfFiles = exports.pullCoreAndExtensionsXlfFiles = exports.findObsoleteResources = exports.pushXlfFiles = exports.createXlfFilesForIsl = exports.createXlfFilesForExtensions = exports.createXlfFilesForCoreBundle = exports.getResource = exports.processNlsFiles = exports.Limiter = exports.XLF = exports.Line = exports.externalExtensionsWithTranslations = exports.extraLanguages = exports.defaultLanguages = void 0;
 const path = require("path");
 const fs = require("fs");
 const event_stream_1 = require("event-stream");
@@ -318,9 +317,9 @@ function escapeCharacters(value) {
     for (let i = 0; i < value.length; i++) {
         const ch = value.charAt(i);
         switch (ch) {
-            case '\'':
-                result.push('\\\'');
-                break;
+            // case '\'':
+            // 	result.push('\\\'');
+            // 	break;
             case '"':
                 result.push('\\"');
                 break;
@@ -348,6 +347,7 @@ function escapeCharacters(value) {
     }
     return result.join('');
 }
+// @ts-ignore
 function processCoreBundleFormat(fileHeader, languages, json, emitter) {
     let keysSection = json.keys;
     let messageSection = json.messages;
@@ -429,8 +429,9 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
         Object.keys(bundleSection).forEach((bundle) => {
             let modules = bundleSection[bundle];
             let contents = [
-                fileHeader,
-                `define("${bundle}.nls.${language.id}", {`
+                // fileHeader,
+                // `define("${bundle}.nls.${language.id}", {`
+                '{',
             ];
             modules.forEach((module, index) => {
                 contents.push(`\t"${module}": [`);
@@ -440,12 +441,12 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
                     return;
                 }
                 messages.forEach((message, index) => {
-                    contents.push(`\t\t"${escapeCharacters(message)}${index < messages.length ? '",' : '"'}`);
+                    contents.push(`\t\t"${escapeCharacters(message)}${index < messages.length - 1 ? '",' : '"'}`);
                 });
                 contents.push(index < modules.length - 1 ? '\t],' : '\t]');
             });
-            contents.push('});');
-            emitter.queue(new File({ path: bundle + '.nls.' + language.id + '.js', contents: Buffer.from(contents.join('\n'), 'utf-8') }));
+            contents.push('}');
+            emitter.queue(new File({ path: bundle + '.nls.' + language.id + '.json', contents: Buffer.from(contents.join('\n'), 'utf-8') }));
         });
     });
     Object.keys(statistics).forEach(key => {
@@ -458,6 +459,21 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
             log(`\tNo translations found for language ${language.id}. Using default language instead.`);
         }
     });
+}
+const commonHeader1 = `/*---------------------------------------------------------\n`;
+const commonHeader2 = `* Copyright (c) Microsoft Corporation. All rights reserved.\n`;
+const commonHeader3 = `*--------------------------------------------------------*/`;
+// 将 nls.js 转换成 nls.json 结构
+// @ts-ignore
+function toJsonNlsFile(content, fileHeader) {
+    return content
+        .replace(fileHeader, '')
+        .replace(commonHeader1, '')
+        .replace(commonHeader2, '')
+        .replace(commonHeader3, '')
+        .replace(`define("vs/editor/editor.main.nls", {`, '{')
+        .replace('});', '}')
+        .trim();
 }
 function processNlsFiles(opts) {
     return event_stream_1.through(function (file) {
@@ -475,7 +491,15 @@ function processNlsFiles(opts) {
                 processCoreBundleFormat(opts.fileHeader, opts.languages, json, this);
             }
         }
-        this.queue(file);
+        if (file.path.includes('editor.main.nls.js')) {
+            this.queue(new File({
+                path: file.path.replace('.js', '.json'),
+                contents: Buffer.from(toJsonNlsFile(file.contents.toString(), opts.fileHeader)),
+            }));
+        }
+        else {
+            this.queue(file);
+        }
     });
 }
 exports.processNlsFiles = processNlsFiles;

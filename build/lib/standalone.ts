@@ -206,8 +206,6 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 			fileContents = fileContents.replace(/import ([a-zA-z0-9]+) = require\(('[^']+')\);/g, function (_, m1, m2) {
 				return `import * as ${m1} from ${m2};`;
 			});
-			const destPath = getDestAbsoluteFilePath(file);
-			console.log('do write', destPath);
 			write(getDestAbsoluteFilePath(file), fileContents);
 			continue;
 		}

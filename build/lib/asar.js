@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAsar = void 0;
 const path = require("path");
 const es = require("event-stream");
 const pickle = require('chromium-pickle-js');
