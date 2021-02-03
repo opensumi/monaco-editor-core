@@ -1,6 +1,6 @@
 {
   "name": "@ali/monaco-editor-core",
-  "version": "0.20.1-patch.11",
+  "version": "0.20.1-patch.12",
   "description": "A browser based code editor",
   "author": "Microsoft Corporation",
   "license": "MIT",
