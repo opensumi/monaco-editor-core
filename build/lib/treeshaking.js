@@ -472,7 +472,12 @@ function generateResult(languageService) {
                 if (ts.isExpressionStatement(node) && ts.isStringLiteral(node.expression) && node.expression.text === 'use strict') {
                     return keep(node);
                 }
-                if (ts.isVariableStatement(node) && nodeOrChildIsBlack(node)) {
+                /**
+                 * 这里保留 DocumentRangeSemanticTokensProviderRegistry
+                 * 不知道什么原因 modes 里 export const DocumentRangeSemanticTokensProviderRegistry 被标记为可删除节点
+                 */
+                if (ts.isVariableStatement(node) &&
+                    (nodeOrChildIsBlack(node) || node.getText().includes('DocumentRangeSemanticTokensProviderRegistry'))) {
                     return keep(node);
                 }
             }
