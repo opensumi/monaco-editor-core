@@ -1699,6 +1699,19 @@ __marked_exports = marked;
 define(function() { return __marked_exports; });
 // ESM-comment-end
 
+// CJS-comment-begin
+// exports.marked = __marked_exports;
+// exports.Parser = __marked_exports.Parser;
+// exports.parser = __marked_exports.parser;
+// exports.Renderer = __marked_exports.Renderer;
+// exports.TextRenderer = __marked_exports.TextRenderer;
+// exports.Lexer = __marked_exports.Lexer;
+// exports.lexer = __marked_exports.lexer;
+// exports.InlineLexer = __marked_exports.InlineLexer;
+// exports.inlineLexer = __marked_exports.inlineLexer;
+// exports.parse = __marked_exports.parse;
+// CJS-comment-end
+
 // ESM-uncomment-begin
 // export var marked = __marked_exports;
 // export var Parser = __marked_exports.Parser;
