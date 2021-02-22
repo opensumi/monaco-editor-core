@@ -381,7 +381,6 @@ function createReplacer(data) {
         let replaceStr = pieces[1];
         findStr = findStr.replace(/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g, '\\$&');
         findStr = '\\b' + findStr + '\\b';
-        console.log('replacer =======>', findStr, replaceStr);
         directives.push([new RegExp(findStr, 'g'), replaceStr]);
     });
     return createReplacerFromDirectives(directives);
