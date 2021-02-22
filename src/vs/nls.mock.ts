@@ -8,7 +8,7 @@
  * 不适用于其他版本 (dev/min)
  *---------------------------------------------------------------------------------------------*/
 // @ts-ignore
-import zhCnBundle from '../../dev/vs/editor/editor.main.nls.zh-cn.json';
+const zhCnBundle = require('../../dev/vs/editor/editor.main.nls.zh-cn.json');
 
 let defaultLocale: string | undefined;
 
