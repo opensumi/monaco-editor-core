@@ -159,6 +159,27 @@ const _manualClassList = new class implements IDomClassList {
 	}
 };
 
+/**
+ * Removes all children from `parent` and appends `children`
+ */
+export function reset(parent: HTMLElement, ...children: Array<Node | string>): void {
+	parent.innerText = '';
+	appendChildren(parent, ...children);
+}
+
+/**
+ * Appends `children` to `parent`
+ */
+export function appendChildren(parent: HTMLElement, ...children: Array<Node | string>): void {
+	for (const child of children) {
+		if (child instanceof Node) {
+			parent.appendChild(child);
+		} else if (typeof child === 'string') {
+			parent.appendChild(document.createTextNode(child));
+		}
+	}
+}
+
 const _nativeClassList = new class implements IDomClassList {
 	hasClass(node: HTMLElement, className: string): boolean {
 		return Boolean(className) && node.classList && node.classList.contains(className);

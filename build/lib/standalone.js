@@ -203,7 +203,6 @@ function createESMSourcesAndResources2(options) {
     }
     function write(absoluteFilePath, contents) {
         if (/(\.ts$)|(\.js$)/.test(absoluteFilePath)) {
-            // 不产出 esm 版本，所以不切换注释
             contents = toggleComments(contents.toString());
         }
         writeFile(absoluteFilePath, contents);

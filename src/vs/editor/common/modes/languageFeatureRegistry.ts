@@ -190,7 +190,7 @@ export class LanguageFeatureRequestDelays {
 	constructor(
 		private readonly _registry: LanguageFeatureRegistry<any>,
 		readonly min: number,
-		readonly max: number = Number.MAX_SAFE_INTEGER,
+		readonly max: number = 9007199254740991,
 	) { }
 
 	private _key(model: ITextModel): string {
