@@ -273,6 +273,10 @@ class Widget {
 	}
 
 	private _layoutBoxInViewport(topLeft: Coordinate, bottomLeft: Coordinate, width: number, height: number, ctx: RenderingContext): IBoxLayoutResult {
+		// monaco@0.0.20 版本中，这里获取 domNode 的 clientHeight 可能为 0，会导致下面计算 contentWidget 定位时整体向下偏移了一行
+		// 由于获取的是缓存的 height，且 domNode 渲染时机暂时不好修改，所以如果高度为0的话，在这里重新获取一次高度
+		const contentHeight = height === 0 ? this.domNode.domNode.clientHeight : height;
+
 		// Our visible box is split horizontally by the current line => 2 boxes
 
 		// a) the box above the line
@@ -283,10 +287,10 @@ class Widget {
 		const underLineTop = bottomLeft.top + this._lineHeight;
 		const heightUnderLine = ctx.viewportHeight - underLineTop;
 
-		const aboveTop = aboveLineTop - height;
-		const fitsAbove = (heightAboveLine >= height);
+		const aboveTop = aboveLineTop - contentHeight;
+		const fitsAbove = (heightAboveLine >= contentHeight);
 		const belowTop = underLineTop;
-		const fitsBelow = (heightUnderLine >= height);
+		const fitsBelow = (heightUnderLine >= contentHeight);
 
 		// And its left
 		let actualAboveLeft = topLeft.left;
