@@ -56,10 +56,15 @@
     "vsce": "1.48.0",
     "vscode-universal": "deepak1556/universal#61454d96223b774c53cda10f72c2098c0ce02d58"
   },
+  "resolutions": {
+    "source-map": "0.6.1"
+  },
   "scripts": {
     "compile": "tsc -p tsconfig.build.json",
     "watch": "tsc -p tsconfig.build.json --watch",
     "npmCheckJs": "tsc --noEmit"
   },
-  "dependencies": {}
+  "dependencies": {
+    "gulp-uglify": "^3.0.2"
+  }
 }
