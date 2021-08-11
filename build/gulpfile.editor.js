@@ -77,7 +77,8 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
 	});
 });
 
-const compileEditorAMDTask = task.define('compile-editor-amd', compilation.compileTask('out-editor-src', 'out-editor-build', true));
+const compileEditorAMDTask = task.define('compile-editor-amd', compilation.compileTask('out-editor-src', 'out-editor-build', true, false));
+const compileEditorEsmTask = task.define('compile-editor-esm-core', compilation.compileTask('out-editor-esm', 'out-monaco-editor-core/esm', true, true, 1 /** CommonJS */));
 
 const optimizeEditorAMDTask = task.define('optimize-editor-amd', common.optimizeTask({
 	src: 'out-editor-build',
@@ -108,6 +109,20 @@ const createESMSourcesAndResourcesTask = task.define('extract-editor-esm', () =>
 		ignores: [
 			'inlineEntryPoint:0.ts',
 			'inlineEntryPoint:1.ts',
+			'inlineEntryPoint:0.js',
+			'inlineEntryPoint:1.js',
+			'inlineEntryPoint:0.js.map',
+			'inlineEntryPoint:1.js.map',
+			'inlineEntryPoint:0.d.ts',
+			'inlineEntryPoint:1.d.ts',
+			'inlineEntryPoint.0.ts',
+			'inlineEntryPoint.1.ts',
+			'inlineEntryPoint.0.js',
+			'inlineEntryPoint.1.js',
+			'inlineEntryPoint.0.js.map',
+			'inlineEntryPoint.1.js.map',
+			'inlineEntryPoint.0.d.ts',
+			'inlineEntryPoint.1.d.ts',
 			'vs/loader.js',
 			'vs/nls.ts',
 			'vs/nls.build.js',
@@ -123,6 +138,9 @@ const createESMSourcesAndResourcesTask = task.define('extract-editor-esm', () =>
 	});
 });
 
+/**
+ * @deprecated in monaco-editor-core
+ */
 const compileEditorESMTask = task.define('compile-editor-esm', () => {
 	const KEEP_PREV_ANALYSIS = false;
 	const FAIL_ON_PURPOSE = false;
@@ -381,6 +399,13 @@ gulp.task('extract-editor-src',
 	)
 );
 
+const monacodtsTask = task.define('monacodts', () => {
+	const result = monacoapi.execute();
+	fs.writeFileSync(result.filePath, result.content);
+	fs.writeFileSync(path.join(root, 'src/vs/editor/common/standalone/standaloneEnums.ts'), result.enums);
+	return Promise.resolve(true);
+});
+
 gulp.task('editor-distro',
 	task.series(
 		task.parallel(
@@ -392,16 +417,17 @@ gulp.task('editor-distro',
 			util.rimraf('out-editor-min')
 		),
 		extractEditorSrcTask,
+		monacodtsTask,
 		task.parallel(
 			task.series(
 				compileEditorAMDTask,
 				optimizeEditorAMDTask,
-				minifyEditorAMDTask
+				// minifyEditorAMDTask
 			),
 			task.series(
 				createESMSourcesAndResourcesTask,
-				compileEditorESMTask,
-				appendJSToESMImportsTask
+				appendJSToESMImportsTask,
+				compileEditorEsmTask
 			)
 		),
 		finalEditorResourcesTask
@@ -461,6 +487,8 @@ gulp.task('monacodts', task.define('monacodts', () => {
 	fs.writeFileSync(path.join(root, 'src/vs/editor/common/standalone/standaloneEnums.ts'), result.enums);
 	return Promise.resolve(true);
 }));
+
+gulp.task('monacodts', monacodtsTask);
 
 //#region monaco type checking
 

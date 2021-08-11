@@ -65,10 +65,15 @@
     "vsce": "^1.100.0",
     "vscode-universal-bundler": "^0.0.2"
   },
+  "resolutions": {
+    "source-map": "0.6.1"
+  },
   "scripts": {
     "compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
     "watch": "../node_modules/.bin/tsc -p tsconfig.build.json --watch",
     "npmCheckJs": "../node_modules/.bin/tsc --noEmit"
   },
-  "dependencies": {}
+  "dependencies": {
+    "gulp-uglify": "^3.0.2"
+  }
 }
