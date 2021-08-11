@@ -131,7 +131,7 @@ export interface IGlobalEditorOptions {
 	 * 'configuredByTheme': semanticHighlighting is controlled by the current color theme's semanticHighlighting setting.
 	 * Defaults to 'byTheme'.
 	 */
-	'semanticHighlighting.enabled'?: true | false | 'configuredByTheme';
+	// 'semanticHighlighting.enabled'?: true | false | 'configuredByTheme';
 	/**
 	 * Keep peek editors open even when double clicking their content or when hitting `Escape`.
 	 * Defaults to false.

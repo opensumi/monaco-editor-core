@@ -4,7 +4,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.execute = exports.run3 = exports.DeclarationResolver = exports.FSProvider = exports.RECIPE_PATH = void 0;
 const fs = require("fs");
 const ts = require("typescript");
 const path = require("path");
@@ -13,12 +12,12 @@ const ansiColors = require("ansi-colors");
 const dtsv = '3';
 const tsfmt = require('../../tsfmt.json');
 const SRC = path.join(__dirname, '../../src');
-exports.RECIPE_PATH = path.join(__dirname, '../monaco/monaco.d.ts.recipe');
+exports.RECIPE_PATH = path.join(__dirname, './monaco.d.ts.recipe');
 const DECLARATION_PATH = path.join(__dirname, '../../src/vs/monaco.d.ts');
 function logErr(message, ...rest) {
     fancyLog(ansiColors.yellow(`[monaco.d.ts]`), message, ...rest);
 }
-function isDeclaration(ts, a) {
+function isDeclaration(a) {
     return (a.kind === ts.SyntaxKind.InterfaceDeclaration
         || a.kind === ts.SyntaxKind.EnumDeclaration
         || a.kind === ts.SyntaxKind.ClassDeclaration
@@ -26,9 +25,9 @@ function isDeclaration(ts, a) {
         || a.kind === ts.SyntaxKind.FunctionDeclaration
         || a.kind === ts.SyntaxKind.ModuleDeclaration);
 }
-function visitTopLevelDeclarations(ts, sourceFile, visitor) {
+function visitTopLevelDeclarations(sourceFile, visitor) {
     let stop = false;
-    const visit = (node) => {
+    let visit = (node) => {
         if (stop) {
             return;
         }
@@ -49,9 +48,9 @@ function visitTopLevelDeclarations(ts, sourceFile, visitor) {
     };
     visit(sourceFile);
 }
-function getAllTopLevelDeclarations(ts, sourceFile) {
-    const all = [];
-    visitTopLevelDeclarations(ts, sourceFile, (node) => {
+function getAllTopLevelDeclarations(sourceFile) {
+    let all = [];
+    visitTopLevelDeclarations(sourceFile, (node) => {
         if (node.kind === ts.SyntaxKind.InterfaceDeclaration || node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.ModuleDeclaration) {
             let interfaceDeclaration = node;
             let triviaStart = interfaceDeclaration.pos;
@@ -64,7 +63,7 @@ function getAllTopLevelDeclarations(ts, sourceFile) {
             }
         }
         else {
-            const nodeText = getNodeText(sourceFile, node);
+            let nodeText = getNodeText(sourceFile, node);
             if (nodeText.indexOf('@internal') === -1) {
                 /** 标记为 @internal 的顶层声明不需要导出 */
                 /**
@@ -86,10 +85,10 @@ function getAllTopLevelDeclarations(ts, sourceFile) {
     });
     return all;
 }
-function getTopLevelDeclaration(ts, sourceFile, typeName) {
+function getTopLevelDeclaration(sourceFile, typeName) {
     let result = null;
-    visitTopLevelDeclarations(ts, sourceFile, (node) => {
-        if (isDeclaration(ts, node) && node.name) {
+    visitTopLevelDeclarations(sourceFile, (node) => {
+        if (isDeclaration(node) && node.name) {
             if (node.name.text === typeName) {
                 result = node;
                 return true /*stop*/;
@@ -111,7 +110,7 @@ function getNodeText(sourceFile, node) {
 function hasModifier(modifiers, kind) {
     if (modifiers) {
         for (let i = 0; i < modifiers.length; i++) {
-            const mod = modifiers[i];
+            let mod = modifiers[i];
             if (mod.kind === kind) {
                 return true;
             }
@@ -138,7 +137,7 @@ function isDefaultExport(declaration) {
     return (hasModifier(declaration.modifiers, ts.SyntaxKind.DefaultKeyword)
         && hasModifier(declaration.modifiers, ts.SyntaxKind.ExportKeyword));
 }
-function getMassagedTopLevelDeclarationText(ts, sourceFile, declaration, importName, usage, enums) {
+function getMassagedTopLevelDeclarationText(sourceFile, declaration, importName, usage, enums) {
     let result = getNodeText(sourceFile, declaration);
     if (declaration.kind === ts.SyntaxKind.InterfaceDeclaration || declaration.kind === ts.SyntaxKind.ClassDeclaration) {
         /**
@@ -200,10 +199,30 @@ function getMassagedTopLevelDeclarationText(ts, sourceFile, declaration, importN
             });
         }
     }
+    else if (declaration.kind === ts.SyntaxKind.VariableStatement) {
+        const jsDoc = result.substr(0, declaration.getLeadingTriviaWidth(sourceFile));
+        if (jsDoc.indexOf('@monacodtsreplace') >= 0) {
+            const jsDocLines = jsDoc.split(/\r\n|\r|\n/);
+            let directives = [];
+            for (const jsDocLine of jsDocLines) {
+                const m = jsDocLine.match(/^\s*\* \/([^/]+)\/([^/]+)\/$/);
+                if (m) {
+                    directives.push([new RegExp(m[1], 'g'), m[2]]);
+                }
+            }
+            // remove the jsdoc
+            result = result.substr(jsDoc.length);
+            if (directives.length > 0) {
+                // apply replace directives
+                const replacer = createReplacerFromDirectives(directives);
+                result = replacer(result);
+            }
+        }
+    }
     result = result.replace(/export default /g, 'export ');
     result = result.replace(/export declare /g, 'export ');
     result = result.replace(/declare /g, '');
-    const lines = result.split(/\r\n|\r|\n/);
+    let lines = result.split(/\r\n|\r|\n/);
     for (let i = 0; i < lines.length; i++) {
         if (/\s*\*/.test(lines[i])) {
             // very likely a comment
@@ -221,16 +240,16 @@ function getMassagedTopLevelDeclarationText(ts, sourceFile, declaration, importN
     }
     return result;
 }
-function format(ts, text, endl) {
+function format(text, endl) {
     const REALLY_FORMAT = false;
     text = preformat(text, endl);
     if (!REALLY_FORMAT) {
         return text;
     }
     // Parse the source text
-    const sourceFile = ts.createSourceFile('file.ts', text, ts.ScriptTarget.Latest, /*setParentPointers*/ true);
+    let sourceFile = ts.createSourceFile('file.ts', text, ts.ScriptTarget.Latest, /*setParentPointers*/ true);
     // Get the formatting edits on the input sources
-    const edits = ts.formatting.formatDocument(sourceFile, getRuleProvider(tsfmt), tsfmt);
+    let edits = ts.formatting.formatDocument(sourceFile, getRuleProvider(tsfmt), tsfmt);
     // Apply the edits on the input code
     return applyEdits(text, edits);
     function countParensCurly(text) {
@@ -253,7 +272,7 @@ function format(ts, text, endl) {
         return r;
     }
     function preformat(text, endl) {
-        const lines = text.split(endl);
+        let lines = text.split(endl);
         let inComment = false;
         let inCommentDeltaIndent = 0;
         let indent = 0;
@@ -333,9 +352,9 @@ function format(ts, text, endl) {
         // Apply edits in reverse on the existing text
         let result = text;
         for (let i = edits.length - 1; i >= 0; i--) {
-            const change = edits[i];
-            const head = result.slice(0, change.span.start);
-            const tail = result.slice(change.span.start + change.span.length);
+            let change = edits[i];
+            let head = result.slice(0, change.span.start);
+            let tail = result.slice(change.span.start + change.span.length);
             result = head + change.newText + tail;
         }
         return result;
@@ -351,49 +370,49 @@ function createReplacerFromDirectives(directives) {
 }
 function createReplacer(data) {
     data = data || '';
-    const rawDirectives = data.split(';');
-    const directives = [];
+    let rawDirectives = data.split(';');
+    let directives = [];
     rawDirectives.forEach((rawDirective) => {
         if (rawDirective.length === 0) {
             return;
         }
-        const pieces = rawDirective.split('=>');
+        let pieces = rawDirective.split('=>');
         let findStr = pieces[0];
-        const replaceStr = pieces[1];
+        let replaceStr = pieces[1];
         findStr = findStr.replace(/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g, '\\$&');
         findStr = '\\b' + findStr + '\\b';
         directives.push([new RegExp(findStr, 'g'), replaceStr]);
     });
     return createReplacerFromDirectives(directives);
 }
-function generateDeclarationFile(ts, recipe, sourceFileGetter) {
+function generateDeclarationFile(recipe, sourceFileGetter) {
     const endl = /\r\n/.test(recipe) ? '\r\n' : '\n';
-    const lines = recipe.split(endl);
-    const result = [];
+    let lines = recipe.split(endl);
+    let result = [];
     let usageCounter = 0;
-    const usageImports = [];
-    const usage = [];
+    let usageImports = [];
+    let usage = [];
     let failed = false;
     usage.push(`var a: any;`);
     usage.push(`var b: any;`);
     const generateUsageImport = (moduleId) => {
-        const importName = 'm' + (++usageCounter);
+        let importName = 'm' + (++usageCounter);
         usageImports.push(`import * as ${importName} from './${moduleId.replace(/\.d\.ts$/, '')}';`);
         return importName;
     };
-    const enums = [];
+    let enums = [];
     let version = null;
     lines.forEach(line => {
         if (failed) {
             return;
         }
-        const m0 = line.match(/^\/\/dtsv=(\d+)$/);
+        let m0 = line.match(/^\/\/dtsv=(\d+)$/);
         if (m0) {
             version = m0[1];
         }
-        const m1 = line.match(/^\s*#include\(([^;)]*)(;[^)]*)?\)\:(.*)$/);
+        let m1 = line.match(/^\s*#include\(([^;)]*)(;[^)]*)?\)\:(.*)$/);
         if (m1) {
-            const moduleId = m1[1];
+            let moduleId = m1[1];
             const sourceFile = sourceFileGetter(moduleId);
             if (!sourceFile) {
                 logErr(`While handling ${line}`);
@@ -402,27 +421,27 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
                 return;
             }
             const importName = generateUsageImport(moduleId);
-            const replacer = createReplacer(m1[2]);
-            const typeNames = m1[3].split(/,/);
+            let replacer = createReplacer(m1[2]);
+            let typeNames = m1[3].split(/,/);
             typeNames.forEach((typeName) => {
                 typeName = typeName.trim();
                 if (typeName.length === 0) {
                     return;
                 }
-                const declaration = getTopLevelDeclaration(ts, sourceFile, typeName);
+                let declaration = getTopLevelDeclaration(sourceFile, typeName);
                 if (!declaration) {
                     logErr(`While handling ${line}`);
                     logErr(`Cannot find ${typeName}`);
                     failed = true;
                     return;
                 }
-                result.push(replacer(getMassagedTopLevelDeclarationText(ts, sourceFile, declaration, importName, usage, enums)));
+                result.push(replacer(getMassagedTopLevelDeclarationText(sourceFile, declaration, importName, usage, enums)));
             });
             return;
         }
-        const m2 = line.match(/^\s*#includeAll\(([^;)]*)(;[^)]*)?\)\:(.*)$/);
+        let m2 = line.match(/^\s*#includeAll\(([^;)]*)(;[^)]*)?\)\:(.*)$/);
         if (m2) {
-            const moduleId = m2[1];
+            let moduleId = m2[1];
             const sourceFile = sourceFileGetter(moduleId);
             if (!sourceFile) {
                 logErr(`While handling ${line}`);
@@ -431,10 +450,10 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
                 return;
             }
             const importName = generateUsageImport(moduleId);
-            const replacer = createReplacer(m2[2]);
-            const typeNames = m2[3].split(/,/);
-            const typesToExcludeMap = {};
-            const typesToExcludeArr = [];
+            let replacer = createReplacer(m2[2]);
+            let typeNames = m2[3].split(/,/);
+            let typesToExcludeMap = {};
+            let typesToExcludeArr = [];
             typeNames.forEach((typeName) => {
                 typeName = typeName.trim();
                 if (typeName.length === 0) {
@@ -443,22 +462,22 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
                 typesToExcludeMap[typeName] = true;
                 typesToExcludeArr.push(typeName);
             });
-            getAllTopLevelDeclarations(ts, sourceFile).forEach((declaration) => {
-                if (isDeclaration(ts, declaration) && declaration.name) {
+            getAllTopLevelDeclarations(sourceFile).forEach((declaration) => {
+                if (isDeclaration(declaration) && declaration.name) {
                     if (typesToExcludeMap[declaration.name.text]) {
                         return;
                     }
                 }
                 else {
                     // node is ts.VariableStatement
-                    const nodeText = getNodeText(sourceFile, declaration);
+                    let nodeText = getNodeText(sourceFile, declaration);
                     for (let i = 0; i < typesToExcludeArr.length; i++) {
                         if (nodeText.indexOf(typesToExcludeArr[i]) >= 0) {
                             return;
                         }
                     }
                 }
-                result.push(replacer(getMassagedTopLevelDeclarationText(ts, sourceFile, declaration, importName, usage, enums)));
+                result.push(replacer(getMassagedTopLevelDeclarationText(sourceFile, declaration, importName, usage, enums)));
             });
             return;
         }
@@ -480,7 +499,7 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
     resultTxt = resultTxt.replace(/\bURI\b/g, 'Uri');
     resultTxt = resultTxt.replace(/\bEvent</g, 'IEvent<');
     resultTxt = resultTxt.split(/\r\n|\n|\r/).join(endl);
-    resultTxt = format(ts, resultTxt, endl);
+    resultTxt = format(resultTxt, endl);
     resultTxt = resultTxt.split(/\r\n|\n|\r/).join(endl);
     enums.sort((e1, e2) => {
         if (e1.enumName < e2.enumName) {
@@ -501,7 +520,7 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
         ''
     ].concat(enums.map(e => e.text)).join(endl);
     resultEnums = resultEnums.split(/\r\n|\n|\r/).join(endl);
-    resultEnums = format(ts, resultEnums, endl);
+    resultEnums = format(resultEnums, endl);
     resultEnums = resultEnums.split(/\r\n|\n|\r/).join(endl);
     return {
         result: resultTxt,
@@ -509,9 +528,9 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
         enums: resultEnums
     };
 }
-function _run(ts, sourceFileGetter) {
+function _run(sourceFileGetter) {
     const recipe = fs.readFileSync(exports.RECIPE_PATH).toString();
-    const t = generateDeclarationFile(ts, recipe, sourceFileGetter);
+    const t = generateDeclarationFile(recipe, sourceFileGetter);
     if (!t) {
         return null;
     }
@@ -551,7 +570,6 @@ class CacheEntry {
 class DeclarationResolver {
     constructor(_fsProvider) {
         this._fsProvider = _fsProvider;
-        this.ts = require('typescript');
         this._sourceFileCache = Object.create(null);
     }
     invalidateCache(moduleId) {
@@ -586,26 +604,25 @@ class DeclarationResolver {
         if (/\.d\.ts$/.test(moduleId)) {
             // const mtime = this._fsProvider.statFileSync()
             const fileContents = this._fsProvider.readFileSync(moduleId, fileName).toString();
-            return new CacheEntry(this.ts.createSourceFile(fileName, fileContents, this.ts.ScriptTarget.ES5), mtime);
+            return new CacheEntry(ts.createSourceFile(fileName, fileContents, ts.ScriptTarget.ES5), mtime);
         }
         const fileContents = this._fsProvider.readFileSync(moduleId, fileName).toString();
         const fileMap = {
             'file.ts': fileContents
         };
-        const service = this.ts.createLanguageService(new TypeScriptLanguageServiceHost(this.ts, {}, fileMap, {}));
+        const service = ts.createLanguageService(new TypeScriptLanguageServiceHost({}, fileMap, {}));
         const text = service.getEmitOutput('file.ts', true, true).outputFiles[0].text;
-        return new CacheEntry(this.ts.createSourceFile(fileName, text, this.ts.ScriptTarget.ES5), mtime);
+        return new CacheEntry(ts.createSourceFile(fileName, text, ts.ScriptTarget.ES5), mtime);
     }
 }
 exports.DeclarationResolver = DeclarationResolver;
 function run3(resolver) {
     const sourceFileGetter = (moduleId) => resolver.getDeclarationSourceFile(moduleId);
-    return _run(resolver.ts, sourceFileGetter);
+    return _run(sourceFileGetter);
 }
 exports.run3 = run3;
 class TypeScriptLanguageServiceHost {
-    constructor(ts, libs, files, compilerOptions) {
-        this._ts = ts;
+    constructor(libs, files, compilerOptions) {
         this._libs = libs;
         this._files = files;
         this._compilerOptions = compilerOptions;
@@ -627,17 +644,17 @@ class TypeScriptLanguageServiceHost {
     }
     getScriptSnapshot(fileName) {
         if (this._files.hasOwnProperty(fileName)) {
-            return this._ts.ScriptSnapshot.fromString(this._files[fileName]);
+            return ts.ScriptSnapshot.fromString(this._files[fileName]);
         }
         else if (this._libs.hasOwnProperty(fileName)) {
-            return this._ts.ScriptSnapshot.fromString(this._libs[fileName]);
+            return ts.ScriptSnapshot.fromString(this._libs[fileName]);
         }
         else {
-            return this._ts.ScriptSnapshot.fromString('');
+            return ts.ScriptSnapshot.fromString('');
         }
     }
     getScriptKind(_fileName) {
-        return this._ts.ScriptKind.TS;
+        return ts.ScriptKind.TS;
     }
     getCurrentDirectory() {
         return '';
@@ -648,15 +665,9 @@ class TypeScriptLanguageServiceHost {
     isDefaultLibFileName(fileName) {
         return fileName === this.getDefaultLibFileName(this._compilerOptions);
     }
-    readFile(path, _encoding) {
-        return this._files[path] || this._libs[path];
-    }
-    fileExists(path) {
-        return path in this._files || path in this._libs;
-    }
 }
 function execute() {
-    const r = run3(new DeclarationResolver(new FSProvider()));
+    let r = run3(new DeclarationResolver(new FSProvider()));
     if (!r) {
         throw new Error(`monaco.d.ts generation error - Cannot continue`);
     }

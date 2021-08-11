@@ -65,6 +65,9 @@
     "vsce": "^1.100.0",
     "vscode-universal-bundler": "^0.0.2"
   },
+  "resolutions": {
+    "source-map": "0.6.1"
+  },
   "scripts": {
     "compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
     "watch": "../node_modules/.bin/tsc -p tsconfig.build.json --watch",
@@ -74,5 +77,8 @@
     "tree-sitter": "https://github.com/joaomoreno/node-tree-sitter/releases/download/v0.20.0/tree-sitter-0.20.0.tgz",
     "tree-sitter-typescript": "^0.20.1",
     "vscode-gulp-watch": "^5.0.3"
+  },
+  "dependencies": {
+    "gulp-uglify": "^3.0.2"
   }
 }

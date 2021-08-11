@@ -659,9 +659,9 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		});
 		// ESM-comment-end
 
-		// ESM-uncomment-begin
+		// CJS-comment-begin
 		// return Promise.reject(new Error(`Unexpected usage`));
-		// ESM-uncomment-end
+		// CJS-comment-end
 	}
 
 	// foreign method request
