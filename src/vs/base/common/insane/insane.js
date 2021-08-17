@@ -469,6 +469,11 @@ let __insane_func;
 define(function() { return { insane: __insane_func }; });
 // ESM-comment-end
 
+// CJS-comment-begin
+// exports.insane = __insane_func;
+// CJS-comment-end
+
+
 // ESM-uncomment-begin
 // export var insane = __insane_func;
 // ESM-uncomment-end

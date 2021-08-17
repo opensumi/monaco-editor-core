@@ -16,6 +16,8 @@ const cp = require('child_process');
 const compilation = require('./lib/compilation');
 const monacoapi = require('./lib/monaco-api');
 const fs = require('fs');
+const webpack = require('webpack');
+const webpackGulp = require('webpack-stream');
 
 let root = path.dirname(__dirname);
 let sha1 = util.getVersion(root);
@@ -49,7 +51,7 @@ let BUNDLED_FILE_HEADER = [
 	' * Copyright (c) Microsoft Corporation. All rights reserved.',
 	' * Version: ' + headerVersion,
 	' * Released under the MIT license',
-	' * https://github.com/microsoft/vscode/blob/main/LICENSE.txt',
+	' * https://github.com/microsoft/vscode/blob/master/LICENSE.txt',
 	' *-----------------------------------------------------------*/',
 	''
 ].join('\n');
@@ -77,7 +79,8 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
 	});
 });
 
-const compileEditorAMDTask = task.define('compile-editor-amd', compilation.compileTask('out-editor-src', 'out-editor-build', true));
+const compileEditorAMDTask = task.define('compile-editor-amd', compilation.compileTask('out-editor-src', 'out-editor-build', true, false));
+const compileEditorEsmTask = task.define('compile-editor-esm-core', compilation.compileTask('out-editor-esm', 'out-monaco-editor-core/esm', true, true, 1 /** CommonJS */));
 
 const optimizeEditorAMDTask = task.define('optimize-editor-amd', common.optimizeTask({
 	src: 'out-editor-build',
@@ -108,6 +111,20 @@ const createESMSourcesAndResourcesTask = task.define('extract-editor-esm', () =>
 		ignores: [
 			'inlineEntryPoint:0.ts',
 			'inlineEntryPoint:1.ts',
+			'inlineEntryPoint:0.js',
+			'inlineEntryPoint:1.js',
+			'inlineEntryPoint:0.js.map',
+			'inlineEntryPoint:1.js.map',
+			'inlineEntryPoint:0.d.ts',
+			'inlineEntryPoint:1.d.ts',
+			'inlineEntryPoint.0.ts',
+			'inlineEntryPoint.1.ts',
+			'inlineEntryPoint.0.js',
+			'inlineEntryPoint.1.js',
+			'inlineEntryPoint.0.js.map',
+			'inlineEntryPoint.1.js.map',
+			'inlineEntryPoint.0.d.ts',
+			'inlineEntryPoint.1.d.ts',
 			'vs/loader.js',
 			'vs/nls.ts',
 			'vs/nls.build.js',
@@ -123,6 +140,9 @@ const createESMSourcesAndResourcesTask = task.define('extract-editor-esm', () =>
 	});
 });
 
+/**
+ * @deprecated in monaco-editor-core
+ */
 const compileEditorESMTask = task.define('compile-editor-esm', () => {
 	const KEEP_PREV_ANALYSIS = false;
 	const FAIL_ON_PURPOSE = false;
@@ -340,6 +360,13 @@ gulp.task('extract-editor-src',
 	)
 );
 
+const monacodtsTask = task.define('monacodts', () => {
+	const result = monacoapi.execute();
+	fs.writeFileSync(result.filePath, result.content);
+	fs.writeFileSync(path.join(root, 'src/vs/editor/common/standalone/standaloneEnums.ts'), result.enums);
+	return Promise.resolve(true);
+});
+
 gulp.task('editor-distro',
 	task.series(
 		task.parallel(
@@ -351,6 +378,7 @@ gulp.task('editor-distro',
 			util.rimraf('out-editor-min')
 		),
 		extractEditorSrcTask,
+		monacodtsTask,
 		task.parallel(
 			task.series(
 				compileEditorAMDTask,
@@ -359,7 +387,7 @@ gulp.task('editor-distro',
 			),
 			task.series(
 				createESMSourcesAndResourcesTask,
-				compileEditorESMTask
+				compileEditorEsmTask
 			)
 		),
 		finalEditorResourcesTask
@@ -367,9 +395,6 @@ gulp.task('editor-distro',
 );
 
 const bundleEditorESMTask = task.define('editor-esm-bundle-webpack', () => {
-	const webpack = require('webpack');
-	const webpackGulp = require('webpack-stream');
-
 	const result = es.through();
 
 	const webpackConfigPath = path.join(root, 'build/monaco/monaco.webpack.config.js');
@@ -419,6 +444,8 @@ gulp.task('monacodts', task.define('monacodts', () => {
 	return Promise.resolve(true);
 }));
 
+gulp.task('monacodts', monacodtsTask);
+
 //#region monaco type checking
 
 function createTscCompileTask(watch) {
@@ -435,7 +462,7 @@ function createTscCompileTask(watch) {
 				// stdio: [null, 'pipe', 'inherit']
 			});
 			let errors = [];
-			let reporter = createReporter('monaco');
+			let reporter = createReporter();
 			let report;
 			// eslint-disable-next-line no-control-regex
 			let magic = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g; // https://stackoverflow.com/questions/25245716/remove-all-ansi-colors-styles-from-strings

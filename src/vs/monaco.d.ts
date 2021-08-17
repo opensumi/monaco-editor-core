@@ -48,6 +48,8 @@ declare namespace monaco {
 	}
 
 	export class CancellationTokenSource {
+		_token?: CancellationToken;
+		_parentListener?: IDisposable;
 		constructor(parent?: CancellationToken);
 		get token(): CancellationToken;
 		cancel(): void;
@@ -4239,6 +4241,12 @@ declare namespace monaco.editor {
 
 	export type FindComputedEditorOptionValueById<T extends EditorOption> = NonNullable<ComputedEditorOptionValue<EditorOptionsType[FindEditorOptionsKeyById<T>]>>;
 
+	export interface IEditorWhitespace {
+		readonly id: string;
+		readonly afterLineNumber: number;
+		readonly height: number;
+	}
+
 	/**
 	 * A view zone is a full horizontal rectangle that 'pushes' text down.
 	 * The editor reserves space for view zones when rendering.
@@ -5386,28 +5394,6 @@ declare namespace monaco.languages {
 	}
 
 	/**
-	 * Describes indentation rules for a language.
-	 */
-	export interface IndentationRule {
-		/**
-		 * If a line matches this pattern, then all the lines after it should be unindented once (until another rule matches).
-		 */
-		decreaseIndentPattern: RegExp;
-		/**
-		 * If a line matches this pattern, then all the lines after it should be indented once (until another rule matches).
-		 */
-		increaseIndentPattern: RegExp;
-		/**
-		 * If a line matches this pattern, then **only the next line** after it should be indented once.
-		 */
-		indentNextLinePattern?: RegExp | null;
-		/**
-		 * If a line matches this pattern, then its indentation should not be changed and it should not be evaluated against the other rules.
-		 */
-		unIndentedLinePattern?: RegExp | null;
-	}
-
-	/**
 	 * Describes language specific folding markers such as '#region' and '#endregion'.
 	 * The start and end regexes will be tested against the contents of all lines and must be designed efficiently:
 	 * - the regex should start with '^'
@@ -5476,6 +5462,28 @@ declare namespace monaco.languages {
 	 * opening and closing brackets.
 	 */
 	export type CharacterPair = [string, string];
+
+	/**
+	 * Describes indentation rules for a language.
+	 */
+	export interface IndentationRule {
+		/**
+		 * If a line matches this pattern, then all the lines after it should be unindented once (until another rule matches).
+		 */
+		decreaseIndentPattern: RegExp;
+		/**
+		 * If a line matches this pattern, then all the lines after it should be indented once (until another rule matches).
+		 */
+		increaseIndentPattern: RegExp;
+		/**
+		 * If a line matches this pattern, then **only the next line** after it should be indented once.
+		 */
+		indentNextLinePattern?: RegExp | null;
+		/**
+		 * If a line matches this pattern, then its indentation should not be changed and it should not be evaluated against the other rules.
+		 */
+		unIndentedLinePattern?: RegExp | null;
+	}
 
 	export interface IAutoClosingPair {
 		open: string;

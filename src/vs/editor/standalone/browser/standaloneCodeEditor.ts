@@ -127,7 +127,8 @@ export interface IGlobalEditorOptions {
 	 * 'configuredByTheme': semanticHighlighting is controlled by the current color theme's semanticHighlighting setting.
 	 * Defaults to 'byTheme'.
 	 */
-	'semanticHighlighting.enabled'?: true | false | 'configuredByTheme';
+	// 这个开启会报 semanticHighlighting 不在 IGlobalEditorOptions 的错误
+	// 'semanticHighlighting.enabled'?: true | false | 'configuredByTheme';
 	/**
 	 * Keep peek editors open even when double clicking their content or when hitting `Escape`.
 	 * Defaults to false.

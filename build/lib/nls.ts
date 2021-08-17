@@ -56,10 +56,7 @@ function template(lines: string[]): string {
 		wrap = '\n';
 	}
 
-	return `/*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
- *--------------------------------------------------------*/
-define([], [${ wrap + lines.map(l => indent + l).join(',\n') + wrap}]);`;
+	return `define([], [${wrap + lines.map(l => indent + l).join(',\n') + wrap}]);`;
 }
 
 /**
@@ -116,6 +113,8 @@ module _nls {
 		key: string;
 		valueSpan: ISpan;
 		value: string;
+		pathSpan: ISpan,
+		path: string;
 	}
 
 	interface ILocalizeAnalysisResult {
@@ -171,7 +170,7 @@ module _nls {
 		return node.kind === ts.SyntaxKind.CallExpression ? CollectStepResult.YesAndRecurse : CollectStepResult.NoAndRecurse;
 	}
 
-	function analyze(ts: typeof import('typescript'), contents: string, options: ts.CompilerOptions = {}): ILocalizeAnalysisResult {
+	function analyze(ts: typeof import('typescript'), moduleId: string, contents: string, options: ts.CompilerOptions = {}): ILocalizeAnalysisResult {
 		const filename = 'file.ts';
 		const serviceHost = new SingleFileServiceHost(ts, Object.assign(clone(options), { noResolve: true }), filename, contents);
 		const service = ts.createLanguageService(serviceHost);
@@ -185,14 +184,14 @@ module _nls {
 			.filter(n => n.kind === ts.SyntaxKind.ImportEqualsDeclaration)
 			.map(n => <ts.ImportEqualsDeclaration>n)
 			.filter(d => d.moduleReference.kind === ts.SyntaxKind.ExternalModuleReference)
-			.filter(d => (<ts.ExternalModuleReference>d.moduleReference).expression.getText() === '\'vs/nls\'');
+			.filter(d => (<ts.ExternalModuleReference>d.moduleReference).expression.getText().includes('\/nls'));
 
 		// import ... from 'vs/nls';
 		const importDeclarations = imports
 			.filter(n => n.kind === ts.SyntaxKind.ImportDeclaration)
 			.map(n => <ts.ImportDeclaration>n)
 			.filter(d => d.moduleSpecifier.kind === ts.SyntaxKind.StringLiteral)
-			.filter(d => d.moduleSpecifier.getText() === '\'vs/nls\'')
+			.filter(d => d.moduleSpecifier.getText().includes('\/nls'))
 			.filter(d => !!d.importClause && !!d.importClause.namedBindings);
 
 		const nlsExpressions = importEqualsDeclarations
@@ -258,7 +257,9 @@ module _nls {
 			.filter(a => a.length > 1)
 			.sort((a, b) => a[0].getStart() - b[0].getStart())
 			.map<ILocalizeCall>(a => ({
-				keySpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getStart()), end: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getEnd()) },
+				pathSpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getStart()), end: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getEnd()) },
+				path: `"${moduleId}",`,
+				keySpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getStart() - 1), end: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getStart() - 1) },
 				key: a[0].getText(),
 				valueSpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getStart()), end: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getEnd()) },
 				value: a[1].getText()
@@ -396,7 +397,7 @@ module _nls {
 	}
 
 	function patch(ts: typeof import('typescript'), moduleId: string, typescript: string, javascript: string, sourcemap: sm.RawSourceMap): INlsStringResult {
-		const { localizeCalls, nlsExpressions } = analyze(ts, typescript);
+		const { localizeCalls, nlsExpressions } = analyze(ts, moduleId, typescript);
 
 		if (localizeCalls.length === 0) {
 			return { javascript, sourcemap };
@@ -411,8 +412,9 @@ module _nls {
 		// build patches
 		const patches = lazy(localizeCalls)
 			.map(lc => ([
+				{ range: lc.pathSpan, content: lc.path },
 				{ range: lc.keySpan, content: '' + (i++) },
-				{ range: lc.valueSpan, content: 'null' }
+				{ range: lc.valueSpan, content: lc.value },
 			]))
 			.flatten()
 			.map<IPatch>(c => {

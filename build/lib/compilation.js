@@ -18,11 +18,14 @@ const ansiColors = require("ansi-colors");
 const os = require("os");
 const watch = require('./watch');
 const reporter = reporter_1.createReporter();
-function getTypeScriptCompilerOptions(src) {
+function getTypeScriptCompilerOptions(src, module) {
     const rootDir = path.join(__dirname, `../../${src}`);
     let options = {};
     options.verbose = false;
     options.sourceMap = true;
+    if (module) {
+        options.module = module;
+    }
     if (process.env['VSCODE_NO_SOURCEMAP']) { // To be used by developers in a hurry
         options.sourceMap = false;
     }
@@ -32,11 +35,11 @@ function getTypeScriptCompilerOptions(src) {
     options.newLine = /\r\n/.test(fs.readFileSync(__filename, 'utf8')) ? 0 : 1;
     return options;
 }
-function createCompile(src, build, emitError) {
+function createCompile(src, build, emitError, module) {
     const tsb = require('gulp-tsb');
     const sourcemaps = require('gulp-sourcemaps');
     const projectPath = path.join(__dirname, '../../', src, 'tsconfig.json');
-    const overrideOptions = Object.assign(Object.assign({}, getTypeScriptCompilerOptions(src)), { inlineSources: Boolean(build) });
+    const overrideOptions = Object.assign(Object.assign({}, getTypeScriptCompilerOptions(src, module)), { inlineSources: Boolean(build) });
     const compilation = tsb.create(projectPath, overrideOptions, false, err => reporter(err));
     function pipeline(token) {
         const bom = require('gulp-bom');
@@ -68,12 +71,12 @@ function createCompile(src, build, emitError) {
     };
     return pipeline;
 }
-function compileTask(src, out, build) {
+function compileTask(src, out, build, extractConstEnum, module) {
     return function () {
         if (os.totalmem() < 4000000000) {
             throw new Error('compilation requires 4GB of RAM');
         }
-        const compile = createCompile(src, build, true);
+        const compile = createCompile(src, build, true, module);
         const srcPipe = gulp.src(`${src}/**`, { base: `${src}` });
         let generator = new MonacoGenerator(false);
         if (src === 'src') {
@@ -82,10 +85,19 @@ function compileTask(src, out, build) {
         return srcPipe
             .pipe(generator.stream)
             .pipe(compile())
+            .pipe(extractConstEnum ? doExtractConstEnum() : es.through())
             .pipe(gulp.dest(out));
     };
 }
 exports.compileTask = compileTask;
+function doExtractConstEnum() {
+    return es.map((file, cb) => {
+        if (/\.ts$/.test(file.path)) {
+            file.contents = Buffer.from(file.contents.toString().replace(/const enum/g, 'enum'));
+        }
+        cb(null, file);
+    });
+}
 function watchTask(out, build) {
     return function () {
         const compile = createCompile('src', build);
