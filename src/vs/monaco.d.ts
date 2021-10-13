@@ -1756,7 +1756,7 @@ declare namespace monaco.editor {
 		/**
 		 * @internal
 		 */
-		textChange: any;
+		textChange:  any;
 	}
 
 	/**
@@ -2414,11 +2414,11 @@ declare namespace monaco.editor {
 		/**
 		 * @internal
 		 */
-		_applyUndo(changes: any[], eol: EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: Selection[] | null): void;
+		_applyUndo(changes:  any[], eol: EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: Selection[] | null): void;
 		/**
 		 * @internal
 		 */
-		_applyRedo(changes: any[], eol: EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: Selection[] | null): void;
+		_applyRedo(changes:  any[], eol: EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: Selection[] | null): void;
 		/**
 		 * Undo edit operations until the previous undo/redo point.
 		 * The inverse edit operations will be pushed on the redo stack.
