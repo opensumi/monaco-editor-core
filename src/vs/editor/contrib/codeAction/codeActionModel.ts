@@ -229,7 +229,7 @@ export class CodeActionModel extends Disposable {
 		const model = this._editor.getModel();
 		if (model
 			&& CodeActionProviderRegistry.has(model)
-			&& !this._editor.getOption(EditorOption.readOnly)
+			&& (!this._editor.getOption(EditorOption.readOnly) || this._editor.getOption(EditorOption.renderValidationDecorations) === 'on')
 		) {
 			const supportedActions: string[] = [];
 			for (const provider of CodeActionProviderRegistry.all(model)) {

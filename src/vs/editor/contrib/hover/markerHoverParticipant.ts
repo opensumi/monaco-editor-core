@@ -179,7 +179,7 @@ export class MarkerHoverParticipant implements IEditorHoverParticipant<MarkerHov
 			});
 		}
 
-		if (!this._editor.getOption(EditorOption.readOnly)) {
+		if (!this._editor.getOption(EditorOption.readOnly) || this._editor.getOption(EditorOption.renderValidationDecorations) === 'on') {
 			const quickfixPlaceholderElement = statusBar.append($('div'));
 			if (this.recentMarkerCodeActionsInfo) {
 				if (IMarkerData.makeKey(this.recentMarkerCodeActionsInfo.marker) === IMarkerData.makeKey(markerHover.marker)) {
