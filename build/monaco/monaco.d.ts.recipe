@@ -63,6 +63,10 @@ declare namespace monaco.editor {
 export interface ICommandHandler {
 	(...args: any[]): void;
 }
+#includeAll(vs/base/common/color):
+#include(vs/editor/common/core/wordHelper): IWordAtPosition
+#includeAll(vs/editor/common/tokens/sparseMultilineTokens):
+#includeAll(vs/editor/common/tokens/contiguousMultilineTokens):
 #include(vs/platform/contextkey/common/contextkey): IContextKey
 #include(vs/editor/standalone/browser/standaloneServices): IEditorOverrideServices
 #include(vs/platform/markers/common/markers): IMarker, IMarkerData, IRelatedInformation
@@ -70,19 +74,20 @@ export interface ICommandHandler {
 #include(vs/base/common/scrollable): ScrollbarVisibility
 #include(vs/platform/theme/common/themeService): ThemeColor
 #include(vs/editor/common/core/editOperation): ISingleEditOperation
-#includeAll(vs/editor/common/model): IScrollEvent,IWordAtPosition
 #include(vs/editor/common/diff/diffComputer): IChange, ICharChange, ILineChange
 #include(vs/editor/common/core/dimension): IDimension
 #includeAll(vs/editor/common/textModelEvents):
-#includeAll(vs/editor/common/config/editorOptions):
+#includeAll(vs/editor/common/config/editorOptions;IConfigurationPropertySchema=>any;ComputeOptionsMemory):BaseEditorOption,ComputedEditorOption,EditorFontLigatures,EditorLayoutInfoComputer,EditorLayoutInfoComputerEnv
 #include(vs/editor/browser/config/editorConfiguration): IEditorConstructionOptions
-#includeAll(vs/editor/browser/editorBrowser;editorCommon.=>):
-#include(vs/editor/common/config/fontInfo): FontInfo, BareFontInfo
-#includeAll(vs/editor/common/model;LanguageIdentifier=>any;MultilineTokens=>any;MultilineTokens2=>any;LineTokens=>any;SearchData=>any;LanguageId=>any;FormattingOptions=>languages.FormattingOptions;ModelRawContentChangedEvent=>any;ApplyEditsResult=>any;ValidAnnotatedEditOperation=>any;TextChange=> any;ModelInjectedTextChangedEvent=>any;PositionNormalizationAffinity=>any;IndentGuide=>any;PositionAffinity=>any): IScrollEvent,TextChange
+#includeAll(vs/editor/common/viewModel/overviewZoneManager):
+#includeAll(vs/editor/common/cursorEvents):
+#includeAll(vs/base/browser/mouseEvent):
+#includeAll(vs/editor/browser/editorBrowser;editorCommon.=>;InjectedText=>any;ServicesAccessor=>any;IViewModel=>any;IDiffComputationResult=>any):
+#include(vs/editor/common/config/fontInfo;IValidatedEditorOptions=>any): FontInfo, BareFontInfo
+#includeAll(vs/editor/common/model;StandardTokenType=>any;IBracketPairsTextModelPart=>any;IGuidesTextModelPart=>any;LanguageIdentifier=>any;MultilineTokens=>any;MultilineTokens2=>any;LineTokens=>any;SearchData=>any;LanguageId=>any;FormattingOptions=>languages.FormattingOptions;ModelRawContentChangedEvent=>any;ApplyEditsResult=>any;ValidAnnotatedEditOperation=>any;TextChange=> any;ModelInjectedTextChangedEvent=>any;PositionNormalizationAffinity=>any;IndentGuide=>any): IScrollEvent,TextChange
 #includeAll(vs/editor/common/editorCommon;editorOptions.=>): IScrollEvent
-#includeAll(vs/editor/common/controller/cursorEvents):
 #include(vs/platform/accessibility/common/accessibility): AccessibilitySupport
-#include(vs/editor/common/viewLayout/linesLayout): IEditorWhitespace
+#include(vs/editor/common/viewModel): IEditorWhitespace
 
 //compatibility:
 export type IReadOnlyModel = ITextModel;
@@ -95,19 +100,17 @@ declare namespace monaco.languages {
 #include(vs/editor/common/languageSelector): LanguageSelector, LanguageFilter
 #includeAll(vs/editor/standalone/browser/standaloneLanguages;modes.=>;languages.=>;editorCommon.=>editor.;model.=>editor.;IMarkerData=>editor.IMarkerData):EncodedTokenizationSupport2Adapter,TokenizationSupport2Adapter
 #includeAll(vs/editor/common/languages/languageConfiguration):
-#includeAll(vs/editor/common/languages;IMarkerData=>editor.IMarkerData;ISingleEditOperation=>editor.ISingleEditOperation;model.=>editor.): Token
-#include(vs/editor/common/languages/language): ILanguageExtensionPoint
+#includeAll(vs/editor/common/languages;IMarkerData=>editor.IMarkerData;ISingleEditOperation=>editor.ISingleEditOperation;model.=>editor.;CommentMode=>any;ExtensionIdentifier=>any;ITokenizationSupportFactory=>any;CommentThreadCollapsibleState=>any):ITokenPresentation,ILanguageIdCodec,ITokenizationRegistry,ITokenizationSupport,ITokenizationSupportFactory,CodeActionContext
+#include(vs/editor/common/languages/language): ILanguageExtensionPoint,ILanguageIcon
 #include(vs/platform/theme/common/themeService):ThemeIcon,ThemeColor
-#includeAll(vs/editor/common/modes;editorCommon.IRange=>IRange;editorCommon.IPosition=>IPosition;editorCommon.=>editor.;ExtensionIdentifier=>any;IMarkerData=>editor.IMarkerData;model.=>editor.;CommentThreadCollapsibleState=>any;CommentMode=>any):LanguageIdentifier,TokenMetadata,CodeActionContext,IMode,ITokenizationSupport,ITokenizationRegistry,CommentThreadTemplate,CommentInfo,CommentWidget,Session
-#include(vs/editor/common/services/modeService): ILanguageExtensionPoint
 #includeAll(vs/editor/standalone/common/monarch/monarchTypes):
 export type InlineValue = InlineValueText | InlineValueVariableLookup | InlineValueExpression;
 }
 
 declare namespace monaco.worker {
 
-#include(vs/editor/common/model):IWordAtPosition
-#include(vs/editor/common/modes/linkComputer):ILinkComputerTarget
+#include(vs/editor/common/core/wordHelper):IWordAtPosition
+#include(vs/editor/common/languages/linkComputer):ILinkComputerTarget
 #include(vs/editor/common/model/mirrorTextModel): IMirrorTextModel
 #includeAll(vs/editor/common/services/editorSimpleWorker;):
 
