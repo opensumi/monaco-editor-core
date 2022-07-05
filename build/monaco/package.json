@@ -1,13 +1,13 @@
 {
-  "name": "@ali/monaco-editor-core",
-  "version": "0.29.1-patch.1",
+  "name": "@opensumi/monaco-editor-core",
+  "version": "0.33.0-patch.1",
   "description": "A browser based code editor",
   "author": "Microsoft Corporation",
   "license": "MIT",
   "typings": "./esm/vs/editor/editor.api.d.ts",
   "module": "./esm/vs/editor/editor.main.js",
   "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
+    "registry": "https://registry.npmjs.org"
   },
   "repository": {
     "type": "git",
