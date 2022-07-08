@@ -142,6 +142,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 
 	const getDestAbsoluteFilePath = (file: string): string => {
 		const dest = options.renames[file.replace(/\\/g, '/')] || file;
+		console.log('renames dest>>', dest);
 		if (dest === 'tsconfig.json') {
 			return path.join(OUT_FOLDER, `tsconfig.json`);
 		}

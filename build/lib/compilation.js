@@ -18,9 +18,9 @@ const ansiColors = require("ansi-colors");
 const os = require("os");
 const File = require("vinyl");
 const task = require("./task");
-const tsb = require("gulp-tsb");
 const sourcemaps = require("gulp-sourcemaps");
 const watch = require('./watch');
+const tsb = require('./tsb');
 const reporter = (0, reporter_1.createReporter)();
 function getTypeScriptCompilerOptions(src, module) {
     const rootDir = path.join(__dirname, `../../${src}`);
