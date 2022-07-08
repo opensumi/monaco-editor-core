@@ -1318,357 +1318,6 @@ declare namespace monaco.editor {
 	export interface ICommandHandler {
 		(...args: any[]): void;
 	}
-	export class RGBA {
-		_rgbaBrand: void;
-		/**
-		 * Red: integer in [0-255]
-		 */
-		readonly r: number;
-		/**
-		 * Green: integer in [0-255]
-		 */
-		readonly g: number;
-		/**
-		 * Blue: integer in [0-255]
-		 */
-		readonly b: number;
-		/**
-		 * Alpha: float in [0-1]
-		 */
-		readonly a: number;
-		constructor(r: number, g: number, b: number, a?: number);
-		static equals(a: RGBA, b: RGBA): boolean;
-	}
-
-	export class HSLA {
-		_hslaBrand: void;
-		/**
-		 * Hue: integer in [0, 360]
-		 */
-		readonly h: number;
-		/**
-		 * Saturation: float in [0, 1]
-		 */
-		readonly s: number;
-		/**
-		 * Luminosity: float in [0, 1]
-		 */
-		readonly l: number;
-		/**
-		 * Alpha: float in [0, 1]
-		 */
-		readonly a: number;
-		constructor(h: number, s: number, l: number, a: number);
-		static equals(a: HSLA, b: HSLA): boolean;
-		/**
-		 * Converts an RGB color value to HSL. Conversion formula
-		 * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
-		 * Assumes r, g, and b are contained in the set [0, 255] and
-		 * returns h in the set [0, 360], s, and l in the set [0, 1].
-		 */
-		static fromRGBA(rgba: RGBA): HSLA;
-		private static _hue2rgb;
-		/**
-		 * Converts an HSL color value to RGB. Conversion formula
-		 * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
-		 * Assumes h in the set [0, 360] s, and l are contained in the set [0, 1] and
-		 * returns r, g, and b in the set [0, 255].
-		 */
-		static toRGBA(hsla: HSLA): RGBA;
-	}
-
-	export class HSVA {
-		_hsvaBrand: void;
-		/**
-		 * Hue: integer in [0, 360]
-		 */
-		readonly h: number;
-		/**
-		 * Saturation: float in [0, 1]
-		 */
-		readonly s: number;
-		/**
-		 * Value: float in [0, 1]
-		 */
-		readonly v: number;
-		/**
-		 * Alpha: float in [0, 1]
-		 */
-		readonly a: number;
-		constructor(h: number, s: number, v: number, a: number);
-		static equals(a: HSVA, b: HSVA): boolean;
-		static fromRGBA(rgba: RGBA): HSVA;
-		static toRGBA(hsva: HSVA): RGBA;
-	}
-
-	export class Color {
-		static fromHex(hex: string): Color;
-		readonly rgba: RGBA;
-		private _hsla?;
-		get hsla(): HSLA;
-		private _hsva?;
-		get hsva(): HSVA;
-		constructor(arg: RGBA | HSLA | HSVA);
-		equals(other: Color | null): boolean;
-		/**
-		 * http://www.w3.org/TR/WCAG20/#relativeluminancedef
-		 * Returns the number in the set [0, 1]. O => Darkest Black. 1 => Lightest white.
-		 */
-		getRelativeLuminance(): number;
-		private static _relativeLuminanceForComponent;
-		/**
-		 * http://www.w3.org/TR/WCAG20/#contrast-ratiodef
-		 * Returns the contrast ration number in the set [1, 21].
-		 */
-		getContrastRatio(another: Color): number;
-		/**
-		 *	http://24ways.org/2010/calculating-color-contrast
-		 *  Return 'true' if darker color otherwise 'false'
-		 */
-		isDarker(): boolean;
-		/**
-		 *	http://24ways.org/2010/calculating-color-contrast
-		 *  Return 'true' if lighter color otherwise 'false'
-		 */
-		isLighter(): boolean;
-		isLighterThan(another: Color): boolean;
-		isDarkerThan(another: Color): boolean;
-		lighten(factor: number): Color;
-		darken(factor: number): Color;
-		transparent(factor: number): Color;
-		isTransparent(): boolean;
-		isOpaque(): boolean;
-		opposite(): Color;
-		blend(c: Color): Color;
-		makeOpaque(opaqueBackground: Color): Color;
-		flatten(...backgrounds: Color[]): Color;
-		private static _flatten;
-		private _toString?;
-		toString(): string;
-		static getLighterColor(of: Color, relative: Color, factor?: number): Color;
-		static getDarkerColor(of: Color, relative: Color, factor?: number): Color;
-		static readonly white: Color;
-		static readonly black: Color;
-		static readonly red: Color;
-		static readonly blue: Color;
-		static readonly green: Color;
-		static readonly cyan: Color;
-		static readonly lightgrey: Color;
-		static readonly transparent: Color;
-	}
-
-	export namespace Color {
-		namespace Format {
-			namespace CSS {
-				function formatRGB(color: Color): string;
-				function formatRGBA(color: Color): string;
-				function formatHSL(color: Color): string;
-				function formatHSLA(color: Color): string;
-				/**
-				 * Formats the color as #RRGGBB
-				 */
-				function formatHex(color: Color): string;
-				/**
-				 * Formats the color as #RRGGBBAA
-				 * If 'compact' is set, colors without transparancy will be printed as #RRGGBB
-				 */
-				function formatHexA(color: Color, compact?: boolean): string;
-				/**
-				 * The default format will use HEX if opaque and RGBA otherwise.
-				 */
-				function format(color: Color): string;
-				/**
-				 * Converts an Hex color value to a Color.
-				 * returns r, g, and b are contained in the set [0, 255]
-				 * @param hex string (#RGB, #RGBA, #RRGGBB or #RRGGBBAA).
-				 */
-				function parseHex(hex: string): Color | null;
-			}
-		}
-	}
-
-	namespace Format {
-		namespace CSS {
-			function formatRGB(color: Color): string;
-			function formatRGBA(color: Color): string;
-			function formatHSL(color: Color): string;
-			function formatHSLA(color: Color): string;
-			/**
-			 * Formats the color as #RRGGBB
-			 */
-			function formatHex(color: Color): string;
-			/**
-			 * Formats the color as #RRGGBBAA
-			 * If 'compact' is set, colors without transparancy will be printed as #RRGGBB
-			 */
-			function formatHexA(color: Color, compact?: boolean): string;
-			/**
-			 * The default format will use HEX if opaque and RGBA otherwise.
-			 */
-			function format(color: Color): string;
-			/**
-			 * Converts an Hex color value to a Color.
-			 * returns r, g, and b are contained in the set [0, 255]
-			 * @param hex string (#RGB, #RGBA, #RRGGBB or #RRGGBBAA).
-			 */
-			function parseHex(hex: string): Color | null;
-		}
-	}
-
-	namespace CSS {
-		function formatRGB(color: Color): string;
-		function formatRGBA(color: Color): string;
-		function formatHSL(color: Color): string;
-		function formatHSLA(color: Color): string;
-		/**
-		 * Formats the color as #RRGGBB
-		 */
-		function formatHex(color: Color): string;
-		/**
-		 * Formats the color as #RRGGBBAA
-		 * If 'compact' is set, colors without transparancy will be printed as #RRGGBB
-		 */
-		function formatHexA(color: Color, compact?: boolean): string;
-		/**
-		 * The default format will use HEX if opaque and RGBA otherwise.
-		 */
-		function format(color: Color): string;
-		/**
-		 * Converts an Hex color value to a Color.
-		 * returns r, g, and b are contained in the set [0, 255]
-		 * @param hex string (#RGB, #RGBA, #RRGGBB or #RRGGBBAA).
-		 */
-		function parseHex(hex: string): Color | null;
-	}
-
-	function formatRGB(color: Color): string;
-
-	function formatRGBA(color: Color): string;
-
-	function formatHSL(color: Color): string;
-
-	function formatHSLA(color: Color): string;
-
-	/**
-	 * Formats the color as #RRGGBB
-	 */
-	function formatHex(color: Color): string;
-
-	/**
-	 * Formats the color as #RRGGBBAA
-	 * If 'compact' is set, colors without transparancy will be printed as #RRGGBB
-	 */
-	function formatHexA(color: Color, compact?: boolean): string;
-
-	/**
-	 * The default format will use HEX if opaque and RGBA otherwise.
-	 */
-	function format(color: Color): string;
-
-	/**
-	 * Converts an Hex color value to a Color.
-	 * returns r, g, and b are contained in the set [0, 255]
-	 * @param hex string (#RGB, #RGBA, #RRGGBB or #RRGGBBAA).
-	 */
-	function parseHex(hex: string): Color | null;
-
-	/**
-	 * Word inside a model.
-	 */
-	export interface IWordAtPosition {
-		/**
-		 * The word.
-		 */
-		readonly word: string;
-		/**
-		 * The column where the word starts.
-		 */
-		readonly startColumn: number;
-		/**
-		 * The column where the word ends.
-		 */
-		readonly endColumn: number;
-	}
-
-	/**
-	 * Represents sparse tokens over a contiguous range of lines.
-	 */
-	export class SparseMultilineTokens {
-		static create(startLineNumber: number, tokens: Uint32Array): SparseMultilineTokens;
-		private _startLineNumber;
-		private _endLineNumber;
-		private readonly _tokens;
-		/**
-		 * (Inclusive) start line number for these tokens.
-		 */
-		get startLineNumber(): number;
-		/**
-		 * (Inclusive) end line number for these tokens.
-		 */
-		get endLineNumber(): number;
-		private constructor();
-		toString(): string;
-		private _updateEndLineNumber;
-		isEmpty(): boolean;
-		getLineTokens(lineNumber: number): SparseLineTokens | null;
-		getRange(): Range | null;
-		removeTokens(range: Range): void;
-		split(range: Range): [SparseMultilineTokens, SparseMultilineTokens];
-		applyEdit(range: IRange, text: string): void;
-		acceptEdit(range: IRange, eolCount: number, firstLineLength: number, lastLineLength: number, firstCharCode: number): void;
-		private _acceptDeleteRange;
-		private _acceptInsertText;
-	}
-
-	export class SparseLineTokens {
-		private readonly _tokens;
-		constructor(tokens: Uint32Array);
-		getCount(): number;
-		getStartCharacter(tokenIndex: number): number;
-		getEndCharacter(tokenIndex: number): number;
-		getMetadata(tokenIndex: number): number;
-	}
-
-	/**
-	 * Represents contiguous tokens over a contiguous range of lines.
-	 */
-	export class ContiguousMultilineTokens {
-		static deserialize(buff: Uint8Array, offset: number, result: ContiguousMultilineTokens[]): number;
-		/**
-		 * The start line number for this block of tokens.
-		 */
-		private _startLineNumber;
-		/**
-		 * The tokens are stored in a binary format. There is an element for each line,
-		 * so `tokens[index]` contains all tokens on line `startLineNumber + index`.
-		 *
-		 * On a specific line, each token occupies two array indices. For token i:
-		 *  - at offset 2*i => endOffset
-		 *  - at offset 2*i + 1 => metadata
-		 *
-		 */
-		private _tokens;
-		/**
-		 * (Inclusive) start line number for these tokens.
-		 */
-		get startLineNumber(): number;
-		/**
-		 * (Inclusive) end line number for these tokens.
-		 */
-		get endLineNumber(): number;
-		constructor(startLineNumber: number, tokens: Uint32Array[]);
-		/**
-		 * @see {@link _tokens}
-		 */
-		getLineTokens(lineNumber: number): Uint32Array | ArrayBuffer | null;
-		appendLineTokens(lineTokens: Uint32Array): void;
-		serializeSize(): number;
-		serialize(destination: Uint8Array, offset: number): number;
-		applyEdit(range: IRange, text: string): void;
-		private _acceptDeleteRange;
-		private _acceptInsertText;
-		private _insertLines;
-	}
 
 	export interface IContextKey<T extends ContextKeyValue = ContextKeyValue> {
 		set(value: T): void;
@@ -3838,61 +3487,6 @@ declare namespace monaco.editor {
 		 */
 		overflowWidgetsDomNode?: HTMLElement;
 	}
-	export class ColorZone {
-		_colorZoneBrand: void;
-		readonly from: number;
-		readonly to: number;
-		readonly colorId: number;
-		constructor(from: number, to: number, colorId: number);
-		static compare(a: ColorZone, b: ColorZone): number;
-	}
-
-	/**
-	 * A zone in the overview ruler
-	 */
-	export class OverviewRulerZone {
-		_overviewRulerZoneBrand: void;
-		readonly startLineNumber: number;
-		readonly endLineNumber: number;
-		/**
-		 * If set to 0, the height in lines will be determined based on `endLineNumber`.
-		 */
-		readonly heightInLines: number;
-		readonly color: string;
-		private _colorZone;
-		constructor(startLineNumber: number, endLineNumber: number, heightInLines: number, color: string);
-		static compare(a: OverviewRulerZone, b: OverviewRulerZone): number;
-		setColorZone(colorZone: ColorZone): void;
-		getColorZones(): ColorZone | null;
-	}
-
-	export class OverviewZoneManager {
-		private readonly _getVerticalOffsetForLine;
-		private _zones;
-		private _colorZonesInvalid;
-		private _lineHeight;
-		private _domWidth;
-		private _domHeight;
-		private _outerHeight;
-		private _pixelRatio;
-		private _lastAssignedId;
-		private readonly _color2Id;
-		private readonly _id2Color;
-		constructor(getVerticalOffsetForLine: (lineNumber: number) => number);
-		getId2Color(): string[];
-		setZones(newZones: OverviewRulerZone[]): void;
-		setLineHeight(lineHeight: number): boolean;
-		setPixelRatio(pixelRatio: number): void;
-		getDOMWidth(): number;
-		getCanvasWidth(): number;
-		setDOMWidth(width: number): boolean;
-		getDOMHeight(): number;
-		getCanvasHeight(): number;
-		setDOMHeight(height: number): boolean;
-		getOuterHeight(): number;
-		setOuterHeight(outerHeight: number): boolean;
-		resolveColorZones(): ColorZone[];
-	}
 
 	/**
 	 * Describes the reason the cursor has changed its position.
@@ -3983,79 +3577,23 @@ declare namespace monaco.editor {
 		 */
 		readonly reason: CursorChangeReason;
 	}
-	export interface IMouseEvent {
-		readonly browserEvent: MouseEvent;
-		readonly leftButton: boolean;
-		readonly middleButton: boolean;
-		readonly rightButton: boolean;
-		readonly buttons: number;
-		readonly target: HTMLElement;
-		readonly detail: number;
-		readonly posx: number;
-		readonly posy: number;
-		readonly ctrlKey: boolean;
-		readonly shiftKey: boolean;
-		readonly altKey: boolean;
-		readonly metaKey: boolean;
-		readonly timestamp: number;
-		preventDefault(): void;
-		stopPropagation(): void;
-	}
 
-	export class StandardMouseEvent implements IMouseEvent {
-		readonly browserEvent: MouseEvent;
-		readonly leftButton: boolean;
-		readonly middleButton: boolean;
-		readonly rightButton: boolean;
-		readonly buttons: number;
-		readonly target: HTMLElement;
-		detail: number;
-		readonly posx: number;
-		readonly posy: number;
-		readonly ctrlKey: boolean;
-		readonly shiftKey: boolean;
-		readonly altKey: boolean;
-		readonly metaKey: boolean;
-		readonly timestamp: number;
-		constructor(e: MouseEvent);
-		preventDefault(): void;
-		stopPropagation(): void;
-	}
-
-	export interface IDataTransfer {
-		dropEffect: string;
-		effectAllowed: string;
-		types: any[];
-		files: any[];
-		setData(type: string, data: string): void;
-		setDragImage(image: any, x: number, y: number): void;
-		getData(type: string): string;
-		clearData(types?: string[]): void;
-	}
-
-	export class DragMouseEvent extends StandardMouseEvent {
-		readonly dataTransfer: IDataTransfer;
-		constructor(e: MouseEvent);
-	}
-
-	export interface IMouseWheelEvent extends MouseEvent {
-		readonly wheelDelta: number;
-		readonly wheelDeltaX: number;
-		readonly wheelDeltaY: number;
-		readonly deltaX: number;
-		readonly deltaY: number;
-		readonly deltaZ: number;
-		readonly deltaMode: number;
-	}
-
-	export class StandardWheelEvent {
-		readonly browserEvent: IMouseWheelEvent | null;
-		readonly deltaY: number;
-		readonly deltaX: number;
-		readonly target: Node;
-		constructor(e: IMouseWheelEvent | null, deltaX?: number, deltaY?: number);
-		preventDefault(): void;
-		stopPropagation(): void;
+	/**
+	 * Word inside a model.
+	 */
+	export interface IWordAtPosition {
+		/**
+		 * The word.
+		 */
+		readonly word: string;
+		/**
+		 * The column where the word starts.
+		 */
+		readonly startColumn: number;
+		/**
+		 * The column where the word ends.
+		 */
+		readonly endColumn: number;
 	}
 
 	/**
@@ -4473,17 +4011,6 @@ declare namespace monaco.editor {
 	}
 
 	/**
-	 * An overview ruler
-	 * @internal
-	 */
-	export interface IOverviewRuler {
-		getDomNode(): HTMLElement;
-		dispose(): void;
-		setZones(zones: OverviewRulerZone[]): void;
-		setLayout(position: OverviewRulerPosition): void;
-	}
-
-	/**
 	 * Editor aria options.
 	 * @internal
 	 */
@@ -4683,7 +4210,7 @@ declare namespace monaco.editor {
 		 * @event
 		 * @internal
 		 */
-		readonly onMouseWheel: IEvent<IMouseWheelEvent>;
+		readonly onMouseWheel: IEvent<any>;
 		/**
 		 * An event emitted on a "keyup".
 		 * @event
@@ -7655,15 +7182,6 @@ declare namespace monaco.languages {
 		indentation: string;
 	}
 
-	export class Token {
-		_tokenBrand: void;
-		readonly offset: number;
-		readonly type: string;
-		readonly language: string;
-		constructor(offset: number, type: string, language: string);
-		toString(): string;
-	}
-
 	/**
 	 * The state of the tokenizer between two lines.
 	 * It is useful to store flags such as in multiline comment, etc.
@@ -9039,13 +8557,6 @@ declare namespace monaco.languages {
 			snippet: string;
 		};
 		additionalEdit?: WorkspaceEdit;
-	}
-
-	/**
-	 * @internal
-	 */
-	export interface DocumentOnDropEditProvider {
-		provideDocumentOnDropEdits(model: editor.ITextModel, position: IPosition, dataTransfer: VSDataTransfer, token: CancellationToken): ProviderResult<DocumentOnDropEdit>;
 	}
 
 	export interface ILanguageExtensionPoint {

@@ -539,6 +539,9 @@ export class SimpleWorkerServer<H extends object> {
 			// ESM-uncomment-begin
 			// const req = globals.require;
 			// ESM-uncomment-end
+			// CJS-comment-begin
+			// const req = globals.require;
+			// CJS-comment-end
 
 			req([moduleId], (module: { create: IRequestHandlerFactory<H> }) => {
 				this._requestHandler = module.create(hostProxy);
