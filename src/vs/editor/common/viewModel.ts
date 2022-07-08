@@ -28,7 +28,7 @@ export interface IViewModel extends ICursorSimpleModel {
 
 	readonly cursorConfig: CursorConfiguration;
 
-	readonly hiddenAreas: IRange[];
+	readonly hiddenAreas: Range[];
 
 	addViewEventHandler(eventHandler: ViewEventHandler): void;
 	removeViewEventHandler(eventHandler: ViewEventHandler): void;
