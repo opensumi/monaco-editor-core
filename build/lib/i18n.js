@@ -1088,28 +1088,28 @@ function prepareI18nPackFiles(externalExtensions, resultingTranslationPaths, pse
     }, function () {
         Promise.all(parsePromises)
             .then(() => {
-                if (errors.length > 0) {
-                    throw errors;
+            if (errors.length > 0) {
+                throw errors;
+            }
+            const translatedMainFile = createI18nFile('./main', mainPack);
+            resultingTranslationPaths.push({ id: 'vscode', resourceName: 'main.i18n.json' });
+            this.queue(translatedMainFile);
+            for (const extension in extensionsPacks) {
+                const translatedExtFile = createI18nFile(`extensions/${extension}`, extensionsPacks[extension]);
+                this.queue(translatedExtFile);
+                const externalExtensionId = externalExtensions[extension];
+                if (externalExtensionId) {
+                    resultingTranslationPaths.push({ id: externalExtensionId, resourceName: `extensions/${extension}.i18n.json` });
                 }
-                const translatedMainFile = createI18nFile('./main', mainPack);
-                resultingTranslationPaths.push({ id: 'vscode', resourceName: 'main.i18n.json' });
-                this.queue(translatedMainFile);
-                for (const extension in extensionsPacks) {
-                    const translatedExtFile = createI18nFile(`extensions/${extension}`, extensionsPacks[extension]);
-                    this.queue(translatedExtFile);
-                    const externalExtensionId = externalExtensions[extension];
-                    if (externalExtensionId) {
-                        resultingTranslationPaths.push({ id: externalExtensionId, resourceName: `extensions/${extension}.i18n.json` });
-                    }
-                    else {
-                        resultingTranslationPaths.push({ id: `vscode.${extension}`, resourceName: `extensions/${extension}.i18n.json` });
-                    }
+                else {
+                    resultingTranslationPaths.push({ id: `vscode.${extension}`, resourceName: `extensions/${extension}.i18n.json` });
                 }
-                this.queue(null);
-            })
+            }
+            this.queue(null);
+        })
             .catch((reason) => {
-                this.emit('error', reason);
-            });
+            this.emit('error', reason);
+        });
     });
 }
 exports.prepareI18nPackFiles = prepareI18nPackFiles;
@@ -1131,8 +1131,8 @@ function prepareIslFiles(language, innoSetupConfig) {
         Promise.all(parsePromises)
             .then(() => { this.queue(null); })
             .catch(reason => {
-                this.emit('error', reason);
-            });
+            this.emit('error', reason);
+        });
     });
 }
 exports.prepareIslFiles = prepareIslFiles;

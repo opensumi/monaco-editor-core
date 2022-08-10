@@ -281,30 +281,6 @@ function isVariableStatementWithSideEffects(ts, node) {
     node.forEachChild(visitNode);
     return hasSideEffects;
 }
-function isStaticMemberWithSideEffects(ts, node) {
-    if (!ts.isPropertyDeclaration(node)) {
-        return false;
-    }
-    if (!node.modifiers) {
-        return false;
-    }
-    if (!node.modifiers.some(mod => mod.kind === ts.SyntaxKind.StaticKeyword)) {
-        return false;
-    }
-    let hasSideEffects = false;
-    const visitNode = (node) => {
-        if (hasSideEffects) {
-            // no need to go on
-            return;
-        }
-        if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-            hasSideEffects = true;
-        }
-        node.forEachChild(visitNode);
-    };
-    node.forEachChild(visitNode);
-    return hasSideEffects;
-}
 function markNodes(ts, languageService, options) {
     const program = languageService.getProgram();
     if (!program) {
@@ -373,14 +349,6 @@ function markNodes(ts, languageService, options) {
         } while (_node);
         return null;
     }
-    function enqueue_gray(node) {
-        if (nodeOrParentIsBlack(node) || getColor(node) === 1 /* NodeColor.Gray */) {
-            return;
-        }
-        setColor(node, 1 /* NodeColor.Gray */);
-        gray_queue.push(node);
-    }
-
     function enqueue_black(node) {
         const previousColor = getColor(node);
         if (previousColor === 2 /* NodeColor.Black */) {
@@ -415,7 +383,6 @@ function markNodes(ts, languageService, options) {
         }
         setColor(node, 2 /* NodeColor.Black */);
         black_queue.push(node);
-
         // if (options.shakeLevel === ShakeLevel.ClassMembers && (ts.isMethodDeclaration(node) || ts.isMethodSignature(node) || ts.isPropertySignature(node) || ts.isGetAccessor(node) || ts.isSetAccessor(node))) {
         // 	const references = languageService.getReferencesAtPosition(node.getSourceFile().fileName, node.name.pos + node.name.getLeadingTriviaWidth());
         // 	if (references) {
@@ -511,7 +478,6 @@ function markNodes(ts, languageService, options) {
                         // (they can be the declaration of a module import)
                         continue;
                     }
-
                     // if (options.shakeLevel === ShakeLevel.ClassMembers && (ts.isClassDeclaration(declaration) || ts.isInterfaceDeclaration(declaration))) {
                     // 	enqueue_black(declaration.name!);
                     // 	for (let j = 0; j < declaration.members.length; j++) {
@@ -522,6 +488,8 @@ function markNodes(ts, languageService, options) {
                     // 			|| ts.isConstructSignatureDeclaration(member)
                     // 			|| ts.isIndexSignatureDeclaration(member)
                     // 			|| ts.isCallSignatureDeclaration(member)
+                    // 			|| memberName === '[Symbol.iterator]'
+                    // 			|| memberName === '[Symbol.toStringTag]'
                     // 			|| memberName === 'toJSON'
                     // 			|| memberName === 'toString'
                     // 			|| memberName === 'dispose'// TODO: keeping all `dispose` methods
@@ -672,7 +640,6 @@ function generateResult(languageService) {
                     }
                 }
             }
-
             // if (shakeLevel === ShakeLevel.ClassMembers && (ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node)) && nodeOrChildIsBlack(node)) {
             // 	let toWrite = node.getFullText();
             // 	for (let i = node.members.length - 1; i >= 0; i--) {
@@ -866,3 +833,4 @@ function getRealNodeSymbol(ts, checker, node) {
     }
     return [null, null];
 }
+//#endregion
