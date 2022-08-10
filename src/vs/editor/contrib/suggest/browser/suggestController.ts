@@ -5,7 +5,7 @@
 
 import { alert } from 'vs/base/browser/ui/aria/aria';
 import { isNonEmptyArray } from 'vs/base/common/arrays';
-import { DeferredPromise, IdleValue } from 'vs/base/common/async';
+import { IdleValue } from 'vs/base/common/async';
 import { CancellationTokenSource } from 'vs/base/common/cancellation';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { Event } from 'vs/base/common/event';
@@ -293,7 +293,6 @@ export class SuggestController implements IEditorContribution {
 
 		const model = this.editor.getModel();
 		const modelVersionNow = model.getAlternativeVersionId();
-		const deferredPromise = new DeferredPromise<void>();
 		const { item } = event;
 
 		//
@@ -376,71 +375,65 @@ export class SuggestController implements IEditorContribution {
 				this._logService.trace('[suggest] async resolving of edits DONE (ms, applied?)', sw.elapsed(), applied);
 				docListener.dispose();
 				typeListener.dispose();
-			}).finally(() => {
-				deferredPromise.complete();
 			}));
-		} else {
-			deferredPromise.complete();
 		}
 
-		deferredPromise.p.then(() => {
-			let { insertText } = item.completion;
-			if (!(item.completion.insertTextRules! & CompletionItemInsertTextRule.InsertAsSnippet)) {
-				insertText = SnippetParser.escape(insertText);
-			}
+		let { insertText } = item.completion;
+		if (!(item.completion.insertTextRules! & CompletionItemInsertTextRule.InsertAsSnippet)) {
+			insertText = SnippetParser.escape(insertText);
+		}
 
-			snippetController.insert(insertText, {
-				overwriteBefore: info.overwriteBefore,
-				overwriteAfter: info.overwriteAfter,
-				undoStopBefore: false,
-				undoStopAfter: false,
-				adjustWhitespace: !(item.completion.insertTextRules! & CompletionItemInsertTextRule.KeepWhitespace),
-				clipboardText: event.model.clipboardText,
-				overtypingCapturer: this._overtypingCapturer.value
-			});
+		snippetController.insert(insertText, {
+			overwriteBefore: info.overwriteBefore,
+			overwriteAfter: info.overwriteAfter,
+			undoStopBefore: false,
+			undoStopAfter: false,
+			adjustWhitespace: !(item.completion.insertTextRules! & CompletionItemInsertTextRule.KeepWhitespace),
+			clipboardText: event.model.clipboardText,
+			overtypingCapturer: this._overtypingCapturer.value
+		});
 
-			if (!(flags & InsertFlags.NoAfterUndoStop)) {
-				this.editor.pushUndoStop();
-			}
+		if (!(flags & InsertFlags.NoAfterUndoStop)) {
+			this.editor.pushUndoStop();
+		}
 
-			if (!item.completion.command) {
-				// done
-				this.model.cancel();
+		if (!item.completion.command) {
+			// done
+			this.model.cancel();
 
 		} else if (item.completion.command.id === TriggerSuggestAction.id) {
 			// retigger
 			this.model.trigger({ auto: true, shy: false, noSelect: false }, true);
 
-			} else {
-				// exec command, done
-				tasks.push(this._commandService.executeCommand(item.completion.command.id, ...(item.completion.command.arguments ? [...item.completion.command.arguments] : [])).catch(onUnexpectedError));
-				this.model.cancel();
-			}
+		} else {
+			// exec command, done
+			tasks.push(this._commandService.executeCommand(item.completion.command.id, ...(item.completion.command.arguments ? [...item.completion.command.arguments] : [])).catch(onUnexpectedError));
+			this.model.cancel();
+		}
 
-			if (flags & InsertFlags.KeepAlternativeSuggestions) {
-				this._alternatives.value.set(event, next => {
+		if (flags & InsertFlags.KeepAlternativeSuggestions) {
+			this._alternatives.value.set(event, next => {
 
-					// cancel resolving of additional edits
-					cts.cancel();
+				// cancel resolving of additional edits
+				cts.cancel();
 
-					// this is not so pretty. when inserting the 'next'
-					// suggestion we undo until we are at the state at
-					// which we were before inserting the previous suggestion...
-					while (model.canUndo()) {
-						if (modelVersionNow !== model.getAlternativeVersionId()) {
-							model.undo();
-						}
-						this._insertSuggestion(
-							next,
-							InsertFlags.NoBeforeUndoStop | InsertFlags.NoAfterUndoStop | (flags & InsertFlags.AlternativeOverwriteConfig ? InsertFlags.AlternativeOverwriteConfig : 0)
-						);
-						break;
+				// this is not so pretty. when inserting the 'next'
+				// suggestion we undo until we are at the state at
+				// which we were before inserting the previous suggestion...
+				while (model.canUndo()) {
+					if (modelVersionNow !== model.getAlternativeVersionId()) {
+						model.undo();
 					}
-				});
-			}
+					this._insertSuggestion(
+						next,
+						InsertFlags.NoBeforeUndoStop | InsertFlags.NoAfterUndoStop | (flags & InsertFlags.AlternativeOverwriteConfig ? InsertFlags.AlternativeOverwriteConfig : 0)
+					);
+					break;
+				}
+			});
+		}
 
-			this._alertCompletionItem(item);
-		});
+		this._alertCompletionItem(item);
 
 		// clear only now - after all tasks are done
 		Promise.all(tasks).finally(() => {
