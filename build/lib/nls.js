@@ -45,7 +45,10 @@ function template(lines) {
         indent = '\t';
         wrap = '\n';
     }
-    return `define([], [${wrap + lines.map(l => indent + l).join(',\n') + wrap}]);`;
+    return `/*---------------------------------------------------------
+ * Copyright (C) Microsoft Corporation. All rights reserved.
+ *--------------------------------------------------------*/
+define([], [${wrap + lines.map(l => indent + l).join(',\n') + wrap}]);`;
 }
 /**
  * Returns a stream containing the patched JavaScript and source maps.

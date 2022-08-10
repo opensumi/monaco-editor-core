@@ -142,7 +142,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 
 	const getDestAbsoluteFilePath = (file: string): string => {
 		const dest = options.renames[file.replace(/\\/g, '/')] || file;
-		console.log('renames dest>>', dest);
+
 		if (dest === 'tsconfig.json') {
 			return path.join(OUT_FOLDER, `tsconfig.json`);
 		}
@@ -196,7 +196,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 
 				let relativePath: string;
 				if (importedFilepath === path.dirname(file).replace(/\\/g, '/')) {
-					relativePath = '../' + path.basename(path.dirname(file));
+        	relativePath = '../' + path.basename(path.dirname(file));
 				} else if (importedFilepath === path.dirname(path.dirname(file)).replace(/\\/g, '/')) {
 					relativePath = '../../' + path.basename(path.dirname(path.dirname(file)));
 				} else {

@@ -362,31 +362,6 @@ function isVariableStatementWithSideEffects(ts: typeof import('typescript'), nod
 	return hasSideEffects;
 }
 
-function isStaticMemberWithSideEffects(ts: typeof import('typescript'), node: ts.ClassElement | ts.TypeElement): boolean {
-	if (!ts.isPropertyDeclaration(node)) {
-		return false;
-	}
-	if (!node.modifiers) {
-		return false;
-	}
-	if (!node.modifiers.some(mod => mod.kind === ts.SyntaxKind.StaticKeyword)) {
-		return false;
-	}
-	let hasSideEffects = false;
-	const visitNode = (node: ts.Node) => {
-		if (hasSideEffects) {
-			// no need to go on
-			return;
-		}
-		if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
-			hasSideEffects = true;
-		}
-		node.forEachChild(visitNode);
-	};
-	node.forEachChild(visitNode);
-	return hasSideEffects;
-}
-
 function markNodes(ts: typeof import('typescript'), languageService: ts.LanguageService, options: ITreeShakingOptions) {
 	const program = languageService.getProgram();
 	if (!program) {
@@ -467,14 +442,6 @@ function markNodes(ts: typeof import('typescript'), languageService: ts.Language
 			_node = _node.parent;
 		} while (_node);
 		return null;
-	}
-
-	function enqueue_gray(node: ts.Node): void {
-		if (nodeOrParentIsBlack(node) || getColor(node) === NodeColor.Gray) {
-			return;
-		}
-		setColor(node, NodeColor.Gray);
-		gray_queue.push(node);
 	}
 
 	function enqueue_black(node: ts.Node): void {

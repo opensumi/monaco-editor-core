@@ -53,10 +53,10 @@ function getAllTopLevelDeclarations(ts, sourceFile) {
     const all = [];
     visitTopLevelDeclarations(ts, sourceFile, (node) => {
         if (node.kind === ts.SyntaxKind.InterfaceDeclaration || node.kind === ts.SyntaxKind.ClassDeclaration || node.kind === ts.SyntaxKind.ModuleDeclaration) {
-            let interfaceDeclaration = node;
-            let triviaStart = interfaceDeclaration.pos;
-            let triviaEnd = interfaceDeclaration.name.pos;
-            let triviaText = getNodeText(sourceFile, { pos: triviaStart, end: triviaEnd });
+            const interfaceDeclaration = node;
+            const triviaStart = interfaceDeclaration.pos;
+            const triviaEnd = interfaceDeclaration.name.pos;
+            const triviaText = getNodeText(sourceFile, { pos: triviaStart, end: triviaEnd });
             if (triviaText.indexOf('@internal') === -1 || node.kind === ts.SyntaxKind.InterfaceDeclaration) {
                 /** 标记为 @internal 的 class 和 interface 不需要暴露 */
                 /** 标记为 @internal 的 class 和 interface 不需要暴露 */
@@ -198,6 +198,26 @@ function getMassagedTopLevelDeclarationText(ts, sourceFile, declaration, importN
                     // life..
                 }
             });
+        }
+    }
+    else if (declaration.kind === ts.SyntaxKind.VariableStatement) {
+        const jsDoc = result.substr(0, declaration.getLeadingTriviaWidth(sourceFile));
+        if (jsDoc.indexOf('@monacodtsreplace') >= 0) {
+            const jsDocLines = jsDoc.split(/\r\n|\r|\n/);
+            let directives = [];
+            for (const jsDocLine of jsDocLines) {
+                const m = jsDocLine.match(/^\s*\* \/([^/]+)\/([^/]+)\/$/);
+                if (m) {
+                    directives.push([new RegExp(m[1], 'g'), m[2]]);
+                }
+            }
+            // remove the jsdoc
+            result = result.substr(jsDoc.length);
+            if (directives.length > 0) {
+                // apply replace directives
+                const replacer = createReplacerFromDirectives(directives);
+                result = replacer(result);
+            }
         }
     }
     result = result.replace(/export default /g, 'export ');
