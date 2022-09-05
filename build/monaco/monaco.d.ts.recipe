@@ -71,7 +71,6 @@ export interface ICommandHandler {
 #include(vs/platform/theme/common/themeService): ThemeColor
 #include(vs/editor/common/core/editOperation): ISingleEditOperation
 #include(vs/editor/common/core/wordHelper): IWordAtPosition
-#includeAll(vs/editor/common/model): IScrollEvent
 #include(vs/editor/common/diff/smartLinesDiffComputer): IChange, ICharChange, ILineChange
 #include(vs/editor/common/core/dimension): IDimension
 #includeAll(vs/editor/common/textModelEvents):

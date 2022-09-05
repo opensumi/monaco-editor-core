@@ -1636,8 +1636,8 @@ abstract class ViewZonesComputer {
 	}
 
 	public getViewZones(): IEditorsZones {
-		const modifiedHiddenRanges = this._modifiedEditor._getViewModel()?.hiddenAreas;
-		const originalHiddenRanges = this._originalEditor._getViewModel()?.hiddenAreas;
+		const modifiedHiddenRanges = this._modifiedEditor._getViewModel()?.getHiddenAreas();
+		const originalHiddenRanges = this._originalEditor._getViewModel()?.getHiddenAreas();
 		const originalLineHeight = this._originalEditor.getOption(EditorOption.lineHeight);
 		const modifiedLineHeight = this._modifiedEditor.getOption(EditorOption.lineHeight);
 		const originalHasWrapping = (this._originalEditor.getOption(EditorOption.wrappingInfo).wrappingColumn !== -1);
