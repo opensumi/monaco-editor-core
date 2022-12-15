@@ -23,6 +23,4 @@ class OverflowContentWidgetsSettings {
 	}
 }
 
-const overflowWidgetsSettings = new OverflowContentWidgetsSettings();
-
-export { overflowWidgetsSettings };
+export const overflowWidgetsSettings = new OverflowContentWidgetsSettings();
