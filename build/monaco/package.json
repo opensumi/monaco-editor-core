@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/monaco-editor-core",
-  "version": "0.35.0-patch.0",
+  "version": "0.35.0-patch.1",
   "description": "A browser based code editor",
   "author": "Microsoft Corporation",
   "license": "MIT",
