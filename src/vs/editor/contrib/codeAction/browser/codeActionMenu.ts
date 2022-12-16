@@ -392,7 +392,7 @@ export class CodeActionMenu extends Disposable implements IEditorContribution {
 			}
 		}, [this.listRenderer],
 			{
-				keyboardSupport: false,
+				keyboardSupport: true,
 				accessibilityProvider: {
 					getAriaLabel: element => {
 						if (element.action instanceof CodeActionAction) {
