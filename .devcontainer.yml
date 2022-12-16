@@ -1,6 +1,0 @@
-# 研发容器 YAML 详细语法，请参考：https://yuque.antfin-inc.com/cloud-ide/devcontainer/fetfbr
-version: '1.0'
-image: reg.docker.alibaba-inc.com/cloudide-platform/node-monaco-editor-core:20201224113556
-resource:
-  memory: 16 #默认规格 G
-  cpu: 8 #默认规格 C
