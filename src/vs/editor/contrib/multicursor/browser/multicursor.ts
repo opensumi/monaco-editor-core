@@ -89,6 +89,10 @@ export class InsertCursorAbove extends EditorAction {
 		);
 		viewModel.revealTopMostCursor(args.source);
 		announceCursorChange(previousCursorState, viewModel.getCursorStates());
+		// At browser, click menu will blur editor
+		if (!editor.hasTextFocus()) {
+			editor.focus()
+		}
 	}
 }
 
@@ -142,6 +146,10 @@ export class InsertCursorBelow extends EditorAction {
 		);
 		viewModel.revealBottomMostCursor(args.source);
 		announceCursorChange(previousCursorState, viewModel.getCursorStates());
+		// At browser, click menu will blur editor
+		if (!editor.hasTextFocus()) {
+			editor.focus()
+		}
 	}
 }
 
@@ -197,6 +205,11 @@ class InsertCursorAtEndOfEachLineSelected extends EditorAction {
 			editor.setSelections(newSelections);
 		}
 		announceCursorChange(previousCursorState, viewModel.getCursorStates());
+
+		// At browser, click menu will blur editor
+		if (!editor.hasTextFocus()) {
+			editor.focus()
+		}
 	}
 }
 
