@@ -44,8 +44,8 @@ export function extractEditor(options: tss.ITreeShakingOptions & { destRoot: str
 
 	compilerOptions.noEmit = false;
 	compilerOptions.noUnusedLocals = false;
-	compilerOptions.preserveConstEnums = false;
-	compilerOptions.declaration = false;
+	compilerOptions.preserveConstEnums = true;
+	compilerOptions.declaration = true;
 	compilerOptions.moduleResolution = ts.ModuleResolutionKind.Classic;
 
 
@@ -206,7 +206,8 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 						mode = 1;
 						continue;
 					}
-					if (/\/\/ ESM-uncomment-begin/.test(line)) {
+					// if (/\/\/ ESM-uncomment-begin/.test(line)) {
+					if (/\/\/ CJS-comment-begin/.test(line)) {
 						mode = 2;
 						continue;
 					}
@@ -223,7 +224,8 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 				}
 
 				if (mode === 2) {
-					if (/\/\/ ESM-uncomment-end/.test(line)) {
+					// if (/\/\/ ESM-uncomment-end/.test(line)) {
+					if (/\/\/ CJS-comment-end/.test(line)) {
 						mode = 0;
 						continue;
 					}
