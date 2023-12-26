@@ -19,6 +19,7 @@ const copyrightHeaderLines = [
 	' *  Licensed under the MIT License. See License.txt in the project root for license information.',
 	' *--------------------------------------------------------------------------------------------*/',
 ];
+const skipCopyrightFiles = ['src/vs/base/browser/settings.ts'];
 
 function hygiene(some, linting = true) {
 	const gulpeslint = require('gulp-eslint');
@@ -97,6 +98,10 @@ function hygiene(some, linting = true) {
 	});
 
 	const copyrights = es.through(function (file) {
+		if (skipCopyrightFiles.includes(file.relative)) {
+			this.emit('data', file);
+			return;
+		}
 		const lines = file.__lines;
 
 		for (let i = 0; i < copyrightHeaderLines.length; i++) {
