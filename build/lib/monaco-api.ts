@@ -75,13 +75,27 @@ function getAllTopLevelDeclarations(ts: typeof import('typescript'), sourceFile:
 			const triviaEnd = interfaceDeclaration.name.pos;
 			const triviaText = getNodeText(sourceFile, { pos: triviaStart, end: triviaEnd });
 
-			if (triviaText.indexOf('@internal') === -1) {
+			if (triviaText.indexOf('@internal') === -1 || node.kind === ts.SyntaxKind.InterfaceDeclaration) {
+				/** 标记为 @internal 的 class 和 interface 不需要暴露 */
+				/** 标记为 @internal 的 class 和 interface 不需要暴露 */
 				all.push(node);
 			}
 		} else {
 			const nodeText = getNodeText(sourceFile, node);
 			if (nodeText.indexOf('@internal') === -1) {
+				/** 标记为 @internal 的顶层声明不需要导出 */
+				/**
+				 * @example
+				 * ```ts
+				 * export const a = 'test';
+				 * export function foo() {
+				 * };
+				 * ```
+				 */
 				all.push(node);
+				/** 标记为 @internal 的顶层声明不需要导出 */
+			} else if (node.kind === ts.SyntaxKind.EnumDeclaration) {
+				// all.push(node);
 			}
 		}
 		return false /*continue*/;
@@ -134,6 +148,27 @@ function isStatic(ts: typeof import('typescript'), member: ts.ClassElement | ts.
 	return false;
 }
 
+function isPrivate(ts: typeof import('typescript'), member: ts.ClassElement | ts.TypeElement): boolean {
+	if (ts.canHaveModifiers(member)) {
+		return hasModifier(ts.getModifiers(member), ts.SyntaxKind.PrivateKeyword);
+	}
+	return false;
+}
+
+function isProtected(ts: typeof import('typescript'), member: ts.ClassElement | ts.TypeElement): boolean {
+	if (ts.canHaveModifiers(member)) {
+		return hasModifier(ts.getModifiers(member), ts.SyntaxKind.ProtectedKeyword);
+	}
+	return false;
+}
+
+function isAbstractClass(ts: typeof import('typescript'), member: ts.ClassDeclaration): boolean {
+	if (ts.canHaveModifiers(member)) {
+		return hasModifier(ts.getModifiers(member), ts.SyntaxKind.AbstractKeyword);
+	}
+	return false;
+}
+
 function isDefaultExport(ts: typeof import('typescript'), declaration: ts.InterfaceDeclaration | ts.ClassDeclaration): boolean {
 	return (
 		hasModifier(declaration.modifiers, ts.SyntaxKind.DefaultKeyword)
@@ -144,43 +179,89 @@ function isDefaultExport(ts: typeof import('typescript'), declaration: ts.Interf
 function getMassagedTopLevelDeclarationText(ts: typeof import('typescript'), sourceFile: ts.SourceFile, declaration: TSTopLevelDeclare, importName: string, usage: string[], enums: IEnumEntry[]): string {
 	let result = getNodeText(sourceFile, declaration);
 	if (declaration.kind === ts.SyntaxKind.InterfaceDeclaration || declaration.kind === ts.SyntaxKind.ClassDeclaration) {
-		const interfaceDeclaration = <ts.InterfaceDeclaration | ts.ClassDeclaration>declaration;
 
-		const staticTypeName = (
-			isDefaultExport(ts, interfaceDeclaration)
-				? `${importName}.default`
-				: `${importName}.${declaration.name!.text}`
-		);
+		/**
+		 * 不要将标记为 @internal 的 class 和 interface 暴露出来
+		 * 这里仅需要公开 API 的私有属性
+		 */
+		if (!isAbstractClass(ts, <ts.ClassDeclaration>declaration)) {
+			const interfaceDeclaration = <ts.InterfaceDeclaration | ts.ClassDeclaration>declaration;
 
-		let instanceTypeName = staticTypeName;
-		const typeParametersCnt = (interfaceDeclaration.typeParameters ? interfaceDeclaration.typeParameters.length : 0);
-		if (typeParametersCnt > 0) {
-			const arr: string[] = [];
-			for (let i = 0; i < typeParametersCnt; i++) {
-				arr.push('any');
-			}
-			instanceTypeName = `${instanceTypeName}<${arr.join(',')}>`;
-		}
+			const staticTypeName = (
+				isDefaultExport(ts, interfaceDeclaration)
+					? `${importName}.default`
+					: `${importName}.${declaration.name!.text}`
+			);
 
-		const members: ts.NodeArray<ts.ClassElement | ts.TypeElement> = interfaceDeclaration.members;
-		members.forEach((member) => {
-			try {
-				const memberText = getNodeText(sourceFile, member);
-				if (memberText.indexOf('@internal') >= 0 || memberText.indexOf('private') >= 0) {
-					result = result.replace(memberText, '');
-				} else {
-					const memberName = (<ts.Identifier | ts.StringLiteral>member.name).text;
-					const memberAccess = (memberName.indexOf('.') >= 0 ? `['${memberName}']` : `.${memberName}`);
-					if (isStatic(ts, member)) {
-						usage.push(`a = ${staticTypeName}${memberAccess};`);
-					} else {
-						usage.push(`a = (<${instanceTypeName}>b)${memberAccess};`);
-					}
+			let instanceTypeName = staticTypeName;
+			const typeParametersCnt = (interfaceDeclaration.typeParameters ? interfaceDeclaration.typeParameters.length : 0);
+			if (typeParametersCnt > 0) {
+				const arr: string[] = [];
+				for (let i = 0; i < typeParametersCnt; i++) {
+					arr.push('any');
 				}
-			} catch (err) {
-				// life..
+				instanceTypeName = `${instanceTypeName}<${arr.join(',')}>`;
 			}
-		});
+
+			const members: ts.NodeArray<ts.ClassElement | ts.TypeElement> = interfaceDeclaration.members;
+			members.forEach((member) => {
+				try {
+					/** ------------------------ 这段是原始代码，主要内容是过滤掉了 class 的 private 成员与注释为 @internal 的成员 ------------------------ */
+					// const memberText = getNodeText(sourceFile, member);
+					// if (memberText.indexOf('@internal') >= 0 || memberText.indexOf('private') >= 0) {
+					// 	result = result.replace(memberText, '');
+					// } else {
+					// 	const memberName = (<ts.Identifier | ts.StringLiteral>member.name).text;
+					// 	const memberAccess = (memberName.indexOf('.') >= 0 ? `['${memberName}']` : `.${memberName}`);
+					// 	if (isStatic(ts, member)) {
+					// 		usage.push(`a = ${staticTypeName}${memberAccess};`);
+					// 	} else {
+					// 		usage.push(`a = (<${instanceTypeName}>b)${memberAccess};`);
+					// 	}
+					// }
+					/** ------------------------ 这段是原始代码，主要内容是过滤掉了 class 的 private 成员与注释为 @internal 的成员 ------------------------ */
+
+					/** ------------------------ 这段是修改后的代码，主要内容是过滤掉 private 及 protected 成员，但保留了 @internal 成员 ------------------------  */
+					if (!isPrivate(ts, member) && !isProtected(ts, member)) {
+						// console.log('usage class or interface member', (<ts.Identifier | ts.StringLiteral>member.name).text);
+						const memberName = (<ts.Identifier | ts.StringLiteral>member.name).text;
+						const memberAccess = (memberName.indexOf('.') >= 0 ? `['${memberName}']` : `.${memberName}`);
+						if (isStatic(ts, member)) {
+							usage.push(`a = ${staticTypeName}${memberAccess};`);
+						} else {
+							const memberText = getNodeText(sourceFile, member);
+							if (memberText.indexOf('@internal') >= 0) {
+								// result = result.replace(memberText, '');
+							} else {
+							}
+							usage.push(`a = (<${instanceTypeName}>b)${memberAccess};`);
+						}
+					}
+					/** ------------------------ 这段是修改后的代码，主要内容是过滤掉 private 及 protected 成员，但保留了 @internal 成员 ------------------------  */
+				} catch (err) {
+					// life..
+				}
+			});
+		}
+	} else if (declaration.kind === ts.SyntaxKind.VariableStatement) {
+		const jsDoc = result.substr(0, declaration.getLeadingTriviaWidth(sourceFile));
+		if (jsDoc.indexOf('@monacodtsreplace') >= 0) {
+			const jsDocLines = jsDoc.split(/\r\n|\r|\n/);
+			let directives: [RegExp, string][] = [];
+			for (const jsDocLine of jsDocLines) {
+				const m = jsDocLine.match(/^\s*\* \/([^/]+)\/([^/]+)\/$/);
+				if (m) {
+					directives.push([new RegExp(m[1], 'g'), m[2]]);
+				}
+			}
+			// remove the jsdoc
+			result = result.substr(jsDoc.length);
+			if (directives.length > 0) {
+				// apply replace directives
+				const replacer = createReplacerFromDirectives(directives);
+				result = replacer(result);
+			}
+		}
 	}
 	result = result.replace(/export default /g, 'export ');
 	result = result.replace(/export declare /g, 'export ');

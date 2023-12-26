@@ -284,6 +284,7 @@ function isVariableStatementWithSideEffects(ts, node) {
     node.forEachChild(visitNode);
     return hasSideEffects;
 }
+// @ts-ignore
 function isStaticMemberWithSideEffects(ts, node) {
     if (!ts.isPropertyDeclaration(node)) {
         return false;
@@ -376,6 +377,7 @@ function markNodes(ts, languageService, options) {
         } while (_node);
         return null;
     }
+    // @ts-ignore
     function enqueue_gray(node) {
         if (nodeOrParentIsBlack(node) || getColor(node) === 1 /* NodeColor.Gray */) {
             return;
@@ -417,25 +419,27 @@ function markNodes(ts, languageService, options) {
         }
         setColor(node, 2 /* NodeColor.Black */);
         black_queue.push(node);
-        if (options.shakeLevel === 2 /* ShakeLevel.ClassMembers */ && (ts.isMethodDeclaration(node) || ts.isMethodSignature(node) || ts.isPropertySignature(node) || ts.isPropertyDeclaration(node) || ts.isGetAccessor(node) || ts.isSetAccessor(node))) {
-            const references = languageService.getReferencesAtPosition(node.getSourceFile().fileName, node.name.pos + node.name.getLeadingTriviaWidth());
-            if (references) {
-                for (let i = 0, len = references.length; i < len; i++) {
-                    const reference = references[i];
-                    const referenceSourceFile = program.getSourceFile(reference.fileName);
-                    if (!referenceSourceFile) {
-                        continue;
-                    }
-                    const referenceNode = getTokenAtPosition(ts, referenceSourceFile, reference.textSpan.start, false, false);
-                    if (ts.isMethodDeclaration(referenceNode.parent)
-                        || ts.isPropertyDeclaration(referenceNode.parent)
-                        || ts.isGetAccessor(referenceNode.parent)
-                        || ts.isSetAccessor(referenceNode.parent)) {
-                        enqueue_gray(referenceNode.parent);
-                    }
-                }
-            }
-        }
+        // if (options.shakeLevel === ShakeLevel.ClassMembers && (ts.isMethodDeclaration(node) || ts.isMethodSignature(node) || ts.isPropertySignature(node) || ts.isPropertyDeclaration(node) || ts.isGetAccessor(node) || ts.isSetAccessor(node))) {
+        // 	const references = languageService.getReferencesAtPosition(node.getSourceFile().fileName, node.name.pos + node.name.getLeadingTriviaWidth());
+        // 	if (references) {
+        // 		for (let i = 0, len = references.length; i < len; i++) {
+        // 			const reference = references[i];
+        // 			const referenceSourceFile = program!.getSourceFile(reference.fileName);
+        // 			if (!referenceSourceFile) {
+        // 				continue;
+        // 			}
+        // 			const referenceNode = getTokenAtPosition(ts, referenceSourceFile, reference.textSpan.start, false, false);
+        // 			if (
+        // 				ts.isMethodDeclaration(referenceNode.parent)
+        // 				|| ts.isPropertyDeclaration(referenceNode.parent)
+        // 				|| ts.isGetAccessor(referenceNode.parent)
+        // 				|| ts.isSetAccessor(referenceNode.parent)
+        // 			) {
+        // 				enqueue_gray(referenceNode.parent);
+        // 			}
+        // 		}
+        // 	}
+        // }
     }
     function enqueueFile(filename) {
         const sourceFile = program.getSourceFile(filename);
@@ -511,38 +515,38 @@ function markNodes(ts, languageService, options) {
                             // (they can be the declaration of a module import)
                             continue;
                         }
-                        if (options.shakeLevel === 2 /* ShakeLevel.ClassMembers */ && (ts.isClassDeclaration(declaration) || ts.isInterfaceDeclaration(declaration)) && !isLocalCodeExtendingOrInheritingFromDefaultLibSymbol(ts, program, checker, declaration)) {
-                            enqueue_black(declaration.name);
-                            for (let j = 0; j < declaration.members.length; j++) {
-                                const member = declaration.members[j];
-                                const memberName = member.name ? member.name.getText() : null;
-                                if (ts.isConstructorDeclaration(member)
-                                    || ts.isConstructSignatureDeclaration(member)
-                                    || ts.isIndexSignatureDeclaration(member)
-                                    || ts.isCallSignatureDeclaration(member)
-                                    || memberName === '[Symbol.iterator]'
-                                    || memberName === '[Symbol.toStringTag]'
-                                    || memberName === 'toJSON'
-                                    || memberName === 'toString'
-                                    || memberName === 'dispose' // TODO: keeping all `dispose` methods
-                                    || /^_(.*)Brand$/.test(memberName || '') // TODO: keeping all members ending with `Brand`...
-                                ) {
-                                    enqueue_black(member);
-                                }
-                                if (isStaticMemberWithSideEffects(ts, member)) {
-                                    enqueue_black(member);
-                                }
-                            }
-                            // queue the heritage clauses
-                            if (declaration.heritageClauses) {
-                                for (const heritageClause of declaration.heritageClauses) {
-                                    enqueue_black(heritageClause);
-                                }
-                            }
-                        }
-                        else {
-                            enqueue_black(declaration);
-                        }
+                        // if (options.shakeLevel === ShakeLevel.ClassMembers && (ts.isClassDeclaration(declaration) || ts.isInterfaceDeclaration(declaration)) && !isLocalCodeExtendingOrInheritingFromDefaultLibSymbol(ts, program, checker, declaration)) {
+                        // 	enqueue_black(declaration.name!);
+                        // 	for (let j = 0; j < declaration.members.length; j++) {
+                        // 		const member = declaration.members[j];
+                        // 		const memberName = member.name ? member.name.getText() : null;
+                        // 		if (
+                        // 			ts.isConstructorDeclaration(member)
+                        // 			|| ts.isConstructSignatureDeclaration(member)
+                        // 			|| ts.isIndexSignatureDeclaration(member)
+                        // 			|| ts.isCallSignatureDeclaration(member)
+                        // 			|| memberName === '[Symbol.iterator]'
+                        // 			|| memberName === '[Symbol.toStringTag]'
+                        // 			|| memberName === 'toJSON'
+                        // 			|| memberName === 'toString'
+                        // 			|| memberName === 'dispose'// TODO: keeping all `dispose` methods
+                        // 			|| /^_(.*)Brand$/.test(memberName || '') // TODO: keeping all members ending with `Brand`...
+                        // 		) {
+                        // 			enqueue_black(member);
+                        // 		}
+                        // 		if (isStaticMemberWithSideEffects(ts, member)) {
+                        // 			enqueue_black(member);
+                        // 		}
+                        // 	}
+                        // 	// queue the heritage clauses
+                        // 	if (declaration.heritageClauses) {
+                        // 		for (const heritageClause of declaration.heritageClauses) {
+                        // 			enqueue_black(heritageClause);
+                        // 		}
+                        // 	}
+                        // } else {
+                        enqueue_black(declaration);
+                        // }
                     }
                 }
             }
@@ -579,6 +583,7 @@ function nodeIsInItsOwnDeclaration(nodeSourceFile, node, symbol) {
     }
     return false;
 }
+// @ts-ignore
 function generateResult(ts, languageService, shakeLevel) {
     const program = languageService.getProgram();
     if (!program) {
@@ -672,20 +677,20 @@ function generateResult(ts, languageService, shakeLevel) {
                     }
                 }
             }
-            if (shakeLevel === 2 /* ShakeLevel.ClassMembers */ && (ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node)) && nodeOrChildIsBlack(node)) {
-                let toWrite = node.getFullText();
-                for (let i = node.members.length - 1; i >= 0; i--) {
-                    const member = node.members[i];
-                    if (getColor(member) === 2 /* NodeColor.Black */ || !member.name) {
-                        // keep method
-                        continue;
-                    }
-                    const pos = member.pos - node.pos;
-                    const end = member.end - node.pos;
-                    toWrite = toWrite.substring(0, pos) + toWrite.substring(end);
-                }
-                return write(toWrite);
-            }
+            // if (shakeLevel === ShakeLevel.ClassMembers && (ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node)) && nodeOrChildIsBlack(node)) {
+            // 	let toWrite = node.getFullText();
+            // 	for (let i = node.members.length - 1; i >= 0; i--) {
+            // 		const member = node.members[i];
+            // 		if (getColor(member) === NodeColor.Black || !member.name) {
+            // 			// keep method
+            // 			continue;
+            // 		}
+            // 		const pos = member.pos - node.pos;
+            // 		const end = member.end - node.pos;
+            // 		toWrite = toWrite.substring(0, pos) + toWrite.substring(end);
+            // 	}
+            // 	return write(toWrite);
+            // }
             if (ts.isFunctionDeclaration(node)) {
                 // Do not go inside functions if they haven't been marked
                 return;
@@ -721,6 +726,7 @@ function generateResult(ts, languageService, shakeLevel) {
 }
 //#endregion
 //#region Utils
+// @ts-ignore
 function isLocalCodeExtendingOrInheritingFromDefaultLibSymbol(ts, program, checker, declaration) {
     if (!program.isSourceFileDefaultLibrary(declaration.getSourceFile()) && declaration.heritageClauses) {
         for (const heritageClause of declaration.heritageClauses) {
@@ -881,6 +887,7 @@ function getRealNodeSymbol(ts, checker, node) {
     }
 }
 /** Get the token whose text contains the position */
+// @ts-ignore
 function getTokenAtPosition(ts, sourceFile, position, allowPositionInLeadingTrivia, includeEndPosition) {
     let current = sourceFile;
     outer: while (true) {

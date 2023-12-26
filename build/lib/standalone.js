@@ -40,8 +40,8 @@ function extractEditor(options) {
     tsConfig.compilerOptions = compilerOptions;
     compilerOptions.noEmit = false;
     compilerOptions.noUnusedLocals = false;
-    compilerOptions.preserveConstEnums = false;
-    compilerOptions.declaration = false;
+    compilerOptions.preserveConstEnums = true;
+    compilerOptions.declaration = true;
     compilerOptions.moduleResolution = ts.ModuleResolutionKind.Classic;
     options.compilerOptions = compilerOptions;
     console.log(`Running tree shaker with shakeLevel ${tss.toStringShakeLevel(options.shakeLevel)}`);
@@ -223,7 +223,8 @@ function createESMSourcesAndResources2(options) {
                         mode = 1;
                         continue;
                     }
-                    if (/\/\/ ESM-uncomment-begin/.test(line)) {
+                    // if (/\/\/ ESM-uncomment-begin/.test(line)) {
+                    if (/\/\/ CJS-comment-begin/.test(line)) {
                         mode = 2;
                         continue;
                     }
@@ -238,7 +239,8 @@ function createESMSourcesAndResources2(options) {
                     continue;
                 }
                 if (mode === 2) {
-                    if (/\/\/ ESM-uncomment-end/.test(line)) {
+                    // if (/\/\/ ESM-uncomment-end/.test(line)) {
+                    if (/\/\/ CJS-comment-end/.test(line)) {
                         mode = 0;
                         continue;
                     }

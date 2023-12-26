@@ -87,6 +87,8 @@ declare namespace monaco {
 	}
 
 	export class CancellationTokenSource {
+		_token?: CancellationToken;
+		_parentListener?: IDisposable;
 		constructor(parent?: CancellationToken);
 		get token(): CancellationToken;
 		cancel(): void;
@@ -148,6 +150,14 @@ declare namespace monaco {
 		 * fragment is the 'fragment' part of 'http://www.example.com/some/path?query#fragment'.
 		 */
 		readonly fragment: string;
+		/**
+		 * @internal
+		 */
+		protected constructor(scheme: string, authority?: string, path?: string, query?: string, fragment?: string, _strict?: boolean);
+		/**
+		 * @internal
+		 */
+		protected constructor(components: UriComponents);
 		/**
 		 * Returns a string representing the corresponding file system path of this Uri.
 		 * Will handle UNC paths, normalizes windows drive letters to lower-case, and uses the
@@ -499,6 +509,10 @@ declare namespace monaco {
 		readonly altGraphKey: boolean;
 		readonly keyCode: KeyCode;
 		readonly code: string;
+		/**
+		 * @internal
+		 */
+		toKeyCodeChord(): any;
 		equals(keybinding: number): boolean;
 		preventDefault(): void;
 		stopPropagation(): void;
@@ -683,6 +697,11 @@ declare namespace monaco {
 		 * Test if `position` is in `range`. If the position is at the edges, will return true.
 		 */
 		static containsPosition(range: IRange, position: IPosition): boolean;
+		/**
+		 * Test if `position` is in `range`. If the position is at the edges, will return false.
+		 * @internal
+		 */
+		static strictContainsPosition(range: IRange, position: IPosition): boolean;
 		/**
 		 * Test if range is in this range. If the range is equal to this range, will return true.
 		 */
@@ -1523,6 +1542,11 @@ declare namespace monaco.editor {
 		Visible = 3
 	}
 
+	export interface ThemeIcon {
+		readonly id: string;
+		readonly color?: ThemeColor;
+	}
+
 	export interface ThemeColor {
 		id: string;
 	}
@@ -1563,776 +1587,6 @@ declare namespace monaco.editor {
 		 * The column where the word ends.
 		 */
 		readonly endColumn: number;
-	}
-
-	/**
-	 * Vertical Lane in the overview ruler of the editor.
-	 */
-	export enum OverviewRulerLane {
-		Left = 1,
-		Center = 2,
-		Right = 4,
-		Full = 7
-	}
-
-	/**
-	 * Vertical Lane in the glyph margin of the editor.
-	 */
-	export enum GlyphMarginLane {
-		Left = 1,
-		Right = 2
-	}
-
-	/**
-	 * Position in the minimap to render the decoration.
-	 */
-	export enum MinimapPosition {
-		Inline = 1,
-		Gutter = 2
-	}
-
-	export interface IDecorationOptions {
-		/**
-		 * CSS color to render.
-		 * e.g.: rgba(100, 100, 100, 0.5) or a color from the color registry
-		 */
-		color: string | ThemeColor | undefined;
-		/**
-		 * CSS color to render.
-		 * e.g.: rgba(100, 100, 100, 0.5) or a color from the color registry
-		 */
-		darkColor?: string | ThemeColor;
-	}
-
-	export interface IModelDecorationGlyphMarginOptions {
-		/**
-		 * The position in the glyph margin.
-		 */
-		position: GlyphMarginLane;
-	}
-
-	/**
-	 * Options for rendering a model decoration in the overview ruler.
-	 */
-	export interface IModelDecorationOverviewRulerOptions extends IDecorationOptions {
-		/**
-		 * The position in the overview ruler.
-		 */
-		position: OverviewRulerLane;
-	}
-
-	/**
-	 * Options for rendering a model decoration in the minimap.
-	 */
-	export interface IModelDecorationMinimapOptions extends IDecorationOptions {
-		/**
-		 * The position in the minimap.
-		 */
-		position: MinimapPosition;
-	}
-
-	/**
-	 * Options for a model decoration.
-	 */
-	export interface IModelDecorationOptions {
-		/**
-		 * Customize the growing behavior of the decoration when typing at the edges of the decoration.
-		 * Defaults to TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
-		 */
-		stickiness?: TrackedRangeStickiness;
-		/**
-		 * CSS class name describing the decoration.
-		 */
-		className?: string | null;
-		/**
-		 * Indicates whether the decoration should span across the entire line when it continues onto the next line.
-		 */
-		shouldFillLineOnLineBreak?: boolean | null;
-		blockClassName?: string | null;
-		/**
-		 * Indicates if this block should be rendered after the last line.
-		 * In this case, the range must be empty and set to the last line.
-		 */
-		blockIsAfterEnd?: boolean | null;
-		blockDoesNotCollapse?: boolean | null;
-		blockPadding?: [top: number, right: number, bottom: number, left: number] | null;
-		/**
-		 * Message to be rendered when hovering over the glyph margin decoration.
-		 */
-		glyphMarginHoverMessage?: IMarkdownString | IMarkdownString[] | null;
-		/**
-		 * Array of MarkdownString to render as the decoration message.
-		 */
-		hoverMessage?: IMarkdownString | IMarkdownString[] | null;
-		/**
-		 * Should the decoration expand to encompass a whole line.
-		 */
-		isWholeLine?: boolean;
-		/**
-		 * Always render the decoration (even when the range it encompasses is collapsed).
-		 */
-		showIfCollapsed?: boolean;
-		/**
-		 * Specifies the stack order of a decoration.
-		 * A decoration with greater stack order is always in front of a decoration with
-		 * a lower stack order when the decorations are on the same line.
-		 */
-		zIndex?: number;
-		/**
-		 * If set, render this decoration in the overview ruler.
-		 */
-		overviewRuler?: IModelDecorationOverviewRulerOptions | null;
-		/**
-		 * If set, render this decoration in the minimap.
-		 */
-		minimap?: IModelDecorationMinimapOptions | null;
-		/**
-		 * If set, the decoration will be rendered in the glyph margin with this CSS class name.
-		 */
-		glyphMarginClassName?: string | null;
-		/**
-		 * If set and the decoration has {@link glyphMarginClassName} set, render this decoration
-		 * with the specified {@link IModelDecorationGlyphMarginOptions} in the glyph margin.
-		 */
-		glyphMargin?: IModelDecorationGlyphMarginOptions | null;
-		/**
-		 * If set, the decoration will be rendered in the lines decorations with this CSS class name.
-		 */
-		linesDecorationsClassName?: string | null;
-		/**
-		 * If set, the decoration will be rendered in the lines decorations with this CSS class name, but only for the first line in case of line wrapping.
-		 */
-		firstLineDecorationClassName?: string | null;
-		/**
-		 * If set, the decoration will be rendered in the margin (covering its full width) with this CSS class name.
-		 */
-		marginClassName?: string | null;
-		/**
-		 * If set, the decoration will be rendered inline with the text with this CSS class name.
-		 * Please use this only for CSS rules that must impact the text. For example, use `className`
-		 * to have a background color decoration.
-		 */
-		inlineClassName?: string | null;
-		/**
-		 * If there is an `inlineClassName` which affects letter spacing.
-		 */
-		inlineClassNameAffectsLetterSpacing?: boolean;
-		/**
-		 * If set, the decoration will be rendered before the text with this CSS class name.
-		 */
-		beforeContentClassName?: string | null;
-		/**
-		 * If set, the decoration will be rendered after the text with this CSS class name.
-		 */
-		afterContentClassName?: string | null;
-		/**
-		 * If set, text will be injected in the view after the range.
-		 */
-		after?: InjectedTextOptions | null;
-		/**
-		 * If set, text will be injected in the view before the range.
-		 */
-		before?: InjectedTextOptions | null;
-	}
-
-	/**
-	 * Configures text that is injected into the view without changing the underlying document.
-	*/
-	export interface InjectedTextOptions {
-		/**
-		 * Sets the text to inject. Must be a single line.
-		 */
-		readonly content: string;
-		/**
-		 * If set, the decoration will be rendered inline with the text with this CSS class name.
-		 */
-		readonly inlineClassName?: string | null;
-		/**
-		 * If there is an `inlineClassName` which affects letter spacing.
-		 */
-		readonly inlineClassNameAffectsLetterSpacing?: boolean;
-		/**
-		 * This field allows to attach data to this injected text.
-		 * The data can be read when injected texts at a given position are queried.
-		 */
-		readonly attachedData?: unknown;
-		/**
-		 * Configures cursor stops around injected text.
-		 * Defaults to {@link InjectedTextCursorStops.Both}.
-		*/
-		readonly cursorStops?: InjectedTextCursorStops | null;
-	}
-
-	export enum InjectedTextCursorStops {
-		Both = 0,
-		Right = 1,
-		Left = 2,
-		None = 3
-	}
-
-	/**
-	 * New model decorations.
-	 */
-	export interface IModelDeltaDecoration {
-		/**
-		 * Range that this decoration covers.
-		 */
-		range: IRange;
-		/**
-		 * Options associated with this decoration.
-		 */
-		options: IModelDecorationOptions;
-	}
-
-	/**
-	 * A decoration in the model.
-	 */
-	export interface IModelDecoration {
-		/**
-		 * Identifier for a decoration.
-		 */
-		readonly id: string;
-		/**
-		 * Identifier for a decoration's owner.
-		 */
-		readonly ownerId: number;
-		/**
-		 * Range that this decoration covers.
-		 */
-		readonly range: Range;
-		/**
-		 * Options associated with this decoration.
-		 */
-		readonly options: IModelDecorationOptions;
-	}
-
-	/**
-	 * End of line character preference.
-	 */
-	export enum EndOfLinePreference {
-		/**
-		 * Use the end of line character identified in the text buffer.
-		 */
-		TextDefined = 0,
-		/**
-		 * Use line feed (\n) as the end of line character.
-		 */
-		LF = 1,
-		/**
-		 * Use carriage return and line feed (\r\n) as the end of line character.
-		 */
-		CRLF = 2
-	}
-
-	/**
-	 * The default end of line to use when instantiating models.
-	 */
-	export enum DefaultEndOfLine {
-		/**
-		 * Use line feed (\n) as the end of line character.
-		 */
-		LF = 1,
-		/**
-		 * Use carriage return and line feed (\r\n) as the end of line character.
-		 */
-		CRLF = 2
-	}
-
-	/**
-	 * End of line character preference.
-	 */
-	export enum EndOfLineSequence {
-		/**
-		 * Use line feed (\n) as the end of line character.
-		 */
-		LF = 0,
-		/**
-		 * Use carriage return and line feed (\r\n) as the end of line character.
-		 */
-		CRLF = 1
-	}
-
-	/**
-	 * A single edit operation, that has an identifier.
-	 */
-	export interface IIdentifiedSingleEditOperation extends ISingleEditOperation {
-	}
-
-	export interface IValidEditOperation {
-		/**
-		 * The range to replace. This can be empty to emulate a simple insert.
-		 */
-		range: Range;
-		/**
-		 * The text to replace with. This can be empty to emulate a simple delete.
-		 */
-		text: string;
-	}
-
-	/**
-	 * A callback that can compute the cursor state after applying a series of edit operations.
-	 */
-	export interface ICursorStateComputer {
-		/**
-		 * A callback that can compute the resulting cursors state after some edit operations have been executed.
-		 */
-		(inverseEditOperations: IValidEditOperation[]): Selection[] | null;
-	}
-
-	export class TextModelResolvedOptions {
-		_textModelResolvedOptionsBrand: void;
-		readonly tabSize: number;
-		readonly indentSize: number;
-		readonly insertSpaces: boolean;
-		readonly defaultEOL: DefaultEndOfLine;
-		readonly trimAutoWhitespace: boolean;
-		readonly bracketPairColorizationOptions: BracketPairColorizationOptions;
-		get originalIndentSize(): number | 'tabSize';
-	}
-
-	export interface BracketPairColorizationOptions {
-		enabled: boolean;
-		independentColorPoolPerBracketType: boolean;
-	}
-
-	export interface ITextModelUpdateOptions {
-		tabSize?: number;
-		indentSize?: number | 'tabSize';
-		insertSpaces?: boolean;
-		trimAutoWhitespace?: boolean;
-		bracketColorizationOptions?: BracketPairColorizationOptions;
-	}
-
-	export class FindMatch {
-		_findMatchBrand: void;
-		readonly range: Range;
-		readonly matches: string[] | null;
-	}
-
-	/**
-	 * Describes the behavior of decorations when typing/editing near their edges.
-	 * Note: Please do not edit the values, as they very carefully match `DecorationRangeBehavior`
-	 */
-	export enum TrackedRangeStickiness {
-		AlwaysGrowsWhenTypingAtEdges = 0,
-		NeverGrowsWhenTypingAtEdges = 1,
-		GrowsOnlyWhenTypingBefore = 2,
-		GrowsOnlyWhenTypingAfter = 3
-	}
-
-	/**
-	 * Text snapshot that works like an iterator.
-	 * Will try to return chunks of roughly ~64KB size.
-	 * Will return null when finished.
-	 */
-	export interface ITextSnapshot {
-		read(): string | null;
-	}
-
-	/**
-	 * A model.
-	 */
-	export interface ITextModel {
-		/**
-		 * Gets the resource associated with this editor model.
-		 */
-		readonly uri: Uri;
-		/**
-		 * A unique identifier associated with this model.
-		 */
-		readonly id: string;
-		/**
-		 * Get the resolved options for this model.
-		 */
-		getOptions(): TextModelResolvedOptions;
-		/**
-		 * Get the current version id of the model.
-		 * Anytime a change happens to the model (even undo/redo),
-		 * the version id is incremented.
-		 */
-		getVersionId(): number;
-		/**
-		 * Get the alternative version id of the model.
-		 * This alternative version id is not always incremented,
-		 * it will return the same values in the case of undo-redo.
-		 */
-		getAlternativeVersionId(): number;
-		/**
-		 * Replace the entire text buffer value contained in this model.
-		 */
-		setValue(newValue: string | ITextSnapshot): void;
-		/**
-		 * Get the text stored in this model.
-		 * @param eol The end of line character preference. Defaults to `EndOfLinePreference.TextDefined`.
-		 * @param preserverBOM Preserve a BOM character if it was detected when the model was constructed.
-		 * @return The text.
-		 */
-		getValue(eol?: EndOfLinePreference, preserveBOM?: boolean): string;
-		/**
-		 * Get the text stored in this model.
-		 * @param preserverBOM Preserve a BOM character if it was detected when the model was constructed.
-		 * @return The text snapshot (it is safe to consume it asynchronously).
-		 */
-		createSnapshot(preserveBOM?: boolean): ITextSnapshot;
-		/**
-		 * Get the length of the text stored in this model.
-		 */
-		getValueLength(eol?: EndOfLinePreference, preserveBOM?: boolean): number;
-		/**
-		 * Get the text in a certain range.
-		 * @param range The range describing what text to get.
-		 * @param eol The end of line character preference. This will only be used for multiline ranges. Defaults to `EndOfLinePreference.TextDefined`.
-		 * @return The text.
-		 */
-		getValueInRange(range: IRange, eol?: EndOfLinePreference): string;
-		/**
-		 * Get the length of text in a certain range.
-		 * @param range The range describing what text length to get.
-		 * @return The text length.
-		 */
-		getValueLengthInRange(range: IRange, eol?: EndOfLinePreference): number;
-		/**
-		 * Get the character count of text in a certain range.
-		 * @param range The range describing what text length to get.
-		 */
-		getCharacterCountInRange(range: IRange, eol?: EndOfLinePreference): number;
-		/**
-		 * Get the number of lines in the model.
-		 */
-		getLineCount(): number;
-		/**
-		 * Get the text for a certain line.
-		 */
-		getLineContent(lineNumber: number): string;
-		/**
-		 * Get the text length for a certain line.
-		 */
-		getLineLength(lineNumber: number): number;
-		/**
-		 * Get the text for all lines.
-		 */
-		getLinesContent(): string[];
-		/**
-		 * Get the end of line sequence predominantly used in the text buffer.
-		 * @return EOL char sequence (e.g.: '\n' or '\r\n').
-		 */
-		getEOL(): string;
-		/**
-		 * Get the end of line sequence predominantly used in the text buffer.
-		 */
-		getEndOfLineSequence(): EndOfLineSequence;
-		/**
-		 * Get the minimum legal column for line at `lineNumber`
-		 */
-		getLineMinColumn(lineNumber: number): number;
-		/**
-		 * Get the maximum legal column for line at `lineNumber`
-		 */
-		getLineMaxColumn(lineNumber: number): number;
-		/**
-		 * Returns the column before the first non whitespace character for line at `lineNumber`.
-		 * Returns 0 if line is empty or contains only whitespace.
-		 */
-		getLineFirstNonWhitespaceColumn(lineNumber: number): number;
-		/**
-		 * Returns the column after the last non whitespace character for line at `lineNumber`.
-		 * Returns 0 if line is empty or contains only whitespace.
-		 */
-		getLineLastNonWhitespaceColumn(lineNumber: number): number;
-		/**
-		 * Create a valid position.
-		 */
-		validatePosition(position: IPosition): Position;
-		/**
-		 * Advances the given position by the given offset (negative offsets are also accepted)
-		 * and returns it as a new valid position.
-		 *
-		 * If the offset and position are such that their combination goes beyond the beginning or
-		 * end of the model, throws an exception.
-		 *
-		 * If the offset is such that the new position would be in the middle of a multi-byte
-		 * line terminator, throws an exception.
-		 */
-		modifyPosition(position: IPosition, offset: number): Position;
-		/**
-		 * Create a valid range.
-		 */
-		validateRange(range: IRange): Range;
-		/**
-		 * Converts the position to a zero-based offset.
-		 *
-		 * The position will be [adjusted](#TextDocument.validatePosition).
-		 *
-		 * @param position A position.
-		 * @return A valid zero-based offset.
-		 */
-		getOffsetAt(position: IPosition): number;
-		/**
-		 * Converts a zero-based offset to a position.
-		 *
-		 * @param offset A zero-based offset.
-		 * @return A valid [position](#Position).
-		 */
-		getPositionAt(offset: number): Position;
-		/**
-		 * Get a range covering the entire model.
-		 */
-		getFullModelRange(): Range;
-		/**
-		 * Returns if the model was disposed or not.
-		 */
-		isDisposed(): boolean;
-		/**
-		 * Search the model.
-		 * @param searchString The string used to search. If it is a regular expression, set `isRegex` to true.
-		 * @param searchOnlyEditableRange Limit the searching to only search inside the editable range of the model.
-		 * @param isRegex Used to indicate that `searchString` is a regular expression.
-		 * @param matchCase Force the matching to match lower/upper case exactly.
-		 * @param wordSeparators Force the matching to match entire words only. Pass null otherwise.
-		 * @param captureMatches The result will contain the captured groups.
-		 * @param limitResultCount Limit the number of results
-		 * @return The ranges where the matches are. It is empty if not matches have been found.
-		 */
-		findMatches(searchString: string, searchOnlyEditableRange: boolean, isRegex: boolean, matchCase: boolean, wordSeparators: string | null, captureMatches: boolean, limitResultCount?: number): FindMatch[];
-		/**
-		 * Search the model.
-		 * @param searchString The string used to search. If it is a regular expression, set `isRegex` to true.
-		 * @param searchScope Limit the searching to only search inside these ranges.
-		 * @param isRegex Used to indicate that `searchString` is a regular expression.
-		 * @param matchCase Force the matching to match lower/upper case exactly.
-		 * @param wordSeparators Force the matching to match entire words only. Pass null otherwise.
-		 * @param captureMatches The result will contain the captured groups.
-		 * @param limitResultCount Limit the number of results
-		 * @return The ranges where the matches are. It is empty if no matches have been found.
-		 */
-		findMatches(searchString: string, searchScope: IRange | IRange[], isRegex: boolean, matchCase: boolean, wordSeparators: string | null, captureMatches: boolean, limitResultCount?: number): FindMatch[];
-		/**
-		 * Search the model for the next match. Loops to the beginning of the model if needed.
-		 * @param searchString The string used to search. If it is a regular expression, set `isRegex` to true.
-		 * @param searchStart Start the searching at the specified position.
-		 * @param isRegex Used to indicate that `searchString` is a regular expression.
-		 * @param matchCase Force the matching to match lower/upper case exactly.
-		 * @param wordSeparators Force the matching to match entire words only. Pass null otherwise.
-		 * @param captureMatches The result will contain the captured groups.
-		 * @return The range where the next match is. It is null if no next match has been found.
-		 */
-		findNextMatch(searchString: string, searchStart: IPosition, isRegex: boolean, matchCase: boolean, wordSeparators: string | null, captureMatches: boolean): FindMatch | null;
-		/**
-		 * Search the model for the previous match. Loops to the end of the model if needed.
-		 * @param searchString The string used to search. If it is a regular expression, set `isRegex` to true.
-		 * @param searchStart Start the searching at the specified position.
-		 * @param isRegex Used to indicate that `searchString` is a regular expression.
-		 * @param matchCase Force the matching to match lower/upper case exactly.
-		 * @param wordSeparators Force the matching to match entire words only. Pass null otherwise.
-		 * @param captureMatches The result will contain the captured groups.
-		 * @return The range where the previous match is. It is null if no previous match has been found.
-		 */
-		findPreviousMatch(searchString: string, searchStart: IPosition, isRegex: boolean, matchCase: boolean, wordSeparators: string | null, captureMatches: boolean): FindMatch | null;
-		/**
-		 * Get the language associated with this model.
-		 */
-		getLanguageId(): string;
-		/**
-		 * Get the word under or besides `position`.
-		 * @param position The position to look for a word.
-		 * @return The word under or besides `position`. Might be null.
-		 */
-		getWordAtPosition(position: IPosition): IWordAtPosition | null;
-		/**
-		 * Get the word under or besides `position` trimmed to `position`.column
-		 * @param position The position to look for a word.
-		 * @return The word under or besides `position`. Will never be null.
-		 */
-		getWordUntilPosition(position: IPosition): IWordAtPosition;
-		/**
-		 * Perform a minimum amount of operations, in order to transform the decorations
-		 * identified by `oldDecorations` to the decorations described by `newDecorations`
-		 * and returns the new identifiers associated with the resulting decorations.
-		 *
-		 * @param oldDecorations Array containing previous decorations identifiers.
-		 * @param newDecorations Array describing what decorations should result after the call.
-		 * @param ownerId Identifies the editor id in which these decorations should appear. If no `ownerId` is provided, the decorations will appear in all editors that attach this model.
-		 * @return An array containing the new decorations identifiers.
-		 */
-		deltaDecorations(oldDecorations: string[], newDecorations: IModelDeltaDecoration[], ownerId?: number): string[];
-		/**
-		 * Get the options associated with a decoration.
-		 * @param id The decoration id.
-		 * @return The decoration options or null if the decoration was not found.
-		 */
-		getDecorationOptions(id: string): IModelDecorationOptions | null;
-		/**
-		 * Get the range associated with a decoration.
-		 * @param id The decoration id.
-		 * @return The decoration range or null if the decoration was not found.
-		 */
-		getDecorationRange(id: string): Range | null;
-		/**
-		 * Gets all the decorations for the line `lineNumber` as an array.
-		 * @param lineNumber The line number
-		 * @param ownerId If set, it will ignore decorations belonging to other owners.
-		 * @param filterOutValidation If set, it will ignore decorations specific to validation (i.e. warnings, errors).
-		 * @return An array with the decorations
-		 */
-		getLineDecorations(lineNumber: number, ownerId?: number, filterOutValidation?: boolean): IModelDecoration[];
-		/**
-		 * Gets all the decorations for the lines between `startLineNumber` and `endLineNumber` as an array.
-		 * @param startLineNumber The start line number
-		 * @param endLineNumber The end line number
-		 * @param ownerId If set, it will ignore decorations belonging to other owners.
-		 * @param filterOutValidation If set, it will ignore decorations specific to validation (i.e. warnings, errors).
-		 * @return An array with the decorations
-		 */
-		getLinesDecorations(startLineNumber: number, endLineNumber: number, ownerId?: number, filterOutValidation?: boolean): IModelDecoration[];
-		/**
-		 * Gets all the decorations in a range as an array. Only `startLineNumber` and `endLineNumber` from `range` are used for filtering.
-		 * So for now it returns all the decorations on the same line as `range`.
-		 * @param range The range to search in
-		 * @param ownerId If set, it will ignore decorations belonging to other owners.
-		 * @param filterOutValidation If set, it will ignore decorations specific to validation (i.e. warnings, errors).
-		 * @param onlyMinimapDecorations If set, it will return only decorations that render in the minimap.
-		 * @param onlyMarginDecorations If set, it will return only decorations that render in the glyph margin.
-		 * @return An array with the decorations
-		 */
-		getDecorationsInRange(range: IRange, ownerId?: number, filterOutValidation?: boolean, onlyMinimapDecorations?: boolean, onlyMarginDecorations?: boolean): IModelDecoration[];
-		/**
-		 * Gets all the decorations as an array.
-		 * @param ownerId If set, it will ignore decorations belonging to other owners.
-		 * @param filterOutValidation If set, it will ignore decorations specific to validation (i.e. warnings, errors).
-		 */
-		getAllDecorations(ownerId?: number, filterOutValidation?: boolean): IModelDecoration[];
-		/**
-		 * Gets all decorations that render in the glyph margin as an array.
-		 * @param ownerId If set, it will ignore decorations belonging to other owners.
-		 */
-		getAllMarginDecorations(ownerId?: number): IModelDecoration[];
-		/**
-		 * Gets all the decorations that should be rendered in the overview ruler as an array.
-		 * @param ownerId If set, it will ignore decorations belonging to other owners.
-		 * @param filterOutValidation If set, it will ignore decorations specific to validation (i.e. warnings, errors).
-		 */
-		getOverviewRulerDecorations(ownerId?: number, filterOutValidation?: boolean): IModelDecoration[];
-		/**
-		 * Gets all the decorations that contain injected text.
-		 * @param ownerId If set, it will ignore decorations belonging to other owners.
-		 */
-		getInjectedTextDecorations(ownerId?: number): IModelDecoration[];
-		/**
-		 * Normalize a string containing whitespace according to indentation rules (converts to spaces or to tabs).
-		 */
-		normalizeIndentation(str: string): string;
-		/**
-		 * Change the options of this model.
-		 */
-		updateOptions(newOpts: ITextModelUpdateOptions): void;
-		/**
-		 * Detect the indentation options for this model from its content.
-		 */
-		detectIndentation(defaultInsertSpaces: boolean, defaultTabSize: number): void;
-		/**
-		 * Close the current undo-redo element.
-		 * This offers a way to create an undo/redo stop point.
-		 */
-		pushStackElement(): void;
-		/**
-		 * Open the current undo-redo element.
-		 * This offers a way to remove the current undo/redo stop point.
-		 */
-		popStackElement(): void;
-		/**
-		 * Push edit operations, basically editing the model. This is the preferred way
-		 * of editing the model. The edit operations will land on the undo stack.
-		 * @param beforeCursorState The cursor state before the edit operations. This cursor state will be returned when `undo` or `redo` are invoked.
-		 * @param editOperations The edit operations.
-		 * @param cursorStateComputer A callback that can compute the resulting cursors state after the edit operations have been executed.
-		 * @return The cursor state returned by the `cursorStateComputer`.
-		 */
-		pushEditOperations(beforeCursorState: Selection[] | null, editOperations: IIdentifiedSingleEditOperation[], cursorStateComputer: ICursorStateComputer): Selection[] | null;
-		/**
-		 * Change the end of line sequence. This is the preferred way of
-		 * changing the eol sequence. This will land on the undo stack.
-		 */
-		pushEOL(eol: EndOfLineSequence): void;
-		/**
-		 * Edit the model without adding the edits to the undo stack.
-		 * This can have dire consequences on the undo stack! See @pushEditOperations for the preferred way.
-		 * @param operations The edit operations.
-		 * @return If desired, the inverse edit operations, that, when applied, will bring the model back to the previous state.
-		 */
-		applyEdits(operations: IIdentifiedSingleEditOperation[]): void;
-		applyEdits(operations: IIdentifiedSingleEditOperation[], computeUndoEdits: false): void;
-		applyEdits(operations: IIdentifiedSingleEditOperation[], computeUndoEdits: true): IValidEditOperation[];
-		/**
-		 * Change the end of line sequence without recording in the undo stack.
-		 * This can have dire consequences on the undo stack! See @pushEOL for the preferred way.
-		 */
-		setEOL(eol: EndOfLineSequence): void;
-		/**
-		 * An event emitted when the contents of the model have changed.
-		 * @event
-		 */
-		onDidChangeContent(listener: (e: IModelContentChangedEvent) => void): IDisposable;
-		/**
-		 * An event emitted when decorations of the model have changed.
-		 * @event
-		 */
-		readonly onDidChangeDecorations: IEvent<IModelDecorationsChangedEvent>;
-		/**
-		 * An event emitted when the model options have changed.
-		 * @event
-		 */
-		readonly onDidChangeOptions: IEvent<IModelOptionsChangedEvent>;
-		/**
-		 * An event emitted when the language associated with the model has changed.
-		 * @event
-		 */
-		readonly onDidChangeLanguage: IEvent<IModelLanguageChangedEvent>;
-		/**
-		 * An event emitted when the language configuration associated with the model has changed.
-		 * @event
-		 */
-		readonly onDidChangeLanguageConfiguration: IEvent<IModelLanguageConfigurationChangedEvent>;
-		/**
-		 * An event emitted when the model has been attached to the first editor or detached from the last editor.
-		 * @event
-		 */
-		readonly onDidChangeAttached: IEvent<void>;
-		/**
-		 * An event emitted right before disposing the model.
-		 * @event
-		 */
-		readonly onWillDispose: IEvent<void>;
-		/**
-		 * Destroy this model.
-		 */
-		dispose(): void;
-		/**
-		 * Returns if this model is attached to an editor or not.
-		 */
-		isAttachedToEditor(): boolean;
-	}
-
-	export enum PositionAffinity {
-		/**
-		 * Prefers the left most position.
-		*/
-		Left = 0,
-		/**
-		 * Prefers the right most position.
-		*/
-		Right = 1,
-		/**
-		 * No preference.
-		*/
-		None = 2,
-		/**
-		 * If the given position is on injected text, prefers the position left of it.
-		*/
-		LeftOfInjectedText = 3,
-		/**
-		 * If the given position is on injected text, prefers the position right of it.
-		*/
-		RightOfInjectedText = 4
 	}
 
 	/**
@@ -2415,6 +1669,11 @@ declare namespace monaco.editor {
 	 * A command that modifies text / cursor state on a model.
 	 */
 	export interface ICommand {
+		/**
+		 * Signal that this command is inserting automatic whitespace that should be trimmed if possible.
+		 * @internal
+		 */
+		readonly insertsAutoWhitespace?: boolean;
 		/**
 		 * Get the edit operations needed to execute this command.
 		 * @param model The model the command will execute on.
@@ -2565,6 +1824,16 @@ declare namespace monaco.editor {
 		 */
 		updateOptions(newOptions: IEditorOptions): void;
 		/**
+		 * Indicates that the editor becomes visible.
+		 * @internal
+		 */
+		onVisible(): void;
+		/**
+		 * Indicates that the editor becomes hidden.
+		 * @internal
+		 */
+		onHide(): void;
+		/**
 		 * Instructs the editor to remeasure its container. This method should
 		 * be called when the container of the editor gets resized.
 		 *
@@ -2598,6 +1867,11 @@ declare namespace monaco.editor {
 		 * Given a position, returns a column number that takes tab-widths into account.
 		 */
 		getVisibleColumnFromPosition(position: IPosition): number;
+		/**
+		 * Given a position, returns a column number that takes tab-widths into account.
+		 * @internal
+		 */
+		getStatusbarColumn(position: IPosition): number;
 		/**
 		 * Returns the primary position of the cursor.
 		 */
@@ -2750,6 +2024,48 @@ declare namespace monaco.editor {
 		 * These decorations will be automatically cleared when the editor's model changes.
 		 */
 		createDecorationsCollection(decorations?: IModelDeltaDecoration[]): IEditorDecorationsCollection;
+		/**
+		 * Change the decorations. All decorations added through this changeAccessor
+		 * will get the ownerId of the editor (meaning they will not show up in other
+		 * editors).
+		 * @see {@link ITextModel.changeDecorations}
+		 * @internal
+		 */
+		changeDecorations(callback: (changeAccessor: IModelDecorationsChangeAccessor) => any): any;
+	}
+
+	/**
+	 * A diff editor.
+	 *
+	 * @internal
+	 */
+	export interface IDiffEditor extends IEditor {
+		/**
+		 * Type the getModel() of IEditor.
+		 */
+		getModel(): IDiffEditorModel | null;
+		/**
+		 * Get the `original` editor.
+		 */
+		getOriginalEditor(): IEditor;
+		/**
+		 * Get the `modified` editor.
+		 */
+		getModifiedEditor(): IEditor;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface ICompositeCodeEditor {
+		/**
+		 * An event that signals that the active editor has changed
+		 */
+		readonly onDidChangeActiveEditor: IEvent<ICompositeCodeEditor>;
+		/**
+		 * The active code editor iff any
+		 */
+		readonly activeCodeEditor: IEditor | undefined;
 	}
 
 	/**
@@ -2810,12 +2126,172 @@ declare namespace monaco.editor {
 	}
 
 	/**
+	 * A diff editor contribution that gets created every time a new  diffeditor gets created and gets disposed when the diff editor gets disposed.
+	 * @internal
+	 */
+	export interface IDiffEditorContribution {
+		/**
+		 * Dispose this contribution.
+		 */
+		dispose(): void;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IThemeDecorationRenderOptions {
+		backgroundColor?: string | ThemeColor;
+		outline?: string;
+		outlineColor?: string | ThemeColor;
+		outlineStyle?: string;
+		outlineWidth?: string;
+		border?: string;
+		borderColor?: string | ThemeColor;
+		borderRadius?: string;
+		borderSpacing?: string;
+		borderStyle?: string;
+		borderWidth?: string;
+		fontStyle?: string;
+		fontWeight?: string;
+		fontSize?: string;
+		textDecoration?: string;
+		cursor?: string;
+		color?: string | ThemeColor;
+		opacity?: string;
+		letterSpacing?: string;
+		gutterIconPath?: UriComponents;
+		gutterIconSize?: string;
+		overviewRulerColor?: string | ThemeColor;
+		/**
+		 * @deprecated
+		 */
+		before?: IContentDecorationRenderOptions;
+		/**
+		 * @deprecated
+		 */
+		after?: IContentDecorationRenderOptions;
+		/**
+		 * @deprecated
+		 */
+		beforeInjectedText?: IContentDecorationRenderOptions & {
+			affectsLetterSpacing?: boolean;
+		};
+		/**
+		 * @deprecated
+		 */
+		afterInjectedText?: IContentDecorationRenderOptions & {
+			affectsLetterSpacing?: boolean;
+		};
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IContentDecorationRenderOptions {
+		contentText?: string;
+		contentIconPath?: UriComponents;
+		border?: string;
+		borderColor?: string | ThemeColor;
+		borderRadius?: string;
+		fontStyle?: string;
+		fontWeight?: string;
+		fontSize?: string;
+		fontFamily?: string;
+		textDecoration?: string;
+		color?: string | ThemeColor;
+		backgroundColor?: string | ThemeColor;
+		opacity?: string;
+		verticalAlign?: string;
+		margin?: string;
+		padding?: string;
+		width?: string;
+		height?: string;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IDecorationRenderOptions extends IThemeDecorationRenderOptions {
+		isWholeLine?: boolean;
+		rangeBehavior?: TrackedRangeStickiness;
+		overviewRulerLane?: OverviewRulerLane;
+		light?: IThemeDecorationRenderOptions;
+		dark?: IThemeDecorationRenderOptions;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IThemeDecorationInstanceRenderOptions {
+		/**
+		 * @deprecated
+		 */
+		before?: IContentDecorationRenderOptions;
+		/**
+		 * @deprecated
+		 */
+		after?: IContentDecorationRenderOptions;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IDecorationInstanceRenderOptions extends IThemeDecorationInstanceRenderOptions {
+		light?: IThemeDecorationInstanceRenderOptions;
+		dark?: IThemeDecorationInstanceRenderOptions;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IDecorationOptions {
+		range: IRange;
+		hoverMessage?: IMarkdownString | IMarkdownString[];
+		renderOptions?: IDecorationInstanceRenderOptions;
+	}
+
+	/**
 	 * The type of the `IEditor`.
 	 */
 	export const EditorType: {
 		ICodeEditor: string;
 		IDiffEditor: string;
 	};
+
+	/**
+	 * @internal
+	 */
+	export interface TypePayload {
+		text: string;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface ReplacePreviousCharPayload {
+		text: string;
+		replaceCharCnt: number;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CompositionTypePayload {
+		text: string;
+		replacePrevCharCnt: number;
+		replaceNextCharCnt: number;
+		positionDelta: number;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface PastePayload {
+		text: string;
+		pasteOnNewLine: boolean;
+		multicursorText: string[] | null;
+		mode: string | null;
+	}
 
 	/**
 	 * An event describing that the current language associated with a model has changed.
@@ -2901,110 +2377,29 @@ declare namespace monaco.editor {
 		readonly affectsGlyphMargin: boolean;
 	}
 
+	/**
+	 * An event describing that some ranges of lines have been tokenized (their tokens have changed).
+	 * @internal
+	 */
+	export interface IModelTokensChangedEvent {
+		readonly semanticTokensApplied: boolean;
+		readonly ranges: {
+			/**
+			 * The start of the range (inclusive)
+			 */
+			readonly fromLineNumber: number;
+			/**
+			 * The end of the range (inclusive)
+			 */
+			readonly toLineNumber: number;
+		}[];
+	}
+
 	export interface IModelOptionsChangedEvent {
 		readonly tabSize: boolean;
 		readonly indentSize: boolean;
 		readonly insertSpaces: boolean;
 		readonly trimAutoWhitespace: boolean;
-	}
-
-	/**
-	 * Describes the reason the cursor has changed its position.
-	 */
-	export enum CursorChangeReason {
-		/**
-		 * Unknown or not set.
-		 */
-		NotSet = 0,
-		/**
-		 * A `model.setValue()` was called.
-		 */
-		ContentFlush = 1,
-		/**
-		 * The `model` has been changed outside of this cursor and the cursor recovers its position from associated markers.
-		 */
-		RecoverFromMarkers = 2,
-		/**
-		 * There was an explicit user gesture.
-		 */
-		Explicit = 3,
-		/**
-		 * There was a Paste.
-		 */
-		Paste = 4,
-		/**
-		 * There was an Undo.
-		 */
-		Undo = 5,
-		/**
-		 * There was a Redo.
-		 */
-		Redo = 6
-	}
-
-	/**
-	 * An event describing that the cursor position has changed.
-	 */
-	export interface ICursorPositionChangedEvent {
-		/**
-		 * Primary cursor's position.
-		 */
-		readonly position: Position;
-		/**
-		 * Secondary cursors' position.
-		 */
-		readonly secondaryPositions: Position[];
-		/**
-		 * Reason.
-		 */
-		readonly reason: CursorChangeReason;
-		/**
-		 * Source of the call that caused the event.
-		 */
-		readonly source: string;
-	}
-
-	/**
-	 * An event describing that the cursor selection has changed.
-	 */
-	export interface ICursorSelectionChangedEvent {
-		/**
-		 * The primary selection.
-		 */
-		readonly selection: Selection;
-		/**
-		 * The secondary selections.
-		 */
-		readonly secondarySelections: Selection[];
-		/**
-		 * The model version id.
-		 */
-		readonly modelVersionId: number;
-		/**
-		 * The old selections.
-		 */
-		readonly oldSelections: Selection[] | null;
-		/**
-		 * The model version id the that `oldSelections` refer to.
-		 */
-		readonly oldModelVersionId: number;
-		/**
-		 * Source of the call that caused the event.
-		 */
-		readonly source: string;
-		/**
-		 * Reason.
-		 */
-		readonly reason: CursorChangeReason;
-	}
-
-	export enum AccessibilitySupport {
-		/**
-		 * This should be the browser case where it is not known if a screen reader is attached or no.
-		 */
-		Unknown = 0,
-		Disabled = 1,
-		Enabled = 2
 	}
 
 	/**
@@ -3838,6 +3233,11 @@ declare namespace monaco.editor {
 	 * An event describing that the configuration of the editor has changed.
 	 */
 	export class ConfigurationChangedEvent {
+		private readonly _values;
+		/**
+		 * @internal
+		 */
+		constructor(values: boolean[]);
 		hasChanged(id: EditorOption): boolean;
 	}
 
@@ -3848,10 +3248,43 @@ declare namespace monaco.editor {
 		get<T extends EditorOption>(id: T): FindComputedEditorOptionValueById<T>;
 	}
 
+	/**
+	 * @internal
+	 */
+	export interface IEnvironmentalOptions {
+		readonly memory: undefined | null;
+		readonly outerWidth: number;
+		readonly outerHeight: number;
+		readonly fontInfo: FontInfo;
+		readonly extraEditorClassName: string;
+		readonly isDominatedByLongLines: boolean;
+		readonly viewLineCount: number;
+		readonly lineNumbersDigitCount: number;
+		readonly emptySelectionClipboard: boolean;
+		readonly pixelRatio: number;
+		readonly tabFocusMode: boolean;
+		readonly accessibilitySupport: AccessibilitySupport;
+		readonly glyphMarginDecorationLaneCount: number;
+	}
+
 	export interface IEditorOption<K extends EditorOption, V> {
 		readonly id: K;
 		readonly name: string;
 		defaultValue: V;
+		/**
+		 * @internal
+		 */
+		readonly schema: any | {
+			[path: string]: any;
+		} | undefined;
+		/**
+		 * @internal
+		 */
+		validate(input: any): V;
+		/**
+		 * @internal
+		 */
+		compute(env: IEnvironmentalOptions, options: IComputedEditorOptions, value: V): V;
 		/**
 		 * Might modify `value`.
 		*/
@@ -3957,6 +3390,11 @@ declare namespace monaco.editor {
 		 */
 		autoFindInSelection?: 'never' | 'always' | 'multiline';
 		addExtraSpaceOnTop?: boolean;
+		/**
+		 * @internal
+		 * Controls if the Find Widget should read or modify the shared find clipboard on macOS
+		 */
+		globalFindClipboard?: boolean;
 		/**
 		 * Controls whether the search result and diff result automatically restarts from the beginning (or the end) when no further matches can be found
 		 */
@@ -4129,6 +3567,51 @@ declare namespace monaco.editor {
 		readonly minimapCanvasInnerHeight: number;
 		readonly minimapCanvasOuterWidth: number;
 		readonly minimapCanvasOuterHeight: number;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IEditorLayoutComputerInput {
+		readonly outerWidth: number;
+		readonly outerHeight: number;
+		readonly isDominatedByLongLines: boolean;
+		readonly lineHeight: number;
+		readonly lineNumbersDigitCount: number;
+		readonly typicalHalfwidthCharacterWidth: number;
+		readonly maxDigitWidth: number;
+		readonly pixelRatio: number;
+		readonly glyphMargin: boolean;
+		readonly lineDecorationsWidth: string | number;
+		readonly folding: boolean;
+		readonly minimap: Readonly<Required<IEditorMinimapOptions>>;
+		readonly scrollbar: InternalEditorScrollbarOptions;
+		readonly lineNumbers: InternalEditorRenderLineNumbersOptions;
+		readonly lineNumbersMinChars: number;
+		readonly scrollBeyondLastLine: boolean;
+		readonly wordWrap: 'wordWrapColumn' | 'on' | 'off' | 'bounded';
+		readonly wordWrapColumn: number;
+		readonly wordWrapMinified: boolean;
+		readonly accessibilitySupport: AccessibilitySupport;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IMinimapLayoutInput {
+		readonly outerWidth: number;
+		readonly outerHeight: number;
+		readonly lineHeight: number;
+		readonly typicalHalfwidthCharacterWidth: number;
+		readonly pixelRatio: number;
+		readonly scrollBeyondLastLine: boolean;
+		readonly paddingTop: number;
+		readonly paddingBottom: number;
+		readonly minimap: Readonly<Required<IEditorMinimapOptions>>;
+		readonly verticalScrollbarWidth: number;
+		readonly viewLineCount: number;
+		readonly remainingWidth: number;
+		readonly isViewportWrapping: boolean;
 	}
 
 	export enum ShowAiIconMode {
@@ -5063,6 +4546,96 @@ declare namespace monaco.editor {
 	}
 
 	/**
+	 * Describes the reason the cursor has changed its position.
+	 */
+	export enum CursorChangeReason {
+		/**
+		 * Unknown or not set.
+		 */
+		NotSet = 0,
+		/**
+		 * A `model.setValue()` was called.
+		 */
+		ContentFlush = 1,
+		/**
+		 * The `model` has been changed outside of this cursor and the cursor recovers its position from associated markers.
+		 */
+		RecoverFromMarkers = 2,
+		/**
+		 * There was an explicit user gesture.
+		 */
+		Explicit = 3,
+		/**
+		 * There was a Paste.
+		 */
+		Paste = 4,
+		/**
+		 * There was an Undo.
+		 */
+		Undo = 5,
+		/**
+		 * There was a Redo.
+		 */
+		Redo = 6
+	}
+
+	/**
+	 * An event describing that the cursor position has changed.
+	 */
+	export interface ICursorPositionChangedEvent {
+		/**
+		 * Primary cursor's position.
+		 */
+		readonly position: Position;
+		/**
+		 * Secondary cursors' position.
+		 */
+		readonly secondaryPositions: Position[];
+		/**
+		 * Reason.
+		 */
+		readonly reason: CursorChangeReason;
+		/**
+		 * Source of the call that caused the event.
+		 */
+		readonly source: string;
+	}
+
+	/**
+	 * An event describing that the cursor selection has changed.
+	 */
+	export interface ICursorSelectionChangedEvent {
+		/**
+		 * The primary selection.
+		 */
+		readonly selection: Selection;
+		/**
+		 * The secondary selections.
+		 */
+		readonly secondarySelections: Selection[];
+		/**
+		 * The model version id.
+		 */
+		readonly modelVersionId: number;
+		/**
+		 * The old selections.
+		 */
+		readonly oldSelections: Selection[] | null;
+		/**
+		 * The model version id the that `oldSelections` refer to.
+		 */
+		readonly oldModelVersionId: number;
+		/**
+		 * Source of the call that caused the event.
+		 */
+		readonly source: string;
+		/**
+		 * Reason.
+		 */
+		readonly reason: CursorChangeReason;
+	}
+
+	/**
 	 * A view zone is a full horizontal rectangle that 'pushes' text down.
 	 * The editor reserves space for view zones when rendering.
 	 */
@@ -5456,6 +5029,10 @@ declare namespace monaco.editor {
 
 	export interface IMouseTargetContentTextData {
 		readonly mightBeForeignElement: boolean;
+		/**
+		 * @internal
+		 */
+		readonly injectedText: any | null;
 	}
 
 	export interface IMouseTargetContentText extends IBaseMouseTarget {
@@ -5533,6 +5110,15 @@ declare namespace monaco.editor {
 		readonly languageId: string | null;
 	}
 
+	/**
+	 * Editor aria options.
+	 * @internal
+	 */
+	export interface IEditorAriaOptions {
+		activeDescendant: string | undefined;
+		role?: string;
+	}
+
 	export interface IDiffEditorConstructionOptions extends IDiffEditorOptions, IEditorConstructionOptions {
 		/**
 		 * Place overflow widgets inside an external DOM node.
@@ -5553,6 +5139,16 @@ declare namespace monaco.editor {
 	 * A rich code editor.
 	 */
 	export interface ICodeEditor extends IEditor {
+		/**
+		 * This editor is used as an alternative to an <input> box, i.e. as a simple widget.
+		 * @internal
+		 */
+		readonly isSimpleWidget: boolean;
+		/**
+		 * The editor's scoped context key service.
+		 * @internal
+		 */
+		readonly contextKeyService: any;
 		/**
 		 * An event emitted when the content of the current model has changed.
 		 * @event
@@ -5599,6 +5195,11 @@ declare namespace monaco.editor {
 		 */
 		readonly onDidChangeModelDecorations: IEvent<IModelDecorationsChangedEvent>;
 		/**
+		 * An event emitted when the tokens of the current model have changed.
+		 * @internal
+		 */
+		readonly onDidChangeModelTokens: IEvent<IModelTokensChangedEvent>;
+		/**
 		 * An event emitted when the text inside this editor gained focus (i.e. cursor starts blinking).
 		 * @event
 		 */
@@ -5618,6 +5219,18 @@ declare namespace monaco.editor {
 		 * @event
 		 */
 		readonly onDidBlurEditorWidget: IEvent<void>;
+		/**
+		 * An event emitted before interpreting typed characters (on the keyboard).
+		 * @event
+		 * @internal
+		 */
+		readonly onWillType: IEvent<string>;
+		/**
+		 * An event emitted after interpreting typed characters (on the keyboard).
+		 * @event
+		 * @internal
+		 */
+		readonly onDidType: IEvent<string>;
 		/**
 		 * An event emitted after composition has started.
 		 */
@@ -5647,6 +5260,33 @@ declare namespace monaco.editor {
 		 */
 		readonly onMouseDown: IEvent<IEditorMouseEvent>;
 		/**
+		 * An event emitted on a "mousedrag".
+		 * @internal
+		 * @event
+		 */
+		readonly onMouseDrag: IEvent<IEditorMouseEvent>;
+		/**
+		 * An event emitted on a "mousedrop".
+		 * @internal
+		 * @event
+		 */
+		readonly onMouseDrop: IEvent<IPartialEditorMouseEvent>;
+		/**
+		 * An event emitted on a "mousedropcanceled".
+		 * @internal
+		 * @event
+		 */
+		readonly onMouseDropCanceled: IEvent<void>;
+		/**
+		 * An event emitted when content is dropped into the editor.
+		 * @internal
+		 * @event
+		 */
+		readonly onDropIntoEditor: IEvent<{
+			readonly position: IPosition;
+			readonly event: DragEvent;
+		}>;
+		/**
 		 * An event emitted on a "contextmenu".
 		 * @event
 		 */
@@ -5661,6 +5301,12 @@ declare namespace monaco.editor {
 		 * @event
 		 */
 		readonly onMouseLeave: IEvent<IPartialEditorMouseEvent>;
+		/**
+		 * An event emitted on a "mousewheel"
+		 * @event
+		 * @internal
+		 */
+		readonly onMouseWheel: IEvent<any>;
 		/**
 		 * An event emitted on a "keyup".
 		 * @event
@@ -5710,6 +5356,11 @@ declare namespace monaco.editor {
 		 */
 		getContribution<T extends IEditorContribution>(id: string): T | null;
 		/**
+		 * Execute `fn` with the editor's services.
+		 * @internal
+		 */
+		invokeWithinContext<T>(fn: (accessor: any) => T): T;
+		/**
 		 * Type the getModel() of IEditor.
 		 */
 		getModel(): ITextModel | null;
@@ -5734,6 +5385,14 @@ declare namespace monaco.editor {
 		 * Returns the editor's configuration (without any validation or defaults).
 		 */
 		getRawOptions(): IEditorOptions;
+		/**
+		 * @internal
+		 */
+		getOverflowWidgetsDomNode(): HTMLElement | undefined;
+		/**
+		 * @internal
+		 */
+		getConfiguredWordAtPosition(position: Position): IWordAtPosition | null;
 		/**
 		 * Get value of the current model attached to this editor.
 		 * @see {@link ITextModel.getValue}
@@ -5825,6 +5484,10 @@ declare namespace monaco.editor {
 		 */
 		executeCommands(source: string | null | undefined, commands: (ICommand | null)[]): void;
 		/**
+		 * @internal
+		 */
+		_getViewModel(): any | null;
+		/**
 		 * Get all the decorations on a line (filtering out decorations from other editors).
 		 */
 		getLineDecorations(lineNumber: number): IModelDecoration[] | null;
@@ -5843,6 +5506,18 @@ declare namespace monaco.editor {
 		 */
 		removeDecorations(decorationIds: string[]): void;
 		/**
+		 * @internal
+		 */
+		setDecorationsByType(description: string, decorationTypeKey: string, ranges: IDecorationOptions[]): void;
+		/**
+		 * @internal
+		 */
+		setDecorationsByTypeFast(decorationTypeKey: string, ranges: IRange[]): void;
+		/**
+		 * @internal
+		 */
+		removeDecorationsByType(decorationTypeKey: string): void;
+		/**
 		 * Get the layout info for the editor.
 		 */
 		getLayoutInfo(): EditorLayoutInfo;
@@ -5851,6 +5526,15 @@ declare namespace monaco.editor {
 		 * Does not account for horizontal scrolling.
 		 */
 		getVisibleRanges(): Range[];
+		/**
+		 * @internal
+		 */
+		getVisibleRangesPlusViewportAboveBelow(): Range[];
+		/**
+		 * Get the view zones.
+		 * @internal
+		 */
+		getWhitespaces(): IEditorWhitespace[];
 		/**
 		 * Get the vertical position (top offset) for the line's top w.r.t. to the first line.
 		 */
@@ -5864,9 +5548,26 @@ declare namespace monaco.editor {
 		 */
 		getTopForPosition(lineNumber: number, column: number): number;
 		/**
+		 * Set the model ranges that will be hidden in the view.
+		 * Hidden areas are stored per source.
+		 * @internal
+		 */
+		setHiddenAreas(ranges: IRange[], source?: unknown): void;
+		/**
+		 * Sets the editor aria options, primarily the active descendent.
+		 * @internal
+		 */
+		setAriaOptions(options: IEditorAriaOptions): void;
+		/**
 		 * Write the screen reader content to be the current selection
 		 */
 		writeScreenReaderContent(reason: string): void;
+		/**
+		 * @internal
+		 */
+		getTelemetryData(): {
+			[key: string]: any;
+		} | undefined;
 		/**
 		 * Returns the editor's container dom node
 		 */
@@ -5951,6 +5652,11 @@ declare namespace monaco.editor {
 		 * Apply the same font settings as the editor to `target`.
 		 */
 		applyFontInfo(target: HTMLElement): void;
+		/**
+		 * Check if the current instance has a model attached.
+		 * @internal
+		 */
+		hasModel(): this is IActiveCodeEditor;
 		setBanner(bannerDomNode: HTMLElement | null, height: number): void;
 		/**
 		 * Is called when the model has been set, view state was restored and options are updated.
@@ -5960,9 +5666,74 @@ declare namespace monaco.editor {
 	}
 
 	/**
+	 * @internal
+	 */
+	export interface IActiveCodeEditor extends ICodeEditor {
+		/**
+		 * Returns the primary position of the cursor.
+		 */
+		getPosition(): Position;
+		/**
+		 * Returns the primary selection of the editor.
+		 */
+		getSelection(): Selection;
+		/**
+		 * Returns all the selections of the editor.
+		 */
+		getSelections(): Selection[];
+		/**
+		 * Saves current view state of the editor in a serializable object.
+		 */
+		saveViewState(): ICodeEditorViewState;
+		/**
+		 * Type the getModel() of IEditor.
+		 */
+		getModel(): ITextModel;
+		/**
+		 * @internal
+		 */
+		_getViewModel(): any;
+		/**
+		 * Get all the decorations on a line (filtering out decorations from other editors).
+		 */
+		getLineDecorations(lineNumber: number): IModelDecoration[];
+		/**
+		 * Returns the editor's dom node
+		 */
+		getDomNode(): HTMLElement;
+		/**
+		 * Get the visible position for `position`.
+		 * The result position takes scrolling into account and is relative to the top left corner of the editor.
+		 * Explanation 1: the results of this method will change for the same `position` if the user scrolls the editor.
+		 * Explanation 2: the results of this method will not change if the container of the editor gets repositioned.
+		 * Warning: the results of this method are inaccurate for positions that are outside the current editor viewport.
+		 */
+		getScrolledVisiblePosition(position: IPosition): {
+			top: number;
+			left: number;
+			height: number;
+		};
+	}
+
+	/**
 	 * A rich diff editor.
 	 */
 	export interface IDiffEditor extends IEditor {
+		/**
+		 * Returns whether the diff editor is ignoring trim whitespace or not.
+		 * @internal
+		 */
+		readonly ignoreTrimWhitespace: boolean;
+		/**
+		 * Returns whether the diff editor is rendering side by side or inline.
+		 * @internal
+		 */
+		readonly renderSideBySide: boolean;
+		/**
+		 * Timeout in milliseconds after which diff computation is cancelled.
+		 * @internal
+		 */
+		readonly maxComputationTime: number;
 		/**
 		 * @see {@link ICodeEditor.getContainerDomNode}
 		 */
@@ -6012,9 +5783,18 @@ declare namespace monaco.editor {
 		 */
 		getLineChanges(): ILineChange[] | null;
 		/**
+		 * Get the computed diff information.
+		 * @internal
+		 */
+		getDiffComputationResult(): any | null;
+		/**
 		 * Update the editor's options after the editor has been created.
 		 */
 		updateOptions(newOptions: IDiffEditorOptions): void;
+		/**
+		 * @internal
+		 */
+		setBoundarySashes(sashes: any): void;
 		/**
 		 * Jumps to the next or previous diff.
 		 */
@@ -6041,10 +5821,55 @@ declare namespace monaco.editor {
 		readonly middotWidth: number;
 		readonly wsmiddotWidth: number;
 		readonly maxDigitWidth: number;
+		/**
+		 * @internal
+		 */
+		constructor(opts: {
+			pixelRatio: number;
+			fontFamily: string;
+			fontWeight: string;
+			fontSize: number;
+			fontFeatureSettings: string;
+			fontVariationSettings: string;
+			lineHeight: number;
+			letterSpacing: number;
+			isMonospace: boolean;
+			typicalHalfwidthCharacterWidth: number;
+			typicalFullwidthCharacterWidth: number;
+			canUseHalfwidthRightwardsArrow: boolean;
+			spaceWidth: number;
+			middotWidth: number;
+			wsmiddotWidth: number;
+			maxDigitWidth: number;
+		}, isTrusted: boolean);
+		/**
+		 * @internal
+		 */
+		equals(other: FontInfo): boolean;
 	}
 
 	export class BareFontInfo {
 		readonly _bareFontInfoBrand: void;
+		/**
+		 * @internal
+		 */
+		static createFromValidatedSettings(options: any, pixelRatio: number, ignoreEditorZoom: boolean): BareFontInfo;
+		/**
+		 * @internal
+		 */
+		static createFromRawSettings(opts: {
+			fontFamily?: string;
+			fontWeight?: string;
+			fontSize?: number;
+			fontLigatures?: boolean | string;
+			fontVariations?: boolean | string;
+			lineHeight?: number;
+			letterSpacing?: number;
+		}, pixelRatio: number, ignoreEditorZoom?: boolean): BareFontInfo;
+		/**
+		 * @internal
+		 */
+		private static _create;
 		readonly pixelRatio: number;
 		readonly fontFamily: string;
 		readonly fontWeight: string;
@@ -6053,7 +5878,1244 @@ declare namespace monaco.editor {
 		readonly fontVariationSettings: string;
 		readonly lineHeight: number;
 		readonly letterSpacing: number;
+		/**
+		 * @internal
+		 */
+		protected constructor(opts: {
+			pixelRatio: number;
+			fontFamily: string;
+			fontWeight: string;
+			fontSize: number;
+			fontFeatureSettings: string;
+			fontVariationSettings: string;
+			lineHeight: number;
+			letterSpacing: number;
+		});
+		/**
+		 * @internal
+		 */
+		getId(): string;
+		/**
+		 * @internal
+		 */
+		getMassagedFontFamily(): string;
+		private static _wrapInQuotes;
 	}
+
+	/**
+	 * Vertical Lane in the overview ruler of the editor.
+	 */
+	export enum OverviewRulerLane {
+		Left = 1,
+		Center = 2,
+		Right = 4,
+		Full = 7
+	}
+
+	/**
+	 * Vertical Lane in the glyph margin of the editor.
+	 */
+	export enum GlyphMarginLane {
+		Left = 1,
+		Right = 2
+	}
+
+	/**
+	 * Position in the minimap to render the decoration.
+	 */
+	export enum MinimapPosition {
+		Inline = 1,
+		Gutter = 2
+	}
+
+	export interface IDecorationOptions {
+		/**
+		 * CSS color to render.
+		 * e.g.: rgba(100, 100, 100, 0.5) or a color from the color registry
+		 */
+		color: string | ThemeColor | undefined;
+		/**
+		 * CSS color to render.
+		 * e.g.: rgba(100, 100, 100, 0.5) or a color from the color registry
+		 */
+		darkColor?: string | ThemeColor;
+	}
+
+	export interface IModelDecorationGlyphMarginOptions {
+		/**
+		 * The position in the glyph margin.
+		 */
+		position: GlyphMarginLane;
+	}
+
+	/**
+	 * Options for rendering a model decoration in the overview ruler.
+	 */
+	export interface IModelDecorationOverviewRulerOptions extends IDecorationOptions {
+		/**
+		 * The position in the overview ruler.
+		 */
+		position: OverviewRulerLane;
+	}
+
+	/**
+	 * Options for rendering a model decoration in the minimap.
+	 */
+	export interface IModelDecorationMinimapOptions extends IDecorationOptions {
+		/**
+		 * The position in the minimap.
+		 */
+		position: MinimapPosition;
+	}
+
+	/**
+	 * Options for a model decoration.
+	 */
+	export interface IModelDecorationOptions {
+		/**
+		 * A debug description that can be used for inspecting model decorations.
+		 * @internal
+		 */
+		description: string;
+		/**
+		 * Customize the growing behavior of the decoration when typing at the edges of the decoration.
+		 * Defaults to TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
+		 */
+		stickiness?: TrackedRangeStickiness;
+		/**
+		 * CSS class name describing the decoration.
+		 */
+		className?: string | null;
+		/**
+		 * Indicates whether the decoration should span across the entire line when it continues onto the next line.
+		 */
+		shouldFillLineOnLineBreak?: boolean | null;
+		blockClassName?: string | null;
+		/**
+		 * Indicates if this block should be rendered after the last line.
+		 * In this case, the range must be empty and set to the last line.
+		 */
+		blockIsAfterEnd?: boolean | null;
+		blockDoesNotCollapse?: boolean | null;
+		blockPadding?: [top: number, right: number, bottom: number, left: number] | null;
+		/**
+		 * Message to be rendered when hovering over the glyph margin decoration.
+		 */
+		glyphMarginHoverMessage?: IMarkdownString | IMarkdownString[] | null;
+		/**
+		 * Array of MarkdownString to render as the decoration message.
+		 */
+		hoverMessage?: IMarkdownString | IMarkdownString[] | null;
+		/**
+		 * Should the decoration expand to encompass a whole line.
+		 */
+		isWholeLine?: boolean;
+		/**
+		 * Always render the decoration (even when the range it encompasses is collapsed).
+		 */
+		showIfCollapsed?: boolean;
+		/**
+		 * Collapse the decoration if its entire range is being replaced via an edit.
+		 * @internal
+		 */
+		collapseOnReplaceEdit?: boolean;
+		/**
+		 * Specifies the stack order of a decoration.
+		 * A decoration with greater stack order is always in front of a decoration with
+		 * a lower stack order when the decorations are on the same line.
+		 */
+		zIndex?: number;
+		/**
+		 * If set, render this decoration in the overview ruler.
+		 */
+		overviewRuler?: IModelDecorationOverviewRulerOptions | null;
+		/**
+		 * If set, render this decoration in the minimap.
+		 */
+		minimap?: IModelDecorationMinimapOptions | null;
+		/**
+		 * If set, the decoration will be rendered in the glyph margin with this CSS class name.
+		 */
+		glyphMarginClassName?: string | null;
+		/**
+		 * If set and the decoration has {@link glyphMarginClassName} set, render this decoration
+		 * with the specified {@link IModelDecorationGlyphMarginOptions} in the glyph margin.
+		 */
+		glyphMargin?: IModelDecorationGlyphMarginOptions | null;
+		/**
+		 * If set, the decoration will be rendered in the lines decorations with this CSS class name.
+		 */
+		linesDecorationsClassName?: string | null;
+		/**
+		 * If set, the decoration will be rendered in the lines decorations with this CSS class name, but only for the first line in case of line wrapping.
+		 */
+		firstLineDecorationClassName?: string | null;
+		/**
+		 * If set, the decoration will be rendered in the margin (covering its full width) with this CSS class name.
+		 */
+		marginClassName?: string | null;
+		/**
+		 * If set, the decoration will be rendered inline with the text with this CSS class name.
+		 * Please use this only for CSS rules that must impact the text. For example, use `className`
+		 * to have a background color decoration.
+		 */
+		inlineClassName?: string | null;
+		/**
+		 * If there is an `inlineClassName` which affects letter spacing.
+		 */
+		inlineClassNameAffectsLetterSpacing?: boolean;
+		/**
+		 * If set, the decoration will be rendered before the text with this CSS class name.
+		 */
+		beforeContentClassName?: string | null;
+		/**
+		 * If set, the decoration will be rendered after the text with this CSS class name.
+		 */
+		afterContentClassName?: string | null;
+		/**
+		 * If set, text will be injected in the view after the range.
+		 */
+		after?: InjectedTextOptions | null;
+		/**
+		 * If set, text will be injected in the view before the range.
+		 */
+		before?: InjectedTextOptions | null;
+		/**
+		 * If set, this decoration will not be rendered for comment tokens.
+		 * @internal
+		*/
+		hideInCommentTokens?: boolean | null;
+		/**
+		 * If set, this decoration will not be rendered for string tokens.
+		 * @internal
+		*/
+		hideInStringTokens?: boolean | null;
+	}
+
+	/**
+	 * Configures text that is injected into the view without changing the underlying document.
+	*/
+	export interface InjectedTextOptions {
+		/**
+		 * Sets the text to inject. Must be a single line.
+		 */
+		readonly content: string;
+		/**
+		 * If set, the decoration will be rendered inline with the text with this CSS class name.
+		 */
+		readonly inlineClassName?: string | null;
+		/**
+		 * If there is an `inlineClassName` which affects letter spacing.
+		 */
+		readonly inlineClassNameAffectsLetterSpacing?: boolean;
+		/**
+		 * This field allows to attach data to this injected text.
+		 * The data can be read when injected texts at a given position are queried.
+		 */
+		readonly attachedData?: unknown;
+		/**
+		 * Configures cursor stops around injected text.
+		 * Defaults to {@link InjectedTextCursorStops.Both}.
+		*/
+		readonly cursorStops?: InjectedTextCursorStops | null;
+	}
+
+	export enum InjectedTextCursorStops {
+		Both = 0,
+		Right = 1,
+		Left = 2,
+		None = 3
+	}
+
+	/**
+	 * New model decorations.
+	 */
+	export interface IModelDeltaDecoration {
+		/**
+		 * Range that this decoration covers.
+		 */
+		range: IRange;
+		/**
+		 * Options associated with this decoration.
+		 */
+		options: IModelDecorationOptions;
+	}
+
+	/**
+	 * A decoration in the model.
+	 */
+	export interface IModelDecoration {
+		/**
+		 * Identifier for a decoration.
+		 */
+		readonly id: string;
+		/**
+		 * Identifier for a decoration's owner.
+		 */
+		readonly ownerId: number;
+		/**
+		 * Range that this decoration covers.
+		 */
+		readonly range: Range;
+		/**
+		 * Options associated with this decoration.
+		 */
+		readonly options: IModelDecorationOptions;
+	}
+
+	/**
+	 * An accessor that can add, change or remove model decorations.
+	 * @internal
+	 */
+	export interface IModelDecorationsChangeAccessor {
+		/**
+		 * Add a new decoration.
+		 * @param range Range that this decoration covers.
+		 * @param options Options associated with this decoration.
+		 * @return An unique identifier associated with this decoration.
+		 */
+		addDecoration(range: IRange, options: IModelDecorationOptions): string;
+		/**
+		 * Change the range that an existing decoration covers.
+		 * @param id The unique identifier associated with the decoration.
+		 * @param newRange The new range that this decoration covers.
+		 */
+		changeDecoration(id: string, newRange: IRange): void;
+		/**
+		 * Change the options associated with an existing decoration.
+		 * @param id The unique identifier associated with the decoration.
+		 * @param newOptions The new options associated with this decoration.
+		 */
+		changeDecorationOptions(id: string, newOptions: IModelDecorationOptions): void;
+		/**
+		 * Remove an existing decoration.
+		 * @param id The unique identifier associated with the decoration.
+		 */
+		removeDecoration(id: string): void;
+		/**
+		 * Perform a minimum amount of operations, in order to transform the decorations
+		 * identified by `oldDecorations` to the decorations described by `newDecorations`
+		 * and returns the new identifiers associated with the resulting decorations.
+		 *
+		 * @param oldDecorations Array containing previous decorations identifiers.
+		 * @param newDecorations Array describing what decorations should result after the call.
+		 * @return An array containing the new decorations identifiers.
+		 */
+		deltaDecorations(oldDecorations: readonly string[], newDecorations: readonly IModelDeltaDecoration[]): string[];
+	}
+
+	/**
+	 * End of line character preference.
+	 */
+	export enum EndOfLinePreference {
+		/**
+		 * Use the end of line character identified in the text buffer.
+		 */
+		TextDefined = 0,
+		/**
+		 * Use line feed (\n) as the end of line character.
+		 */
+		LF = 1,
+		/**
+		 * Use carriage return and line feed (\r\n) as the end of line character.
+		 */
+		CRLF = 2
+	}
+
+	/**
+	 * The default end of line to use when instantiating models.
+	 */
+	export enum DefaultEndOfLine {
+		/**
+		 * Use line feed (\n) as the end of line character.
+		 */
+		LF = 1,
+		/**
+		 * Use carriage return and line feed (\r\n) as the end of line character.
+		 */
+		CRLF = 2
+	}
+
+	/**
+	 * End of line character preference.
+	 */
+	export enum EndOfLineSequence {
+		/**
+		 * Use line feed (\n) as the end of line character.
+		 */
+		LF = 0,
+		/**
+		 * Use carriage return and line feed (\r\n) as the end of line character.
+		 */
+		CRLF = 1
+	}
+
+	/**
+	 * An identifier for a single edit operation.
+	 * @internal
+	 */
+	export interface ISingleEditOperationIdentifier {
+		/**
+		 * Identifier major
+		 */
+		major: number;
+		/**
+		 * Identifier minor
+		 */
+		minor: number;
+	}
+
+	/**
+	 * A single edit operation, that has an identifier.
+	 */
+	export interface IIdentifiedSingleEditOperation extends ISingleEditOperation {
+		/**
+		 * An identifier associated with this single edit operation.
+		 * @internal
+		 */
+		identifier?: ISingleEditOperationIdentifier | null;
+		/**
+		 * This indicates that this operation is inserting automatic whitespace
+		 * that can be removed on next model edit operation if `config.trimAutoWhitespace` is true.
+		 * @internal
+		 */
+		isAutoWhitespaceEdit?: boolean;
+		/**
+		 * This indicates that this operation is in a set of operations that are tracked and should not be "simplified".
+		 * @internal
+		 */
+		_isTracked?: boolean;
+	}
+
+	export interface IValidEditOperation {
+		/**
+		 * An identifier associated with this single edit operation.
+		 * @internal
+		 */
+		identifier: ISingleEditOperationIdentifier | null;
+		/**
+		 * The range to replace. This can be empty to emulate a simple insert.
+		 */
+		range: Range;
+		/**
+		 * The text to replace with. This can be empty to emulate a simple delete.
+		 */
+		text: string;
+		/**
+		 * @internal
+		 */
+		textChange:  any;
+	}
+
+	/**
+	 * A callback that can compute the cursor state after applying a series of edit operations.
+	 */
+	export interface ICursorStateComputer {
+		/**
+		 * A callback that can compute the resulting cursors state after some edit operations have been executed.
+		 */
+		(inverseEditOperations: IValidEditOperation[]): Selection[] | null;
+	}
+
+	export class TextModelResolvedOptions {
+		_textModelResolvedOptionsBrand: void;
+		readonly tabSize: number;
+		readonly indentSize: number;
+		private readonly _indentSizeIsTabSize;
+		readonly insertSpaces: boolean;
+		readonly defaultEOL: DefaultEndOfLine;
+		readonly trimAutoWhitespace: boolean;
+		readonly bracketPairColorizationOptions: BracketPairColorizationOptions;
+		get originalIndentSize(): number | 'tabSize';
+		/**
+		 * @internal
+		 */
+		constructor(src: {
+			tabSize: number;
+			indentSize: number | 'tabSize';
+			insertSpaces: boolean;
+			defaultEOL: DefaultEndOfLine;
+			trimAutoWhitespace: boolean;
+			bracketPairColorizationOptions: BracketPairColorizationOptions;
+		});
+		/**
+		 * @internal
+		 */
+		equals(other: TextModelResolvedOptions): boolean;
+		/**
+		 * @internal
+		 */
+		createChangeEvent(newOpts: TextModelResolvedOptions): IModelOptionsChangedEvent;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface ITextModelCreationOptions {
+		tabSize: number;
+		indentSize: number | 'tabSize';
+		insertSpaces: boolean;
+		detectIndentation: boolean;
+		trimAutoWhitespace: boolean;
+		defaultEOL: DefaultEndOfLine;
+		isForSimpleWidget: boolean;
+		largeFileOptimizations: boolean;
+		bracketPairColorizationOptions: BracketPairColorizationOptions;
+	}
+
+	export interface BracketPairColorizationOptions {
+		enabled: boolean;
+		independentColorPoolPerBracketType: boolean;
+	}
+
+	export interface ITextModelUpdateOptions {
+		tabSize?: number;
+		indentSize?: number | 'tabSize';
+		insertSpaces?: boolean;
+		trimAutoWhitespace?: boolean;
+		bracketColorizationOptions?: BracketPairColorizationOptions;
+	}
+
+	export class FindMatch {
+		_findMatchBrand: void;
+		readonly range: Range;
+		readonly matches: string[] | null;
+		/**
+		 * @internal
+		 */
+		constructor(range: Range, matches: string[] | null);
+	}
+
+	/**
+	 * Describes the behavior of decorations when typing/editing near their edges.
+	 * Note: Please do not edit the values, as they very carefully match `DecorationRangeBehavior`
+	 */
+	export enum TrackedRangeStickiness {
+		AlwaysGrowsWhenTypingAtEdges = 0,
+		NeverGrowsWhenTypingAtEdges = 1,
+		GrowsOnlyWhenTypingBefore = 2,
+		GrowsOnlyWhenTypingAfter = 3
+	}
+
+	/**
+	 * Text snapshot that works like an iterator.
+	 * Will try to return chunks of roughly ~64KB size.
+	 * Will return null when finished.
+	 */
+	export interface ITextSnapshot {
+		read(): string | null;
+	}
+
+	/**
+	 * A model.
+	 */
+	export interface ITextModel {
+		/**
+		 * Gets the resource associated with this editor model.
+		 */
+		readonly uri: Uri;
+		/**
+		 * A unique identifier associated with this model.
+		 */
+		readonly id: string;
+		/**
+		 * This model is constructed for a simple widget code editor.
+		 * @internal
+		 */
+		readonly isForSimpleWidget: boolean;
+		/**
+		 * If true, the text model might contain RTL.
+		 * If false, the text model **contains only** contain LTR.
+		 * @internal
+		 */
+		mightContainRTL(): boolean;
+		/**
+		 * If true, the text model might contain LINE SEPARATOR (LS), PARAGRAPH SEPARATOR (PS).
+		 * If false, the text model definitely does not contain these.
+		 * @internal
+		 */
+		mightContainUnusualLineTerminators(): boolean;
+		/**
+		 * @internal
+		 */
+		removeUnusualLineTerminators(selections?: Selection[]): void;
+		/**
+		 * If true, the text model might contain non basic ASCII.
+		 * If false, the text model **contains only** basic ASCII.
+		 * @internal
+		 */
+		mightContainNonBasicASCII(): boolean;
+		/**
+		 * Get the resolved options for this model.
+		 */
+		getOptions(): TextModelResolvedOptions;
+		/**
+		 * Get the formatting options for this model.
+		 * @internal
+		 */
+		getFormattingOptions(): languages.FormattingOptions;
+		/**
+		 * Get the current version id of the model.
+		 * Anytime a change happens to the model (even undo/redo),
+		 * the version id is incremented.
+		 */
+		getVersionId(): number;
+		/**
+		 * Get the alternative version id of the model.
+		 * This alternative version id is not always incremented,
+		 * it will return the same values in the case of undo-redo.
+		 */
+		getAlternativeVersionId(): number;
+		/**
+		 * Replace the entire text buffer value contained in this model.
+		 */
+		setValue(newValue: string | ITextSnapshot): void;
+		/**
+		 * Get the text stored in this model.
+		 * @param eol The end of line character preference. Defaults to `EndOfLinePreference.TextDefined`.
+		 * @param preserverBOM Preserve a BOM character if it was detected when the model was constructed.
+		 * @return The text.
+		 */
+		getValue(eol?: EndOfLinePreference, preserveBOM?: boolean): string;
+		/**
+		 * Get the text stored in this model.
+		 * @param preserverBOM Preserve a BOM character if it was detected when the model was constructed.
+		 * @return The text snapshot (it is safe to consume it asynchronously).
+		 */
+		createSnapshot(preserveBOM?: boolean): ITextSnapshot;
+		/**
+		 * Get the length of the text stored in this model.
+		 */
+		getValueLength(eol?: EndOfLinePreference, preserveBOM?: boolean): number;
+		/**
+		 * Check if the raw text stored in this model equals another raw text.
+		 * @internal
+		 */
+		equalsTextBuffer(other: ITextBuffer): boolean;
+		/**
+		 * Get the underling text buffer.
+		 * @internal
+		 */
+		getTextBuffer(): ITextBuffer;
+		/**
+		 * Get the text in a certain range.
+		 * @param range The range describing what text to get.
+		 * @param eol The end of line character preference. This will only be used for multiline ranges. Defaults to `EndOfLinePreference.TextDefined`.
+		 * @return The text.
+		 */
+		getValueInRange(range: IRange, eol?: EndOfLinePreference): string;
+		/**
+		 * Get the length of text in a certain range.
+		 * @param range The range describing what text length to get.
+		 * @return The text length.
+		 */
+		getValueLengthInRange(range: IRange, eol?: EndOfLinePreference): number;
+		/**
+		 * Get the character count of text in a certain range.
+		 * @param range The range describing what text length to get.
+		 */
+		getCharacterCountInRange(range: IRange, eol?: EndOfLinePreference): number;
+		/**
+		 * Splits characters in two buckets. First bucket (A) is of characters that
+		 * sit in lines with length < `LONG_LINE_BOUNDARY`. Second bucket (B) is of
+		 * characters that sit in lines with length >= `LONG_LINE_BOUNDARY`.
+		 * If count(B) > count(A) return true. Returns false otherwise.
+		 * @internal
+		 */
+		isDominatedByLongLines(): boolean;
+		/**
+		 * Get the number of lines in the model.
+		 */
+		getLineCount(): number;
+		/**
+		 * Get the text for a certain line.
+		 */
+		getLineContent(lineNumber: number): string;
+		/**
+		 * Get the text length for a certain line.
+		 */
+		getLineLength(lineNumber: number): number;
+		/**
+		 * Get the text for all lines.
+		 */
+		getLinesContent(): string[];
+		/**
+		 * Get the end of line sequence predominantly used in the text buffer.
+		 * @return EOL char sequence (e.g.: '\n' or '\r\n').
+		 */
+		getEOL(): string;
+		/**
+		 * Get the end of line sequence predominantly used in the text buffer.
+		 */
+		getEndOfLineSequence(): EndOfLineSequence;
+		/**
+		 * Get the minimum legal column for line at `lineNumber`
+		 */
+		getLineMinColumn(lineNumber: number): number;
+		/**
+		 * Get the maximum legal column for line at `lineNumber`
+		 */
+		getLineMaxColumn(lineNumber: number): number;
+		/**
+		 * Returns the column before the first non whitespace character for line at `lineNumber`.
+		 * Returns 0 if line is empty or contains only whitespace.
+		 */
+		getLineFirstNonWhitespaceColumn(lineNumber: number): number;
+		/**
+		 * Returns the column after the last non whitespace character for line at `lineNumber`.
+		 * Returns 0 if line is empty or contains only whitespace.
+		 */
+		getLineLastNonWhitespaceColumn(lineNumber: number): number;
+		/**
+		 * Create a valid position.
+		 */
+		validatePosition(position: IPosition): Position;
+		/**
+		 * Advances the given position by the given offset (negative offsets are also accepted)
+		 * and returns it as a new valid position.
+		 *
+		 * If the offset and position are such that their combination goes beyond the beginning or
+		 * end of the model, throws an exception.
+		 *
+		 * If the offset is such that the new position would be in the middle of a multi-byte
+		 * line terminator, throws an exception.
+		 */
+		modifyPosition(position: IPosition, offset: number): Position;
+		/**
+		 * Create a valid range.
+		 */
+		validateRange(range: IRange): Range;
+		/**
+		 * Converts the position to a zero-based offset.
+		 *
+		 * The position will be [adjusted](#TextDocument.validatePosition).
+		 *
+		 * @param position A position.
+		 * @return A valid zero-based offset.
+		 */
+		getOffsetAt(position: IPosition): number;
+		/**
+		 * Converts a zero-based offset to a position.
+		 *
+		 * @param offset A zero-based offset.
+		 * @return A valid [position](#Position).
+		 */
+		getPositionAt(offset: number): Position;
+		/**
+		 * Get a range covering the entire model.
+		 */
+		getFullModelRange(): Range;
+		/**
+		 * Returns if the model was disposed or not.
+		 */
+		isDisposed(): boolean;
+		/**
+		 * This model is so large that it would not be a good idea to sync it over
+		 * to web workers or other places.
+		 * @internal
+		 */
+		isTooLargeForSyncing(): boolean;
+		/**
+		 * The file is so large, that even tokenization is disabled.
+		 * @internal
+		 */
+		isTooLargeForTokenization(): boolean;
+		/**
+		 * The file is so large, that operations on it might be too large for heap
+		 * and can lead to OOM crashes so they should be disabled.
+		 * @internal
+		 */
+		isTooLargeForHeapOperation(): boolean;
+		/**
+		 * Search the model.
+		 * @param searchString The string used to search. If it is a regular expression, set `isRegex` to true.
+		 * @param searchOnlyEditableRange Limit the searching to only search inside the editable range of the model.
+		 * @param isRegex Used to indicate that `searchString` is a regular expression.
+		 * @param matchCase Force the matching to match lower/upper case exactly.
+		 * @param wordSeparators Force the matching to match entire words only. Pass null otherwise.
+		 * @param captureMatches The result will contain the captured groups.
+		 * @param limitResultCount Limit the number of results
+		 * @return The ranges where the matches are. It is empty if not matches have been found.
+		 */
+		findMatches(searchString: string, searchOnlyEditableRange: boolean, isRegex: boolean, matchCase: boolean, wordSeparators: string | null, captureMatches: boolean, limitResultCount?: number): FindMatch[];
+		/**
+		 * Search the model.
+		 * @param searchString The string used to search. If it is a regular expression, set `isRegex` to true.
+		 * @param searchScope Limit the searching to only search inside these ranges.
+		 * @param isRegex Used to indicate that `searchString` is a regular expression.
+		 * @param matchCase Force the matching to match lower/upper case exactly.
+		 * @param wordSeparators Force the matching to match entire words only. Pass null otherwise.
+		 * @param captureMatches The result will contain the captured groups.
+		 * @param limitResultCount Limit the number of results
+		 * @return The ranges where the matches are. It is empty if no matches have been found.
+		 */
+		findMatches(searchString: string, searchScope: IRange | IRange[], isRegex: boolean, matchCase: boolean, wordSeparators: string | null, captureMatches: boolean, limitResultCount?: number): FindMatch[];
+		/**
+		 * Search the model for the next match. Loops to the beginning of the model if needed.
+		 * @param searchString The string used to search. If it is a regular expression, set `isRegex` to true.
+		 * @param searchStart Start the searching at the specified position.
+		 * @param isRegex Used to indicate that `searchString` is a regular expression.
+		 * @param matchCase Force the matching to match lower/upper case exactly.
+		 * @param wordSeparators Force the matching to match entire words only. Pass null otherwise.
+		 * @param captureMatches The result will contain the captured groups.
+		 * @return The range where the next match is. It is null if no next match has been found.
+		 */
+		findNextMatch(searchString: string, searchStart: IPosition, isRegex: boolean, matchCase: boolean, wordSeparators: string | null, captureMatches: boolean): FindMatch | null;
+		/**
+		 * Search the model for the previous match. Loops to the end of the model if needed.
+		 * @param searchString The string used to search. If it is a regular expression, set `isRegex` to true.
+		 * @param searchStart Start the searching at the specified position.
+		 * @param isRegex Used to indicate that `searchString` is a regular expression.
+		 * @param matchCase Force the matching to match lower/upper case exactly.
+		 * @param wordSeparators Force the matching to match entire words only. Pass null otherwise.
+		 * @param captureMatches The result will contain the captured groups.
+		 * @return The range where the previous match is. It is null if no previous match has been found.
+		 */
+		findPreviousMatch(searchString: string, searchStart: IPosition, isRegex: boolean, matchCase: boolean, wordSeparators: string | null, captureMatches: boolean): FindMatch | null;
+		/**
+		 * Get the language associated with this model.
+		 */
+		getLanguageId(): string;
+		/**
+		 * Set the current language mode associated with the model.
+		 * @param languageId The new language.
+		 * @param source The source of the call that set the language.
+		 * @internal
+		 */
+		setLanguage(languageId: string, source?: string): void;
+		/**
+		 * Set the current language mode associated with the model.
+		 * @param languageSelection The new language selection.
+		 * @param source The source of the call that set the language.
+		 * @internal
+		 */
+		setLanguage(languageSelection: languages.ILanguageSelection, source?: string): void;
+		/**
+		 * Returns the real (inner-most) language mode at a given position.
+		 * The result might be inaccurate. Use `forceTokenization` to ensure accurate tokens.
+		 * @internal
+		 */
+		getLanguageIdAtPosition(lineNumber: number, column: number): string;
+		/**
+		 * Get the word under or besides `position`.
+		 * @param position The position to look for a word.
+		 * @return The word under or besides `position`. Might be null.
+		 */
+		getWordAtPosition(position: IPosition): IWordAtPosition | null;
+		/**
+		 * Get the word under or besides `position` trimmed to `position`.column
+		 * @param position The position to look for a word.
+		 * @return The word under or besides `position`. Will never be null.
+		 */
+		getWordUntilPosition(position: IPosition): IWordAtPosition;
+		/**
+		 * Change the decorations. The callback will be called with a change accessor
+		 * that becomes invalid as soon as the callback finishes executing.
+		 * This allows for all events to be queued up until the change
+		 * is completed. Returns whatever the callback returns.
+		 * @param ownerId Identifies the editor id in which these decorations should appear. If no `ownerId` is provided, the decorations will appear in all editors that attach this model.
+		 * @internal
+		 */
+		changeDecorations<T>(callback: (changeAccessor: IModelDecorationsChangeAccessor) => T, ownerId?: number): T | null;
+		/**
+		 * Perform a minimum amount of operations, in order to transform the decorations
+		 * identified by `oldDecorations` to the decorations described by `newDecorations`
+		 * and returns the new identifiers associated with the resulting decorations.
+		 *
+		 * @param oldDecorations Array containing previous decorations identifiers.
+		 * @param newDecorations Array describing what decorations should result after the call.
+		 * @param ownerId Identifies the editor id in which these decorations should appear. If no `ownerId` is provided, the decorations will appear in all editors that attach this model.
+		 * @return An array containing the new decorations identifiers.
+		 */
+		deltaDecorations(oldDecorations: string[], newDecorations: IModelDeltaDecoration[], ownerId?: number): string[];
+		/**
+		 * Remove all decorations that have been added with this specific ownerId.
+		 * @param ownerId The owner id to search for.
+		 * @internal
+		 */
+		removeAllDecorationsWithOwnerId(ownerId: number): void;
+		/**
+		 * Get the options associated with a decoration.
+		 * @param id The decoration id.
+		 * @return The decoration options or null if the decoration was not found.
+		 */
+		getDecorationOptions(id: string): IModelDecorationOptions | null;
+		/**
+		 * Get the range associated with a decoration.
+		 * @param id The decoration id.
+		 * @return The decoration range or null if the decoration was not found.
+		 */
+		getDecorationRange(id: string): Range | null;
+		/**
+		 * Gets all the decorations for the line `lineNumber` as an array.
+		 * @param lineNumber The line number
+		 * @param ownerId If set, it will ignore decorations belonging to other owners.
+		 * @param filterOutValidation If set, it will ignore decorations specific to validation (i.e. warnings, errors).
+		 * @return An array with the decorations
+		 */
+		getLineDecorations(lineNumber: number, ownerId?: number, filterOutValidation?: boolean): IModelDecoration[];
+		/**
+		 * Gets all the decorations for the lines between `startLineNumber` and `endLineNumber` as an array.
+		 * @param startLineNumber The start line number
+		 * @param endLineNumber The end line number
+		 * @param ownerId If set, it will ignore decorations belonging to other owners.
+		 * @param filterOutValidation If set, it will ignore decorations specific to validation (i.e. warnings, errors).
+		 * @return An array with the decorations
+		 */
+		getLinesDecorations(startLineNumber: number, endLineNumber: number, ownerId?: number, filterOutValidation?: boolean): IModelDecoration[];
+		/**
+		 * Gets all the decorations in a range as an array. Only `startLineNumber` and `endLineNumber` from `range` are used for filtering.
+		 * So for now it returns all the decorations on the same line as `range`.
+		 * @param range The range to search in
+		 * @param ownerId If set, it will ignore decorations belonging to other owners.
+		 * @param filterOutValidation If set, it will ignore decorations specific to validation (i.e. warnings, errors).
+		 * @param onlyMinimapDecorations If set, it will return only decorations that render in the minimap.
+		 * @param onlyMarginDecorations If set, it will return only decorations that render in the glyph margin.
+		 * @return An array with the decorations
+		 */
+		getDecorationsInRange(range: IRange, ownerId?: number, filterOutValidation?: boolean, onlyMinimapDecorations?: boolean, onlyMarginDecorations?: boolean): IModelDecoration[];
+		/**
+		 * Gets all the decorations as an array.
+		 * @param ownerId If set, it will ignore decorations belonging to other owners.
+		 * @param filterOutValidation If set, it will ignore decorations specific to validation (i.e. warnings, errors).
+		 */
+		getAllDecorations(ownerId?: number, filterOutValidation?: boolean): IModelDecoration[];
+		/**
+		 * Gets all decorations that render in the glyph margin as an array.
+		 * @param ownerId If set, it will ignore decorations belonging to other owners.
+		 */
+		getAllMarginDecorations(ownerId?: number): IModelDecoration[];
+		/**
+		 * Gets all the decorations that should be rendered in the overview ruler as an array.
+		 * @param ownerId If set, it will ignore decorations belonging to other owners.
+		 * @param filterOutValidation If set, it will ignore decorations specific to validation (i.e. warnings, errors).
+		 */
+		getOverviewRulerDecorations(ownerId?: number, filterOutValidation?: boolean): IModelDecoration[];
+		/**
+		 * Gets all the decorations that contain injected text.
+		 * @param ownerId If set, it will ignore decorations belonging to other owners.
+		 */
+		getInjectedTextDecorations(ownerId?: number): IModelDecoration[];
+		/**
+		 * @internal
+		 */
+		_getTrackedRange(id: string): Range | null;
+		/**
+		 * @internal
+		 */
+		_setTrackedRange(id: string | null, newRange: null, newStickiness: TrackedRangeStickiness): null;
+		/**
+		 * @internal
+		 */
+		_setTrackedRange(id: string | null, newRange: Range, newStickiness: TrackedRangeStickiness): string;
+		/**
+		 * Normalize a string containing whitespace according to indentation rules (converts to spaces or to tabs).
+		 */
+		normalizeIndentation(str: string): string;
+		/**
+		 * Change the options of this model.
+		 */
+		updateOptions(newOpts: ITextModelUpdateOptions): void;
+		/**
+		 * Detect the indentation options for this model from its content.
+		 */
+		detectIndentation(defaultInsertSpaces: boolean, defaultTabSize: number): void;
+		/**
+		 * Close the current undo-redo element.
+		 * This offers a way to create an undo/redo stop point.
+		 */
+		pushStackElement(): void;
+		/**
+		 * Open the current undo-redo element.
+		 * This offers a way to remove the current undo/redo stop point.
+		 */
+		popStackElement(): void;
+		/**
+		 * Push edit operations, basically editing the model. This is the preferred way
+		 * of editing the model. The edit operations will land on the undo stack.
+		 * @param beforeCursorState The cursor state before the edit operations. This cursor state will be returned when `undo` or `redo` are invoked.
+		 * @param editOperations The edit operations.
+		 * @param cursorStateComputer A callback that can compute the resulting cursors state after the edit operations have been executed.
+		 * @return The cursor state returned by the `cursorStateComputer`.
+		 */
+		pushEditOperations(beforeCursorState: Selection[] | null, editOperations: IIdentifiedSingleEditOperation[], cursorStateComputer: ICursorStateComputer): Selection[] | null;
+		/**
+		 * @internal
+		 */
+		pushEditOperations(beforeCursorState: Selection[] | null, editOperations: IIdentifiedSingleEditOperation[], cursorStateComputer: ICursorStateComputer, group?: any): Selection[] | null;
+		/**
+		 * Change the end of line sequence. This is the preferred way of
+		 * changing the eol sequence. This will land on the undo stack.
+		 */
+		pushEOL(eol: EndOfLineSequence): void;
+		/**
+		 * Edit the model without adding the edits to the undo stack.
+		 * This can have dire consequences on the undo stack! See @pushEditOperations for the preferred way.
+		 * @param operations The edit operations.
+		 * @return If desired, the inverse edit operations, that, when applied, will bring the model back to the previous state.
+		 */
+		applyEdits(operations: IIdentifiedSingleEditOperation[]): void;
+		applyEdits(operations: IIdentifiedSingleEditOperation[], computeUndoEdits: false): void;
+		applyEdits(operations: IIdentifiedSingleEditOperation[], computeUndoEdits: true): IValidEditOperation[];
+		/**
+		 * Change the end of line sequence without recording in the undo stack.
+		 * This can have dire consequences on the undo stack! See @pushEOL for the preferred way.
+		 */
+		setEOL(eol: EndOfLineSequence): void;
+		/**
+		 * @internal
+		 */
+		_applyUndo(changes:  any[], eol: EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: Selection[] | null): void;
+		/**
+		 * @internal
+		 */
+		_applyRedo(changes:  any[], eol: EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: Selection[] | null): void;
+		/**
+		 * Undo edit operations until the previous undo/redo point.
+		 * The inverse edit operations will be pushed on the redo stack.
+		 * @internal
+		 */
+		undo(): void | Promise<void>;
+		/**
+		 * Is there anything in the undo stack?
+		 * @internal
+		 */
+		canUndo(): boolean;
+		/**
+		 * Redo edit operations until the next undo/redo point.
+		 * The inverse edit operations will be pushed on the undo stack.
+		 * @internal
+		 */
+		redo(): void | Promise<void>;
+		/**
+		 * Is there anything in the redo stack?
+		 * @internal
+		 */
+		canRedo(): boolean;
+		/**
+		 * @deprecated Please use `onDidChangeContent` instead.
+		 * An event emitted when the contents of the model have changed.
+		 * @internal
+		 * @event
+		 */
+		readonly onDidChangeContentOrInjectedText: IEvent<any | any>;
+		/**
+		 * An event emitted when the contents of the model have changed.
+		 * @event
+		 */
+		onDidChangeContent(listener: (e: IModelContentChangedEvent) => void): IDisposable;
+		/**
+		 * An event emitted when decorations of the model have changed.
+		 * @event
+		 */
+		readonly onDidChangeDecorations: IEvent<IModelDecorationsChangedEvent>;
+		/**
+		 * An event emitted when the model options have changed.
+		 * @event
+		 */
+		readonly onDidChangeOptions: IEvent<IModelOptionsChangedEvent>;
+		/**
+		 * An event emitted when the language associated with the model has changed.
+		 * @event
+		 */
+		readonly onDidChangeLanguage: IEvent<IModelLanguageChangedEvent>;
+		/**
+		 * An event emitted when the language configuration associated with the model has changed.
+		 * @event
+		 */
+		readonly onDidChangeLanguageConfiguration: IEvent<IModelLanguageConfigurationChangedEvent>;
+		/**
+		 * An event emitted when the tokens associated with the model have changed.
+		 * @event
+		 * @internal
+		 */
+		readonly onDidChangeTokens: IEvent<IModelTokensChangedEvent>;
+		/**
+		 * An event emitted when the model has been attached to the first editor or detached from the last editor.
+		 * @event
+		 */
+		readonly onDidChangeAttached: IEvent<void>;
+		/**
+		 * An event emitted right before disposing the model.
+		 * @event
+		 */
+		readonly onWillDispose: IEvent<void>;
+		/**
+		 * Destroy this model.
+		 */
+		dispose(): void;
+		/**
+		 * @internal
+		 */
+		onBeforeAttached(): IAttachedView;
+		/**
+		 * @internal
+		 */
+		onBeforeDetached(view: IAttachedView): void;
+		/**
+		 * Returns if this model is attached to an editor or not.
+		 */
+		isAttachedToEditor(): boolean;
+		/**
+		 * Returns the count of editors this model is attached to.
+		 * @internal
+		 */
+		getAttachedEditorCount(): number;
+		/**
+		 * Among all positions that are projected to the same position in the underlying text model as
+		 * the given position, select a unique position as indicated by the affinity.
+		 *
+		 * PositionAffinity.Left:
+		 * The normalized position must be equal or left to the requested position.
+		 *
+		 * PositionAffinity.Right:
+		 * The normalized position must be equal or right to the requested position.
+		 *
+		 * @internal
+		 */
+		normalizePosition(position: Position, affinity: PositionAffinity): Position;
+		/**
+		 * Gets the column at which indentation stops at a given line.
+		 * @internal
+		*/
+		getLineIndentColumn(lineNumber: number): number;
+		/**
+		 * Returns an object that can be used to query brackets.
+		 * @internal
+		*/
+		readonly bracketPairs: any;
+		/**
+		 * Returns an object that can be used to query indent guides.
+		 * @internal
+		*/
+		readonly guides: any;
+		/**
+		 * @internal
+		 */
+		readonly tokenization: any;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IAttachedView {
+		/**
+		 * @param stabilized Indicates if the visible lines are probably going to change soon or can be considered stable.
+		 * Is true on reveal range and false on scroll.
+		 * Tokenizers should tokenize synchronously if stabilized is true.
+		 */
+		setVisibleLines(visibleLines: {
+			startLineNumber: number;
+			endLineNumber: number;
+		}[], stabilized: boolean): void;
+	}
+
+	export enum PositionAffinity {
+		/**
+		 * Prefers the left most position.
+		*/
+		Left = 0,
+		/**
+		 * Prefers the right most position.
+		*/
+		Right = 1,
+		/**
+		 * No preference.
+		*/
+		None = 2,
+		/**
+		 * If the given position is on injected text, prefers the position left of it.
+		*/
+		LeftOfInjectedText = 3,
+		/**
+		 * If the given position is on injected text, prefers the position right of it.
+		*/
+		RightOfInjectedText = 4
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface ITextBufferBuilder {
+		acceptChunk(chunk: string): void;
+		finish(): ITextBufferFactory;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface ITextBufferFactory {
+		create(defaultEOL: DefaultEndOfLine): {
+			textBuffer: ITextBuffer;
+			disposable: IDisposable;
+		};
+		getFirstLineText(lengthLimit: number): string;
+	}
+
+	/**
+	 * @internal
+	 *
+	 * `lineNumber` is 1 based.
+	 */
+	export interface IReadonlyTextBuffer {
+		onDidChangeContent: IEvent<void>;
+		equals(other: ITextBuffer): boolean;
+		mightContainRTL(): boolean;
+		mightContainUnusualLineTerminators(): boolean;
+		resetMightContainUnusualLineTerminators(): void;
+		mightContainNonBasicASCII(): boolean;
+		getBOM(): string;
+		getEOL(): string;
+		getOffsetAt(lineNumber: number, column: number): number;
+		getPositionAt(offset: number): Position;
+		getRangeAt(offset: number, length: number): Range;
+		getValueInRange(range: Range, eol: EndOfLinePreference): string;
+		createSnapshot(preserveBOM: boolean): ITextSnapshot;
+		getValueLengthInRange(range: Range, eol: EndOfLinePreference): number;
+		getCharacterCountInRange(range: Range, eol: EndOfLinePreference): number;
+		getLength(): number;
+		getLineCount(): number;
+		getLinesContent(): string[];
+		getLineContent(lineNumber: number): string;
+		getLineCharCode(lineNumber: number, index: number): number;
+		getCharCode(offset: number): number;
+		getLineLength(lineNumber: number): number;
+		getLineFirstNonWhitespaceColumn(lineNumber: number): number;
+		getLineLastNonWhitespaceColumn(lineNumber: number): number;
+		findMatchesLineByLine(searchRange: Range, searchData: any, captureMatches: boolean, limitResultCount: number): FindMatch[];
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface ITextBuffer extends IReadonlyTextBuffer, IDisposable {
+		setEOL(newEOL: '\r\n' | '\n'): void;
+		applyEdits(rawOperations: any[], recordTrimAutoWhitespace: boolean, computeUndoEdits: boolean): any;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IInternalModelContentChange extends IModelContentChange {
+		range: Range;
+		forceMoveMarkers: boolean;
+	}
+
+	export enum AccessibilitySupport {
+		/**
+		 * This should be the browser case where it is not known if a screen reader is attached or no.
+		 */
+		Unknown = 0,
+		Disabled = 1,
+		Enabled = 2
+	}
+
+	export interface IEditorWhitespace {
+		readonly id: string;
+		readonly afterLineNumber: number;
+		readonly height: number;
+	}
+
 
 	export const EditorZoom: IEditorZoom;
 
@@ -6666,6 +7728,55 @@ declare namespace monaco.languages {
 	}
 
 	/**
+	 * @internal
+	 */
+	export interface CompleteEnterAction {
+		/**
+		 * Describe what to do with the indentation.
+		 */
+		indentAction: IndentAction;
+		/**
+		 * Describes text to be appended after the new line and after the indentation.
+		 */
+		appendText: string;
+		/**
+		 * Describes the number of characters to remove from the new line's indentation.
+		 */
+		removeText: number;
+		/**
+		 * The line's indentation minus removeText
+		 */
+		indentation: string;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IBackgroundTokenizer extends IDisposable {
+		/**
+		 * Instructs the background tokenizer to set the tokens for the given range again.
+		 *
+		 * This might be necessary if the renderer overwrote those tokens with heuristically computed ones for some viewport,
+		 * when the change does not even propagate to that viewport.
+		 */
+		requestTokens(startLineNumber: number, endLineNumberExclusive: number): void;
+		reportMismatchingTokens?(lineNumber: number): void;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IBackgroundTokenizationStore {
+		setTokens(tokens: any[]): void;
+		setEndState(lineNumber: number, state: IState): void;
+		/**
+		 * Should be called to indicate that the background tokenization has finished for now.
+		 * (This triggers bracket pair colorization to re-parse the bracket pairs with token information)
+		 */
+		backgroundTokenizationFinished(): void;
+	}
+
+	/**
 	 * The state of the tokenizer between two lines.
 	 * It is useful to store flags such as in multiline comment, etc.
 	 * The model will clone the previous line's state and pass it in to tokenize the next line.
@@ -6711,6 +7822,93 @@ declare namespace monaco.languages {
 		 * to the word range at the position when omitted.
 		 */
 		provideHover(model: editor.ITextModel, position: Position, token: CancellationToken): ProviderResult<Hover>;
+	}
+
+	/**
+	 * An evaluatable expression represents additional information for an expression in a document. Evaluatable expressions are
+	 * evaluated by a debugger or runtime and their result is rendered in a tooltip-like widget.
+	 * @internal
+	 */
+	export interface EvaluatableExpression {
+		/**
+		 * The range to which this expression applies.
+		 */
+		range: IRange;
+		/**
+		 * This expression overrides the expression extracted from the range.
+		 */
+		expression?: string;
+	}
+
+	/**
+	 * The evaluatable expression provider interface defines the contract between extensions and
+	 * the debug hover.
+	 * @internal
+	 */
+	export interface EvaluatableExpressionProvider {
+		/**
+		 * Provide a hover for the given position and document. Multiple hovers at the same
+		 * position will be merged by the editor. A hover can have a range which defaults
+		 * to the word range at the position when omitted.
+		 */
+		provideEvaluatableExpression(model: editor.ITextModel, position: Position, token: CancellationToken): ProviderResult<EvaluatableExpression>;
+	}
+
+	/**
+	 * A value-object that contains contextual information when requesting inline values from a InlineValuesProvider.
+	 * @internal
+	 */
+	export interface InlineValueContext {
+		frameId: number;
+		stoppedLocation: Range;
+	}
+
+	/**
+	 * Provide inline value as text.
+	 * @internal
+	 */
+	export interface InlineValueText {
+		type: 'text';
+		range: IRange;
+		text: string;
+	}
+
+	/**
+	 * Provide inline value through a variable lookup.
+	 * @internal
+	 */
+	export interface InlineValueVariableLookup {
+		type: 'variable';
+		range: IRange;
+		variableName?: string;
+		caseSensitiveLookup: boolean;
+	}
+
+	/**
+	 * Provide inline value through an expression evaluation.
+	 * @internal
+	 */
+	export interface InlineValueExpression {
+		type: 'expression';
+		range: IRange;
+		expression?: string;
+	}
+
+	/**
+	 * The inline values provider interface defines the contract between extensions and
+	 * the debugger's inline values feature.
+	 * @internal
+	 */
+	export interface InlineValuesProvider {
+		/**
+		 */
+		onDidChangeInlineValues?: IEvent<void> | undefined;
+		/**
+		 * Provide the "inline values" for the given range and document. Multiple hovers at the same
+		 * position will be merged by the editor. A hover can have a range which defaults
+		 * to the word range at the position when omitted.
+		 */
+		provideInlineValues(model: editor.ITextModel, viewPort: Range, context: InlineValueContext, token: CancellationToken): ProviderResult<InlineValue[]>;
 	}
 
 	export enum CompletionItemKind {
@@ -6856,12 +8054,24 @@ declare namespace monaco.languages {
 		 * A command that should be run upon acceptance of this item.
 		 */
 		command?: Command;
+		/**
+		 * @internal
+		 */
+		extensionId?: any;
+		/**
+		 * @internal
+		 */
+		_id?: [number, number];
 	}
 
 	export interface CompletionList {
 		suggestions: CompletionItem[];
 		incomplete?: boolean;
 		dispose?(): void;
+		/**
+		 * @internal
+		 */
+		duration?: number;
 	}
 
 	/**
@@ -6902,6 +8112,13 @@ declare namespace monaco.languages {
 	 * the item, like adding {@link CompletionItem.documentation doc-comment} or {@link CompletionItem.detail details}.
 	 */
 	export interface CompletionItemProvider {
+		/**
+		 * Used to identify completions in the (debug) UI and telemetry. This isn't the extension identifier because extensions
+		 * often contribute multiple completion item providers.
+		 *
+		 * @internal
+		 */
+		_debugDisplayName: string;
 		triggerCharacters?: string[];
 		/**
 		 * Provide completion items for the given position and document.
@@ -7046,6 +8263,49 @@ declare namespace monaco.languages {
 
 	export interface CodeActionList extends IDisposable {
 		readonly actions: ReadonlyArray<CodeAction>;
+	}
+
+	/**
+	 * The code action interface defines the contract between extensions and
+	 * the [light bulb](https://code.visualstudio.com/docs/editor/editingevolved#_code-action) feature.
+	 * @internal
+	 */
+	export interface CodeActionProvider {
+		displayName?: string;
+		/**
+		 * Provide commands for the given document and range.
+		 */
+		provideCodeActions(model: editor.ITextModel, range: Range | Selection, context: CodeActionContext, token: CancellationToken): ProviderResult<CodeActionList>;
+		/**
+		 * Given a code action fill in the edit. Will only invoked when missing.
+		 */
+		resolveCodeAction?(codeAction: CodeAction, token: CancellationToken): ProviderResult<CodeAction>;
+		/**
+		 * Optional list of CodeActionKinds that this provider returns.
+		 */
+		readonly providedCodeActionKinds?: ReadonlyArray<string>;
+		readonly documentation?: ReadonlyArray<{
+			readonly kind: string;
+			readonly command: Command;
+		}>;
+		/**
+		 * @internal
+		 */
+		_getAdditionalMenuItems?(context: CodeActionContext, actions: readonly CodeAction[]): Command[];
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface DocumentPasteEdit {
+		readonly label: string;
+		readonly detail: string;
+		readonly handledMimeType?: string;
+		readonly yieldTo?: readonly DropYieldTo[];
+		insertText: string | {
+			readonly snippet: string;
+		};
+		additionalEdit?: WorkspaceEdit;
 	}
 
 	/**
@@ -7440,6 +8700,10 @@ declare namespace monaco.languages {
 	 * the formatting-feature.
 	 */
 	export interface DocumentFormattingEditProvider {
+		/**
+		 * @internal
+		 */
+		readonly extensionId?: any;
 		readonly displayName?: string;
 		/**
 		 * Provide formatting edits for a whole document.
@@ -7452,6 +8716,10 @@ declare namespace monaco.languages {
 	 * the formatting-feature.
 	 */
 	export interface DocumentRangeFormattingEditProvider {
+		/**
+		 * @internal
+		 */
+		readonly extensionId?: any;
 		readonly displayName?: string;
 		/**
 		 * Provide formatting edits for a range in a document.
@@ -7469,6 +8737,10 @@ declare namespace monaco.languages {
 	 * the formatting-feature.
 	 */
 	export interface OnTypeFormattingEditProvider {
+		/**
+		 * @internal
+		 */
+		readonly extensionId?: any;
 		autoFormatTriggerCharacters: string[];
 		/**
 		 * Provide formatting edits after a character has been typed.
@@ -7478,6 +8750,14 @@ declare namespace monaco.languages {
 		 * when `}` has been entered.
 		 */
 		provideOnTypeFormattingEdits(model: editor.ITextModel, position: Position, ch: string, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IInplaceReplaceSupportResult {
+		value: string;
+		range: IRange;
 	}
 
 	/**
@@ -7593,6 +8873,10 @@ declare namespace monaco.languages {
 	 */
 	export interface FoldingRangeProvider {
 		/**
+		 * @internal
+		 */
+		readonly id?: string;
+		/**
 		 * An optional event to signal that the folding ranges from this provider have changed.
 		 */
 		onDidChange?: IEvent<this>;
@@ -7653,6 +8937,13 @@ declare namespace monaco.languages {
 		needsConfirmation: boolean;
 		label: string;
 		description?: string;
+		/**
+		 * @internal
+		 */
+		iconPath?: editor.ThemeIcon | Uri | {
+			light: Uri;
+			dark: Uri;
+		};
 	}
 
 	export interface WorkspaceFileEditOptions {
@@ -7664,6 +8955,10 @@ declare namespace monaco.languages {
 		folder?: boolean;
 		skipTrashBin?: boolean;
 		maxSize?: number;
+		/**
+		 * @internal
+		 */
+		contents?: Promise<any>;
 	}
 
 	export interface IWorkspaceFileEdit {
@@ -7707,12 +9002,153 @@ declare namespace monaco.languages {
 		arguments?: any[];
 	}
 
+	/**
+	 * @internal
+	 */
+	export interface CommentThreadTemplate {
+		controllerHandle: number;
+		label: string;
+		acceptInputCommand?: Command;
+		additionalCommands?: Command[];
+		deleteCommand?: Command;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentInfo {
+		extensionId?: string;
+		threads: CommentThread[];
+		pendingCommentThreads?: PendingCommentThread[];
+		commentingRanges: CommentingRanges;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentWidget {
+		commentThread: CommentThread;
+		comment?: Comment;
+		input: string;
+		onDidChangeInput: IEvent<string>;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentInput {
+		value: string;
+		uri: Uri;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentThread<T = IRange> {
+		isDocumentCommentThread(): this is CommentThread<IRange>;
+		commentThreadHandle: number;
+		controllerHandle: number;
+		extensionId?: string;
+		threadId: string;
+		resource: string | null;
+		range: T | undefined;
+		label: string | undefined;
+		contextValue: string | undefined;
+		comments: Comment[] | undefined;
+		onDidChangeComments: IEvent<readonly Comment[] | undefined>;
+		collapsibleState?: any;
+		initialCollapsibleState?: any;
+		onDidChangeInitialCollapsibleState: IEvent<any | undefined>;
+		state?: any;
+		canReply: boolean;
+		input?: CommentInput;
+		onDidChangeInput: IEvent<CommentInput | undefined>;
+		onDidChangeRange: IEvent<T | undefined>;
+		onDidChangeLabel: IEvent<string | undefined>;
+		onDidChangeCollapsibleState: IEvent<any | undefined>;
+		onDidChangeState: IEvent<any | undefined>;
+		onDidChangeCanReply: IEvent<boolean>;
+		isDisposed: boolean;
+		isTemplate: boolean;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentingRanges {
+		readonly resource: Uri;
+		ranges: IRange[];
+		fileComments: boolean;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentReaction {
+		readonly label?: string;
+		readonly iconPath?: UriComponents;
+		readonly count?: number;
+		readonly hasReacted?: boolean;
+		readonly canEdit?: boolean;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentOptions {
+		/**
+		 * An optional string to show on the comment input box when it's collapsed.
+		 */
+		prompt?: string;
+		/**
+		 * An optional string to show as placeholder in the comment input box when it's focused.
+		 */
+		placeHolder?: string;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface Comment {
+		readonly uniqueIdInThread: number;
+		readonly body: string | IMarkdownString;
+		readonly userName: string;
+		readonly userIconPath?: UriComponents;
+		readonly contextValue?: string;
+		readonly commentReactions?: CommentReaction[];
+		readonly label?: string;
+		readonly mode?: any;
+		readonly timestamp?: string;
+	}
+
 	export interface PendingCommentThread {
 		body: string;
 		range: IRange | undefined;
 		uri: Uri;
 		owner: string;
 		isReply: boolean;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentThreadChangedEvent<T> {
+		/**
+		 * Pending comment threads.
+		 */
+		readonly pending: PendingCommentThread[];
+		/**
+		 * Added comment threads.
+		 */
+		readonly added: CommentThread<T>[];
+		/**
+		 * Removed comment threads.
+		 */
+		readonly removed: CommentThread<T>[];
+		/**
+		 * Changed comment threads.
+		 */
+		readonly changed: CommentThread<T>[];
 	}
 
 	export interface CodeLens {
@@ -7799,6 +9235,33 @@ declare namespace monaco.languages {
 		provideDocumentRangeSemanticTokens(model: editor.ITextModel, range: Range, token: CancellationToken): ProviderResult<SemanticTokens>;
 	}
 
+	/**
+	 * @internal
+	 */
+	export interface ITokenizationSupportChangedEvent {
+		changedLanguages: string[];
+		changedColorMap: boolean;
+	}
+
+	export type DropYieldTo = {
+		readonly providerId: string;
+	} | {
+		readonly mimeType: string;
+	};
+
+	/**
+	 * @internal
+	 */
+	export interface DocumentOnDropEdit {
+		readonly label: string;
+		readonly handledMimeType?: string;
+		readonly yieldTo?: readonly DropYieldTo[];
+		insertText: string | {
+			readonly snippet: string;
+		};
+		additionalEdit?: WorkspaceEdit;
+	}
+
 	export interface DocumentContextItem {
 		readonly uri: Uri;
 		readonly version: number;
@@ -7833,6 +9296,20 @@ declare namespace monaco.languages {
 		aliases?: string[];
 		mimetypes?: string[];
 		configuration?: Uri;
+		/**
+		 * @internal
+		 */
+		icon?: ILanguageIcon;
+	}
+
+	export interface ILanguageIcon {
+		readonly light: Uri;
+		readonly dark: Uri;
+	}
+
+	export interface ILanguageSelection {
+		readonly languageId: string;
+		readonly onDidChange: IEvent<string>;
 	}
 	/**
 	 * A Monarch language definition
@@ -7970,11 +9447,40 @@ declare namespace monaco.languages {
 		 */
 		token: string;
 	}
-
+	export type InlineValue = InlineValueText | InlineValueVariableLookup | InlineValueExpression;
 }
 
 declare namespace monaco.worker {
 
+
+	export interface IDocumentColorComputerTarget {
+		getValue(): string;
+		positionAt(offset: number): IPosition;
+		findMatches(regex: RegExp): RegExpMatchArray[];
+	}
+
+	/**
+	 * Word inside a model.
+	 */
+	export interface IWordAtPosition {
+		/**
+		 * The word.
+		 */
+		readonly word: string;
+		/**
+		 * The column where the word starts.
+		 */
+		readonly startColumn: number;
+		/**
+		 * The column where the word ends.
+		 */
+		readonly endColumn: number;
+	}
+
+	export interface ILinkComputerTarget {
+		getLineCount(): number;
+		getLineContent(lineNumber: number): string;
+	}
 
 	export interface IMirrorTextModel {
 		readonly version: number;
@@ -7995,6 +9501,44 @@ declare namespace monaco.worker {
 		 * Get all available mirror models in this worker.
 		 */
 		getMirrorModels(): IMirrorModel[];
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IRawModelData {
+		url: string;
+		versionId: number;
+		lines: string[];
+		EOL: string;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface ICommonModel extends ILinkComputerTarget, IDocumentColorComputerTarget, IMirrorModel {
+		uri: Uri;
+		version: number;
+		eol: string;
+		getValue(): string;
+		getLinesContent(): string[];
+		getLineCount(): number;
+		getLineContent(lineNumber: number): string;
+		getLineWords(lineNumber: number, wordDefinition: RegExp): IWordAtPosition[];
+		words(wordDefinition: RegExp): Iterable<string>;
+		getWordUntilPosition(position: IPosition, wordDefinition: RegExp): IWordAtPosition;
+		getValueInRange(range: IRange): string;
+		getWordAtPosition(position: IPosition, wordDefinition: RegExp): Range | null;
+		offsetAt(position: IPosition): number;
+		positionAt(offset: number): IPosition;
+		findMatches(regex: RegExp): RegExpMatchArray[];
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IForeignModuleFactory {
+		(ctx: IWorkerContext, createData: any): any;
 	}
 
 }

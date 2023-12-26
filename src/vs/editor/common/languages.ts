@@ -81,9 +81,6 @@ export class EncodedTokenizationResult {
 	}
 }
 
-/**
- * @internal
- */
 export interface ITokenizationSupport {
 	/**
 	 * If true, the background tokenizer will only be used to verify tokens against the default background tokenizer.
@@ -2058,9 +2055,6 @@ export enum ExternalUriOpenerPriority {
 	Preferred = 3,
 }
 
-/**
- * @internal
- */
 export type DropYieldTo = { readonly providerId: string } | { readonly mimeType: string };
 
 /**
