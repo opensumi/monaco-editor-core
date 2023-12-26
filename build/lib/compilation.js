@@ -63,11 +63,19 @@ const ts = require("typescript");
 const watch = require('./watch');
 // --- gulp-tsb: compile and transpile --------------------------------
 const reporter = (0, reporter_1.createReporter)();
+<<<<<<< HEAD
 function getTypeScriptCompilerOptions(src) {
     const rootDir = path_1.default.join(__dirname, `../../${src}`);
+=======
+function getTypeScriptCompilerOptions(src, module) {
+    const rootDir = path.join(__dirname, `../../${src}`);
+>>>>>>> c0a0ae7fe46 (feat: support compile common js module)
     const options = {};
     options.verbose = false;
     options.sourceMap = true;
+    if (module) {
+        options.module = module;
+    }
     if (process.env['VSCODE_NO_SOURCEMAP']) { // To be used by developers in a hurry
         options.sourceMap = false;
     }
@@ -77,13 +85,19 @@ function getTypeScriptCompilerOptions(src) {
     options.newLine = /\r\n/.test(fs_1.default.readFileSync(__filename, 'utf8')) ? 0 : 1;
     return options;
 }
-function createCompile(src, { build, emitError, transpileOnly, preserveEnglish }) {
+function createCompile(src, { build, emitError, transpileOnly, preserveEnglish, module }) {
     const tsb = require('./tsb');
     const sourcemaps = require('gulp-sourcemaps');
+<<<<<<< HEAD
     const projectPath = path_1.default.join(__dirname, '../../', src, 'tsconfig.json');
     const overrideOptions = { ...getTypeScriptCompilerOptions(src), inlineSources: Boolean(build) };
+=======
+    const projectPath = path.join(__dirname, '../../', src, 'tsconfig.json');
+    const overrideOptions = { ...getTypeScriptCompilerOptions(src, module), inlineSources: Boolean(build) };
+>>>>>>> c0a0ae7fe46 (feat: support compile common js module)
     if (!build) {
         overrideOptions.inlineSourceMap = true;
+        overrideOptions.noEmitOnError = false;
     }
     const compilation = tsb.create(projectPath, overrideOptions, {
         verbose: false,
@@ -140,8 +154,13 @@ function compileTask(src, out, build, options = {}) {
         if (os_1.default.totalmem() < 4_000_000_000) {
             throw new Error('compilation requires 4GB of RAM');
         }
+<<<<<<< HEAD
         const compile = createCompile(src, { build, emitError: true, transpileOnly: false, preserveEnglish: !!options.preserveEnglish });
         const srcPipe = gulp_1.default.src(`${src}/**`, { base: `${src}` });
+=======
+        const compile = createCompile(src, { build, emitError: false, transpileOnly: false, preserveEnglish: !!options.preserveEnglish, module: options.module });
+        const srcPipe = gulp.src(`${src}/**`, { base: `${src}` });
+>>>>>>> c0a0ae7fe46 (feat: support compile common js module)
         const generator = new MonacoGenerator(false);
         if (src === 'src') {
             generator.execute();
@@ -170,10 +189,23 @@ function compileTask(src, out, build, options = {}) {
             .pipe(mangleStream)
             .pipe(generator.stream)
             .pipe(compile())
+<<<<<<< HEAD
             .pipe(gulp_1.default.dest(out));
+=======
+            .pipe(options.extractConstEnum ? doExtractConstEnum() : es.through())
+            .pipe(gulp.dest(out));
+>>>>>>> c0a0ae7fe46 (feat: support compile common js module)
     };
     task.taskName = `compile-${path_1.default.basename(src)}`;
     return task;
+}
+function doExtractConstEnum() {
+    return es.map((file, cb) => {
+        if (/\.ts$/.test(file.path)) {
+            file.contents = Buffer.from(file.contents.toString().replace(/const enum/g, 'enum'));
+        }
+        cb(null, file);
+    });
 }
 function watchTask(out, build, srcPath = 'src') {
     const task = () => {

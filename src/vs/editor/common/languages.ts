@@ -113,9 +113,6 @@ export interface ITreeSitterTokenizationSupport {
 	tokenizeEncodedInstrumented(lineNumber: number, textModel: model.ITextModel): { result: Uint32Array; captureTime: number; metadataTime: number } | undefined;
 }
 
-/**
- * @internal
- */
 export interface ITokenizationSupport {
 	/**
 	 * If true, the background tokenizer will only be used to verify tokens against the default background tokenizer.
@@ -2321,9 +2318,6 @@ export enum ExternalUriOpenerPriority {
 	Preferred = 3,
 }
 
-/**
- * @internal
- */
 export type DropYieldTo = { readonly kind: HierarchicalKind } | { readonly mimeType: string };
 
 /**
