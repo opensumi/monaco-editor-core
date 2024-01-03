@@ -518,7 +518,7 @@ export class TextModelResolvedOptions {
 
 	readonly tabSize: number;
 	readonly indentSize: number;
-	private readonly _indentSizeIsTabSize: boolean;
+	readonly _indentSizeIsTabSize: boolean;
 	readonly insertSpaces: boolean;
 	readonly defaultEOL: DefaultEndOfLine;
 	readonly trimAutoWhitespace: boolean;

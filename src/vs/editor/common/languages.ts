@@ -670,7 +670,7 @@ export interface CompletionItemProvider {
 	 *
 	 * @internal
 	 */
-	_debugDisplayName: string;
+	_debugDisplayName?: string;
 
 	triggerCharacters?: string[];
 	/**
