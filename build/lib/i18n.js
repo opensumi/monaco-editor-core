@@ -313,6 +313,21 @@ globalThis._VSCODE_NLS_LANGUAGE=${JSON.stringify(language.id)};`),
         }));
     });
 }
+const commonHeader1 = `/*---------------------------------------------------------\n`;
+const commonHeader2 = `* Copyright (c) Microsoft Corporation. All rights reserved.\n`;
+const commonHeader3 = `*--------------------------------------------------------*/`;
+// 将 nls.js 转换成 nls.json 结构
+// @ts-ignore
+function toJsonNlsFile(content, fileHeader) {
+    return content
+        .replace(fileHeader, '')
+        .replace(commonHeader1, '')
+        .replace(commonHeader2, '')
+        .replace(commonHeader3, '')
+        .replace(`define("vs/editor/editor.main.nls", {`, '{')
+        .replace('});', '}')
+        .trim();
+}
 function processNlsFiles(opts) {
     return (0, event_stream_1.through)(function (file) {
         const fileName = path.basename(file.path);
@@ -327,7 +342,15 @@ function processNlsFiles(opts) {
                 this.emit('error', `Failed to read component file: ${error}`);
             }
         }
-        this.queue(file);
+        if (file.path.includes('editor.main.nls.js')) {
+            this.queue(new File({
+                path: file.path.replace('.js', '.json'),
+                contents: Buffer.from(toJsonNlsFile(file.contents.toString(), opts.fileHeader)),
+            }));
+        }
+        else {
+            this.queue(file);
+        }
     });
 }
 const editorProject = 'vscode-editor', workbenchProject = 'vscode-workbench', extensionsProject = 'vscode-extensions', setupProject = 'vscode-setup', serverProject = 'vscode-server';

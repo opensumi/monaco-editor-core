@@ -6792,7 +6792,7 @@ declare namespace monaco.editor {
 		_textModelResolvedOptionsBrand: void;
 		readonly tabSize: number;
 		readonly indentSize: number;
-		private readonly _indentSizeIsTabSize;
+		readonly _indentSizeIsTabSize: boolean;
 		readonly insertSpaces: boolean;
 		readonly defaultEOL: DefaultEndOfLine;
 		readonly trimAutoWhitespace: boolean;
@@ -8780,7 +8780,7 @@ declare namespace monaco.languages {
 		 *
 		 * @internal
 		 */
-		_debugDisplayName: string;
+		_debugDisplayName?: string;
 		triggerCharacters?: string[];
 		/**
 		 * Provide completion items for the given position and document.
