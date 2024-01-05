@@ -1125,9 +1125,10 @@ export module StandaloneServices {
 	serviceCollection.set(IInstantiationService, instantiationService);
 
 	export function get<T>(serviceId: ServiceIdentifier<T>): T {
-		if (!initialized) {
-			initialize({});
-		}
+		// 由于模块加载的时机不同，在 opensumi 当中不需要这样做
+		// if (!initialized) {
+		// 	initialize({});
+		// }
 		const r = serviceCollection.get(serviceId);
 		if (!r) {
 			throw new Error('Missing service ' + serviceId);
