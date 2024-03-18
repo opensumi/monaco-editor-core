@@ -41,15 +41,20 @@ function getTypeScriptCompilerOptions(src: string): ts.CompilerOptions {
 	return options;
 }
 
-function createCompile(src: string, build: boolean, emitError: boolean, transpileOnly: boolean | { swc: boolean }) {
+function createCompile(src: string, build: boolean, emitError: boolean, transpileOnly: boolean | { swc: boolean }, moduleKind?: ts.ModuleKind) {
+	console.log('module', moduleKind);
 	const tsb = require('./tsb') as typeof import('./tsb');
 	const sourcemaps = require('gulp-sourcemaps') as typeof import('gulp-sourcemaps');
 
-
 	const projectPath = path.join(__dirname, '../../', src, 'tsconfig.json');
 	const overrideOptions = { ...getTypeScriptCompilerOptions(src), inlineSources: Boolean(build) };
+
+	if (moduleKind) {
+		overrideOptions.module = moduleKind;
+	}
 	if (!build) {
 		overrideOptions.inlineSourceMap = true;
+		overrideOptions.noEmitOnError = false;
 	}
 
 	const compilation = tsb.create(projectPath, overrideOptions, {
@@ -114,7 +119,7 @@ export function transpileTask(src: string, out: string, swc: boolean): task.Stre
 	return task;
 }
 
-export function compileTask(src: string, out: string, build: boolean, options: { disableMangle?: boolean } = {}): task.StreamTask {
+export function compileTask(src: string, out: string, build: boolean, options: { disableMangle?: boolean; transformConstEnum?: boolean; moduleKind?: ts.ModuleKind } = {}): task.StreamTask {
 
 	const task = () => {
 
@@ -156,6 +161,7 @@ export function compileTask(src: string, out: string, build: boolean, options: {
 			.pipe(mangleStream)
 			.pipe(generator.stream)
 			.pipe(compile())
+			.pipe(options?.transformConstEnum ? transformConstEnum() : es.through())
 			.pipe(gulp.dest(out));
 	};
 
@@ -340,3 +346,12 @@ export const watchApiProposalNamesTask = task.define('watch-api-proposal-names',
 		.pipe(util.debounce(task))
 		.pipe(gulp.dest('src'));
 });
+
+function transformConstEnum() {
+	return es.map((file: File, cb: any) => {
+		if (/\.ts$/.test(file.path)) {
+			file.contents = Buffer.from(file.contents.toString().replace(/const enum/g, 'enum'));
+		}
+		cb(null, file);
+	});
+}

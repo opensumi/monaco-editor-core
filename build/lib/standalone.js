@@ -40,8 +40,8 @@ function extractEditor(options) {
     tsConfig.compilerOptions = compilerOptions;
     compilerOptions.noEmit = false;
     compilerOptions.noUnusedLocals = false;
-    compilerOptions.preserveConstEnums = false;
-    compilerOptions.declaration = false;
+    compilerOptions.preserveConstEnums = true;
+    compilerOptions.declaration = true;
     compilerOptions.moduleResolution = ts.ModuleResolutionKind.Classic;
     options.compilerOptions = compilerOptions;
     console.log(`Running tree shaker with shakeLevel ${tss.toStringShakeLevel(options.shakeLevel)}`);

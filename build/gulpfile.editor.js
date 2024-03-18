@@ -78,7 +78,7 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
 			apiusages,
 			extrausages
 		],
-		shakeLevel: 2, // 0-Files, 1-InnerFile, 2-ClassMembers
+		shakeLevel: 0, // 0-Files, 1-InnerFile, 2-ClassMembers
 		importIgnorePattern: /(^vs\/css!)/,
 		destRoot: path.join(root, 'out-editor-src'),
 		redirects: []
@@ -408,12 +408,13 @@ gulp.task('editor-distro',
 			task.series(
 				compileEditorAMDTask,
 				optimizeEditorAMDTask,
-				minifyEditorAMDTask
+				// disable minify
+				// minifyEditorAMDTask
 			),
 			task.series(
 				createESMSourcesAndResourcesTask,
 				compileEditorESMTask,
-				appendJSToESMImportsTask
+				appendJSToESMImportsTask,
 			)
 		),
 		finalEditorResourcesTask
