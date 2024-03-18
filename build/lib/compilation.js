@@ -38,7 +38,6 @@ function getTypeScriptCompilerOptions(src) {
     return options;
 }
 function createCompile(src, build, emitError, transpileOnly, moduleKind) {
-    console.log('module', moduleKind);
     const tsb = require('./tsb');
     const sourcemaps = require('gulp-sourcemaps');
     const projectPath = path.join(__dirname, '../../', src, 'tsconfig.json');

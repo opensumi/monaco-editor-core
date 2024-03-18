@@ -42,7 +42,6 @@ function getTypeScriptCompilerOptions(src: string): ts.CompilerOptions {
 }
 
 function createCompile(src: string, build: boolean, emitError: boolean, transpileOnly: boolean | { swc: boolean }, moduleKind?: ts.ModuleKind) {
-	console.log('module', moduleKind);
 	const tsb = require('./tsb') as typeof import('./tsb');
 	const sourcemaps = require('gulp-sourcemaps') as typeof import('gulp-sourcemaps');
 

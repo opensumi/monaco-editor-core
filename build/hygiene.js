@@ -130,6 +130,10 @@ function hygiene(some, linting = true) {
 					const original = result.src.replace(/\r\n/gm, '\n');
 					const formatted = result.dest.replace(/\r\n/gm, '\n');
 
+					if (process.env.WRITE_FAIL) {
+						fs.writeFileSync(file.path, formatted, 'utf8');
+					}
+
 					if (original !== formatted) {
 						console.error(
 							`File not formatted. Run the 'Format Document' command to fix it:`,

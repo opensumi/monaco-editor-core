@@ -75,7 +75,7 @@ function getAllTopLevelDeclarations(ts: typeof import('typescript'), sourceFile:
 			const triviaEnd = interfaceDeclaration.name.pos;
 			const triviaText = getNodeText(sourceFile, { pos: triviaStart, end: triviaEnd });
 
-			if (triviaText.indexOf('@internal') === -1) {
+			if (triviaText.indexOf('@internal') === -1 || node.kind === ts.SyntaxKind.InterfaceDeclaration) {
 				all.push(node);
 			}
 		} else {
@@ -165,10 +165,12 @@ function getMassagedTopLevelDeclarationText(ts: typeof import('typescript'), sou
 		const members: ts.NodeArray<ts.ClassElement | ts.TypeElement> = interfaceDeclaration.members;
 		members.forEach((member) => {
 			try {
+				// We need to filter out the private and protected members, but keep the @internal members
 				const memberText = getNodeText(sourceFile, member);
-				if (memberText.indexOf('@internal') >= 0 || memberText.indexOf('private') >= 0) {
+				if (memberText.indexOf('private') >= 0 || memberText.indexOf('protected') >= 0) {
 					result = result.replace(memberText, '');
 				} else {
+					// If it is not private and not protected, then we can use this member
 					const memberName = (<ts.Identifier | ts.StringLiteral>member.name).text;
 					const memberAccess = (memberName.indexOf('.') >= 0 ? `['${memberName}']` : `.${memberName}`);
 					if (isStatic(ts, member)) {
@@ -415,6 +417,8 @@ function generateDeclarationFile(ts: typeof import('typescript'), recipe: string
 			version = m0[1];
 		}
 
+		// #include(xxxx): SomeInterFace,SomeClass It means to introduce an export in a module.
+		// #include(xx; SomeInterface=>any; SomeType=>string) Separated by ; in brackets means that a certain type or member in the module is hard modified to a specified string. It is generally used to modify certain types that do not want to be exposed (or are too complex to be exported).
 		const m1 = line.match(/^\s*#include\(([^;)]*)(;[^)]*)?\)\:(.*)$/);
 		if (m1) {
 			const moduleId = m1[1];
@@ -448,6 +452,8 @@ function generateDeclarationFile(ts: typeof import('typescript'), recipe: string
 			return;
 		}
 
+		// #includeAll(xxx): It means that all exports from a module are introduced into monaco.d.ts
+		// #includeAll(xx;SomeInterface=>any; SomeType=>string): A, B separated by , after the parentheses means that the specified module is imported and a specified member is excluded when all exports are made.
 		const m2 = line.match(/^\s*#includeAll\(([^;)]*)(;[^)]*)?\)\:(.*)$/);
 		if (m2) {
 			const moduleId = m2[1];
