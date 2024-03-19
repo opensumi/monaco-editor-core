@@ -177,8 +177,8 @@ function hygiene(some, linting = true) {
 		.pipe(unicodeFilterStream.restore)
 		.pipe(filter(indentationFilter))
 		.pipe(indentation)
-		.pipe(filter(copyrightFilter))
-		.pipe(copyrights);
+		.pipe(filter(copyrightFilter));
+		// .pipe(copyrights);
 
 	const streams = [
 		result.pipe(filter(tsFormattingFilter)).pipe(formatting)
