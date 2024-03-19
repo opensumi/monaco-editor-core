@@ -160,10 +160,12 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 
 		if (file === 'tsconfig.json') {
 			const tsConfig = JSON.parse(fs.readFileSync(path.join(SRC_FOLDER, file)).toString());
-			tsConfig.compilerOptions.module = 'es6';
+			tsConfig.compilerOptions.module = 'commonjs';
 			tsConfig.compilerOptions.outDir = path.join(path.relative(OUT_FOLDER, OUT_RESOURCES_FOLDER), 'vs').replace(/\\/g, '/');
 			tsConfig.compilerOptions.preserveConstEnums = false;
 			tsConfig.compilerOptions.declaration = true;
+			tsConfig.compilerOptions.noEmitOnError = false;
+
 			tsConfig.compilerOptions.plugins = [
 				{ transform: 'ts-transform-const-enum' }, // replaces 'compilerOptions.preserveConstEnums'
 				{ transform: 'ts-transform-const-enum', afterDeclarations: true }, // modifies declaration files

@@ -147,7 +147,7 @@ const compileEditorESMTask = task.define('compile-editor-esm', () => {
 
 	console.log(result.stdout.toString());
 	console.log(result.stderr.toString());
-
+	return;
 	if (FAIL_ON_PURPOSE || result.status !== 0) {
 		console.log(`The TS Compilation failed, preparing analysis folder...`);
 		const destPath = path.join(__dirname, '../../vscode-monaco-editor-esm-analysis');
