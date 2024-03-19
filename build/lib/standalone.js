@@ -40,8 +40,8 @@ function extractEditor(options) {
     tsConfig.compilerOptions = compilerOptions;
     compilerOptions.noEmit = false;
     compilerOptions.noUnusedLocals = false;
-    compilerOptions.preserveConstEnums = true;
-    compilerOptions.declaration = true;
+    compilerOptions.preserveConstEnums = false;
+    compilerOptions.declaration = false;
     compilerOptions.moduleResolution = ts.ModuleResolutionKind.Classic;
     options.compilerOptions = compilerOptions;
     console.log(`Running tree shaker with shakeLevel ${tss.toStringShakeLevel(options.shakeLevel)}`);
@@ -136,6 +136,12 @@ function createESMSourcesAndResources2(options) {
             const tsConfig = JSON.parse(fs.readFileSync(path.join(SRC_FOLDER, file)).toString());
             tsConfig.compilerOptions.module = 'es6';
             tsConfig.compilerOptions.outDir = path.join(path.relative(OUT_FOLDER, OUT_RESOURCES_FOLDER), 'vs').replace(/\\/g, '/');
+            tsConfig.compilerOptions.preserveConstEnums = false;
+            tsConfig.compilerOptions.declaration = true;
+            tsConfig.compilerOptions.plugins = [
+                { transform: 'ts-transform-const-enum' }, // replaces 'compilerOptions.preserveConstEnums'
+                { transform: 'ts-transform-const-enum', afterDeclarations: true }, // modifies declaration files
+            ];
             write(getDestAbsoluteFilePath(file), JSON.stringify(tsConfig, null, '\t'));
             continue;
         }

@@ -136,11 +136,11 @@ const compileEditorESMTask = task.define('compile-editor-esm', () => {
 	console.log(`Launching the TS compiler at ${path.join(__dirname, '../out-editor-esm')}...`);
 	let result;
 	if (process.platform === 'win32') {
-		result = cp.spawnSync(`..\\node_modules\\.bin\\tsc.cmd`, {
+		result = cp.spawnSync(`..\\node_modules\\.bin\\tspc.cmd`, {
 			cwd: path.join(__dirname, '../out-editor-esm')
 		});
 	} else {
-		result = cp.spawnSync(`node`, [`../node_modules/.bin/tsc`], {
+		result = cp.spawnSync(`node`, [`../node_modules/.bin/tspc`], {
 			cwd: path.join(__dirname, '../out-editor-esm')
 		});
 	}
