@@ -147,7 +147,18 @@ const compileEditorESMTask = task.define('compile-editor-esm', () => {
 
 	console.log(result.stdout.toString());
 	console.log(result.stderr.toString());
-	return;
+
+	// cause here have a type resolve error, so we should ignore the error
+	// vs/editor/common/model/bracketPairsTextModelPart/bracketPairsTree/ast.ts(9,28): error TS2307: Cannot find module '../..' or its corresponding type declarations.
+	// vs/editor/common/model/bracketPairsTextModelPart/bracketPairsTree/bracketPairsTree.ts(9,28): error TS2307: Cannot find module '../..' or its corresponding type declarations.
+	// in the transpiled code, there is no type, so it is ok to ignore the error
+	const errors = result.stdout.toString().trim().split('\n');
+
+	if (errors.length === 2 && errors.every(line => line.includes('Cannot find module'))) {
+		console.log('The TS Compilation failed, but it is expected');
+		return;
+	}
+
 	if (FAIL_ON_PURPOSE || result.status !== 0) {
 		console.log(`The TS Compilation failed, preparing analysis folder...`);
 		const destPath = path.join(__dirname, '../../vscode-monaco-editor-esm-analysis');
