@@ -87,7 +87,7 @@ declare namespace monaco {
 #include(vs/editor/common/core/selection): ISelection, Selection, SelectionDirection
 #include(vs/editor/common/languages): Token
 #includeAll(vs/base/common/jsonSchema):
-#include(vs/platform/configuration/common/configurationRegistry):IConfigurationDelta,ConfigurationScope,IPolicy,IConfigurationPropertySchema,IExtensionInfo,IConfigurationNode,IConfigurationDefaults,IConfigurationDefaultOverride,EditPresentationTypes
+#include(vs/platform/configuration/common/configurationRegistry;ConfigurationScope=>any;EditPresentationTypes=>any):IConfigurationDelta,IPolicy,IConfigurationPropertySchema,IExtensionInfo,IConfigurationNode,IConfigurationDefaults,IConfigurationDefaultOverride
 #include(vs/base/common/collections):IStringDictionary
 //manually copy type alias
 export type PolicyName = string;
@@ -124,7 +124,7 @@ export interface ICommandMetadata {
 #includeAll(vs/editor/common/textModelEvents):
 #include(vs/editor/browser/config/editorConfiguration): IEditorConstructionOptions
 #includeAll(vs/editor/common/cursorEvents):
-#includeAll(vs/editor/common/model;StandardTokenType=>any;IBracketPairsTextModelPart=>any;ITokenizationTextModelPart=>any;IGuidesTextModelPart=>any;LanguageIdentifier=>any;ContiguousMultilineTokens=>any;SparseMultilineTokens=>any;InternalModelContentChangeEvent=>any;MultilineTokens=>any;MultilineTokens2=>any;LineTokens=>any;SearchData=>any;LanguageId=>any;FormattingOptions=>languages.FormattingOptions;ModelRawContentChangedEvent=>any;ApplyEditsResult=>any;ValidAnnotatedEditOperation=>any;TextChange=> any;ModelInjectedTextChangedEvent=>any;PositionNormalizationAffinity=>any;IndentGuide=>any;ILanguageSelection=>languages.ILanguageSelection;UndoRedoGroup=>any): IScrollEvent
+#includeAll(vs/editor/common/model;StandardTokenType=>any;IBracketPairsTextModelPart=>any;ITokenizationTextModelPart=>any;IGuidesTextModelPart=>any;LanguageIdentifier=>any;ContiguousMultilineTokens=>any;SparseMultilineTokens=>any;InternalModelContentChangeEvent=>any;MultilineTokens=>any;MultilineTokens2=>any;LineTokens=>any;SearchData=>any;LanguageId=>any;FormattingOptions=>languages.FormattingOptions;ModelRawContentChangedEvent=>any;ApplyEditsResult=>any;ValidAnnotatedEditOperation=>any;TextChange=>any;ModelInjectedTextChangedEvent=>any;PositionNormalizationAffinity=>any;IndentGuide=>any;ILanguageSelection=>languages.ILanguageSelection;UndoRedoGroup=>any): IScrollEvent
 #include(vs/platform/accessibility/common/accessibility): AccessibilitySupport
 #includeAll(vs/editor/common/config/editorOptions;ComputeOptionsMemory=>any):
 #include(vs/editor/browser/config/editorConfiguration): IEditorConstructionOptions

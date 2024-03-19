@@ -1042,33 +1042,6 @@ declare namespace monaco {
 		addedConfigurations?: IConfigurationNode[];
 	}
 
-	export enum ConfigurationScope {
-		/**
-		 * Application specific configuration, which can be configured only in local user settings.
-		 */
-		APPLICATION = 1,
-		/**
-		 * Machine specific configuration, which can be configured only in local and remote user settings.
-		 */
-		MACHINE = 2,
-		/**
-		 * Window specific configuration, which can be configured in the user or workspace settings.
-		 */
-		WINDOW = 3,
-		/**
-		 * Resource specific configuration, which can be configured in the user, workspace or folder settings.
-		 */
-		RESOURCE = 4,
-		/**
-		 * Resource specific configuration that can be configured in language specific settings
-		 */
-		LANGUAGE_OVERRIDABLE = 5,
-		/**
-		 * Machine specific configuration that can also be configured in workspace or folder settings.
-		 */
-		MACHINE_OVERRIDABLE = 6
-	}
-
 	export interface IPolicy {
 		/**
 		 * The policy name.
@@ -1081,7 +1054,7 @@ declare namespace monaco {
 	}
 
 	export interface IConfigurationPropertySchema extends IJSONSchema {
-		scope?: ConfigurationScope;
+		scope?: any;
 		/**
 		 * When restricted, value of this configuration will be read only from trusted sources.
 		 * For eg., If the workspace is not trusted, then the value of this configuration is not read from workspace settings file.
@@ -1113,7 +1086,7 @@ declare namespace monaco {
 		 * When specified, controls the presentation format of string settings.
 		 * Otherwise, the presentation format defaults to `singleline`.
 		 */
-		editPresentation?: EditPresentationTypes;
+		editPresentation?: any;
 		/**
 		 * When specified, gives an order number for the setting
 		 * within the settings editor. Otherwise, the setting is placed at the end.
@@ -1139,7 +1112,7 @@ declare namespace monaco {
 		description?: string;
 		properties?: IStringDictionary<IConfigurationPropertySchema>;
 		allOf?: IConfigurationNode[];
-		scope?: ConfigurationScope;
+		scope?: any;
 		extensionInfo?: IExtensionInfo;
 		restrictedProperties?: string[];
 	}
@@ -1154,11 +1127,6 @@ declare namespace monaco {
 		readonly source?: IExtensionInfo | string;
 		readonly valuesSources?: Map<string, IExtensionInfo | string>;
 	};
-
-	export enum EditPresentationTypes {
-		Multiline = 'multilineText',
-		Singleline = 'singlelineText'
-	}
 	/**
 	 * An interface for a JavaScript object that
 	 * acts a dictionary. The keys are strings.

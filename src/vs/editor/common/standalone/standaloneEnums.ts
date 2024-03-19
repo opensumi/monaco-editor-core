@@ -77,33 +77,6 @@ export enum CompletionTriggerKind {
 	TriggerForIncompleteCompletions = 2
 }
 
-export enum ConfigurationScope {
-	/**
-	 * Application specific configuration, which can be configured only in local user settings.
-	 */
-	APPLICATION = 1,
-	/**
-	 * Machine specific configuration, which can be configured only in local and remote user settings.
-	 */
-	MACHINE = 2,
-	/**
-	 * Window specific configuration, which can be configured in the user or workspace settings.
-	 */
-	WINDOW = 3,
-	/**
-	 * Resource specific configuration, which can be configured in the user, workspace or folder settings.
-	 */
-	RESOURCE = 4,
-	/**
-	 * Resource specific configuration that can be configured in language specific settings
-	 */
-	LANGUAGE_OVERRIDABLE = 5,
-	/**
-	 * Machine specific configuration that can also be configured in workspace or folder settings.
-	 */
-	MACHINE_OVERRIDABLE = 6
-}
-
 /**
  * A positioning preference for rendering content widgets.
  */
@@ -186,11 +159,6 @@ export enum DocumentHighlightKind {
 	 * Write-access of a symbol, like writing to a variable.
 	 */
 	Write = 2
-}
-
-export enum EditPresentationTypes {
-	Multiline = 'multilineText',
-	Singleline = 'singlelineText'
 }
 
 /**
