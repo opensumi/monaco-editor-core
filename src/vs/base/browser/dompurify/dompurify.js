@@ -1625,7 +1625,7 @@ var purify = createDOMPurify();
 define(function () { return purify; });
 // ESM-comment-end
 
-// ESM-uncomment-begin
+// -ESM-uncomment-begin
 // export default purify;
 // export const version = purify.version;
 // export const isSupported = purify.isSupported;
@@ -1637,4 +1637,9 @@ define(function () { return purify; });
 // export const removeHook = purify.removeHook;
 // export const removeHooks = purify.removeHooks;
 // export const removeAllHooks = purify.removeAllHooks;
+// -ESM-uncomment-end
+
+
+// ESM-uncomment-begin
+// module.exports = purify;
 // ESM-uncomment-end
