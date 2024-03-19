@@ -123,6 +123,7 @@ function createESMSourcesAndResources2(options) {
             return path.join(OUT_FOLDER, `tsconfig.json`);
         }
         if (/\.ts$/.test(dest)) {
+            console.log("path.join(OUT_FOLDER, dest)", file, path.join(OUT_FOLDER, dest));
             return path.join(OUT_FOLDER, dest);
         }
         return path.join(OUT_RESOURCES_FOLDER, dest);

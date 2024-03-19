@@ -116,6 +116,8 @@ module _nls {
 		key: string;
 		valueSpan: ISpan;
 		value: string;
+		pathSpan: ISpan;
+		path: string;
 	}
 
 	interface ILocalizeAnalysisResult {
@@ -181,8 +183,9 @@ module _nls {
 		return node.kind === ts.SyntaxKind.CallExpression ? CollectStepResult.YesAndRecurse : CollectStepResult.NoAndRecurse;
 	}
 
-	function analyze(
+	export function analyze(
 		ts: typeof import('typescript'),
+		moduleId: string,
 		contents: string,
 		functionName: 'localize' | 'localize2',
 		options: ts.CompilerOptions = {}
@@ -200,14 +203,14 @@ module _nls {
 			.filter(n => n.kind === ts.SyntaxKind.ImportEqualsDeclaration)
 			.map(n => <ts.ImportEqualsDeclaration>n)
 			.filter(d => d.moduleReference.kind === ts.SyntaxKind.ExternalModuleReference)
-			.filter(d => (<ts.ExternalModuleReference>d.moduleReference).expression.getText() === '\'vs/nls\'');
+			.filter(d => (<ts.ExternalModuleReference>d.moduleReference).expression.getText().includes('\/nls'));
 
 		// import ... from 'vs/nls';
 		const importDeclarations = imports
 			.filter(n => n.kind === ts.SyntaxKind.ImportDeclaration)
 			.map(n => <ts.ImportDeclaration>n)
 			.filter(d => d.moduleSpecifier.kind === ts.SyntaxKind.StringLiteral)
-			.filter(d => d.moduleSpecifier.getText() === '\'vs/nls\'')
+			.filter(d => d.moduleSpecifier.getText().includes('\/nls'))
 			.filter(d => !!d.importClause && !!d.importClause.namedBindings);
 
 		const nlsExpressions = importEqualsDeclarations
@@ -273,7 +276,9 @@ module _nls {
 			.filter(a => a.length > 1)
 			.sort((a, b) => a[0].getStart() - b[0].getStart())
 			.map<ILocalizeCall>(a => ({
-				keySpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getStart()), end: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getEnd()) },
+				pathSpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getStart()), end: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getEnd()) },
+				path: `"${moduleId}",`,
+				keySpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getStart() - 1), end: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getStart() - 1) },
 				key: a[0].getText(),
 				valueSpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getStart()), end: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getEnd()) },
 				value: a[1].getText()
@@ -410,10 +415,9 @@ module _nls {
 		return JSON.parse(smg.toString());
 	}
 
-	function patch(ts: typeof import('typescript'), moduleId: string, typescript: string, javascript: string, sourcemap: sm.RawSourceMap): INlsStringResult {
-		const { localizeCalls, nlsExpressions } = analyze(ts, typescript, 'localize');
-		const { localizeCalls: localize2Calls, nlsExpressions: nls2Expressions } = analyze(ts, typescript, 'localize2');
-
+	export function patch(ts: typeof import('typescript'), moduleId: string, typescript: string, javascript: string, sourcemap: sm.RawSourceMap): INlsStringResult {
+		const { localizeCalls, nlsExpressions } = analyze(ts, moduleId, typescript, 'localize');
+		const { localizeCalls: localize2Calls, nlsExpressions: nls2Expressions } = analyze(ts, moduleId, typescript, 'localize2');
 		if (localizeCalls.length === 0 && localize2Calls.length === 0) {
 			return { javascript, sourcemap };
 		}
@@ -433,16 +437,19 @@ module _nls {
 		let i = 0;
 		const localizePatches = lazy(localizeCalls)
 			.map(lc => ([
+				{ range: lc.pathSpan, content: lc.path },
 				{ range: lc.keySpan, content: '' + (i++) },
-				{ range: lc.valueSpan, content: 'null' }
+				{ range: lc.valueSpan, content: lc.value },
 			]))
 			.flatten()
 			.map(toPatch);
 
 		const localize2Patches = lazy(localize2Calls)
-			.map(lc => (
-				{ range: lc.keySpan, content: '' + (i++) }
-			))
+			.map(lc => ([
+				{ range: lc.pathSpan, content: lc.path },
+				{ range: lc.keySpan, content: '' + (i++) },
+				{ range: lc.valueSpan, content: lc.value },
+			])).flatten()
 			.map(toPatch);
 
 		// Sort patches by their start position

@@ -122,6 +122,7 @@ const createESMSourcesAndResourcesTask = task.define('extract-editor-esm', () =>
 			'inlineEntryPoint:1.ts',
 			'vs/loader.js',
 			'vs/base/worker/workerMain.ts',
+			'vs/nls.ts',
 		],
 		renames: {
 			'vs/nls.mock.ts': 'vs/nls.ts'
