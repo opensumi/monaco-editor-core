@@ -60,7 +60,7 @@ let nodeProcess: INodeProcess | undefined = undefined;
 if (typeof $globalThis.vscode !== 'undefined' && typeof $globalThis.vscode.process !== 'undefined') {
 	// Native environment (sandboxed)
 	nodeProcess = $globalThis.vscode.process;
-} else if (typeof process !== 'undefined') {
+} else if (typeof process !== 'undefined' && !(process as any).browser && typeof process.platform === 'string') {
 	// Native environment (non-sandboxed)
 	nodeProcess = process;
 }
