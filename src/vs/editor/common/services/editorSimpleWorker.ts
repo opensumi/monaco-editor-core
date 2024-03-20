@@ -809,7 +809,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 			// static foreing module
 			return Promise.resolve(getAllMethodNames(this._foreignModule));
 		}
-		// ESM-comment-begin
+		// -ESM-comment-begin
 		return new Promise<any>((resolve, reject) => {
 			require([moduleId], (foreignModule: { create: IForeignModuleFactory }) => {
 				this._foreignModule = foreignModule.create(ctx, createData);
@@ -818,11 +818,11 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 
 			}, reject);
 		});
-		// ESM-comment-end
+		// -ESM-comment-end
 
-		// ESM-uncomment-begin
+		// -ESM-uncomment-begin
 		// return Promise.reject(new Error(`Unexpected usage`));
-		// ESM-uncomment-end
+		// -ESM-uncomment-end
 	}
 
 	// foreign method request

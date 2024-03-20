@@ -9,14 +9,14 @@
  * The code in this file is generated from files in ./src/
  */
 
-// ESM-uncomment-begin
+// -ESM-uncomment-begin
 // let __marked_exports = {};
 // (function() {
 //   function define(deps, factory) {
 //     factory(__marked_exports);
 //   }
 //   define.amd = true;
-// ESM-uncomment-end
+// -ESM-uncomment-end
 
  (function (global, factory) {
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -3079,7 +3079,7 @@
 
 }));
 
-// ESM-uncomment-begin
+// -ESM-uncomment-begin
 // })();
 // export var Lexer = (__marked_exports.Lexer || exports.Lexer);
 // export var Parser = (__marked_exports.Parser || exports.Parser);
@@ -3097,4 +3097,4 @@
 // export var setOptions = (__marked_exports.setOptions || exports.setOptions);
 // export var use = (__marked_exports.use || exports.use);
 // export var walkTokens = (__marked_exports.walkTokens || exports.walkTokens);
-// ESM-uncomment-end
+// -ESM-uncomment-end
