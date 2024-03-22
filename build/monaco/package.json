@@ -1,17 +1,17 @@
 {
   "name": "@opensumi/monaco-editor-core",
-  "version": "0.47.0-patch.6",
+  "version": "0.47.0-patch.7",
   "description": "A browser based code editor",
-  "author": "Microsoft Corporation",
+  "author": "Microsoft Corporation and open source contributors",
   "license": "MIT",
   "typings": "./esm/vs/editor/editor.api.d.ts",
   "module": "./esm/vs/editor/editor.main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode"
+    "url": "https://github.com/opensumi/monaco-editor-core"
   },
   "bugs": {
-    "url": "https://github.com/microsoft/vscode/issues"
+    "url": "https://github.com/opensumi/monaco-editor-core/issues"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
