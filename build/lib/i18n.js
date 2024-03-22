@@ -19,6 +19,9 @@ const l10n_dev_1 = require("@vscode/l10n-dev");
 function log(message, ...rest) {
     fancyLog(ansiColors.green('[i18n]'), message, ...rest);
 }
+function consumeUnusedVar(...args) {
+    void args;
+}
 exports.defaultLanguages = [
     { id: 'zh-tw', folderName: 'cht', translationId: 'zh-hant' },
     { id: 'zh-cn', folderName: 'chs', translationId: 'zh-hans' },
@@ -294,6 +297,7 @@ function escapeCharacters(value) {
     return result.join('');
 }
 function processCoreBundleFormat(fileHeader, languages, json, emitter) {
+    consumeUnusedVar(fileHeader);
     const keysSection = json.keys;
     const messageSection = json.messages;
     const bundleSection = json.bundles;
@@ -327,6 +331,9 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
             log(`No VS Code localization repository found. Looking at ${languageDirectory}`);
             log(`To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.`);
         }
+    }
+    if (languageDirectory) {
+        log(`Found VS Code localization repository at ${languageDirectory}`);
     }
     const sortedLanguages = sortLanguages(languages);
     sortedLanguages.forEach((language) => {
@@ -379,8 +386,6 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
         Object.keys(bundleSection).forEach((bundle) => {
             const modules = bundleSection[bundle];
             const contents = [
-                fileHeader,
-                // `define("${bundle}.nls.${language.id}", {`
                 '{',
             ];
             modules.forEach((module, index) => {
@@ -414,7 +419,6 @@ const commonHeader1 = `/*-------------------------------------------------------
 const commonHeader2 = `* Copyright (c) Microsoft Corporation. All rights reserved.\n`;
 const commonHeader3 = `*--------------------------------------------------------*/`;
 // transform nls.js to nls.json
-// @ts-ignore
 function toJsonNlsFile(content, fileHeader) {
     return content
         .replace(fileHeader, '')

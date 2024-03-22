@@ -183,7 +183,7 @@ module _nls {
 		return node.kind === ts.SyntaxKind.CallExpression ? CollectStepResult.YesAndRecurse : CollectStepResult.NoAndRecurse;
 	}
 
-	export function analyze(
+	function analyze(
 		ts: typeof import('typescript'),
 		moduleId: string,
 		contents: string,

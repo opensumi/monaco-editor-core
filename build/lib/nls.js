@@ -213,7 +213,6 @@ var _nls;
             nlsExpressions: nlsExpressions.toArray()
         };
     }
-    _nls.analyze = analyze;
     class TextModel {
         lines;
         lineEndings;

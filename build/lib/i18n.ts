@@ -20,6 +20,10 @@ function log(message: any, ...rest: any[]): void {
 	fancyLog(ansiColors.green('[i18n]'), message, ...rest);
 }
 
+function consumeUnusedVar(...args: any[]): void {
+	void args;
+}
+
 export interface Language {
 	id: string; // language id, e.g. zh-tw, de
 	translationId?: string; // language id used in translation tools, e.g. zh-hant, de (optional, if not set, the id is used)
@@ -366,6 +370,7 @@ function escapeCharacters(value: string): string {
 }
 
 function processCoreBundleFormat(fileHeader: string, languages: Language[], json: BundledFormat, emitter: ThroughStream) {
+	consumeUnusedVar(fileHeader);
 	const keysSection = json.keys;
 	const messageSection = json.messages;
 	const bundleSection = json.bundles;
@@ -403,6 +408,11 @@ function processCoreBundleFormat(fileHeader: string, languages: Language[], json
 			log(`To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.`);
 		}
 	}
+
+	if (languageDirectory) {
+		log(`Found VS Code localization repository at ${languageDirectory}`);
+	}
+
 	const sortedLanguages = sortLanguages(languages);
 	sortedLanguages.forEach((language) => {
 		if (process.env['VSCODE_BUILD_VERBOSE']) {
@@ -455,8 +465,6 @@ function processCoreBundleFormat(fileHeader: string, languages: Language[], json
 
 			const modules = bundleSection[bundle];
 			const contents: string[] = [
-				fileHeader,
-				// `define("${bundle}.nls.${language.id}", {`
 				'{',
 			];
 			modules.forEach((module, index) => {
@@ -492,7 +500,6 @@ const commonHeader2 = `* Copyright (c) Microsoft Corporation. All rights reserve
 const commonHeader3 = `*--------------------------------------------------------*/`;
 
 // transform nls.js to nls.json
-// @ts-ignore
 function toJsonNlsFile(content: string, fileHeader: string): string {
 	return content
 		.replace(fileHeader, '')
