@@ -61,6 +61,7 @@ if (typeof $globalThis.vscode !== 'undefined' && typeof $globalThis.vscode.proce
 	// Native environment (sandboxed)
 	nodeProcess = $globalThis.vscode.process;
 } else if (typeof process !== 'undefined' && !(process as any).browser && typeof process.platform === 'string') {
+	// bundler may inject a `process`, but current environment is not node.js
 	// Native environment (non-sandboxed)
 	nodeProcess = process;
 }

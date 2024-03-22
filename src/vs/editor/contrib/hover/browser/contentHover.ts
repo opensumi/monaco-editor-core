@@ -26,6 +26,7 @@ import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/c
 import { ResizableContentWidget } from 'vs/editor/contrib/hover/browser/resizableContentWidget';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IAccessibilityService } from 'vs/platform/accessibility/common/accessibility';
+import { overflowWidgetsSettings } from 'vs/base/browser/settings';
 
 const $ = dom.$;
 
@@ -782,8 +783,8 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	}
 
 	private _updateMaxDimensions() {
-		const height = Math.max(this._editor.getLayoutInfo().height / 4, 250, ContentHoverWidget._lastDimensions.height);
-		const width = Math.max(this._editor.getLayoutInfo().width * 0.66, 500, ContentHoverWidget._lastDimensions.width);
+		const height = Math.max(this._editor.getLayoutInfo().height / 4, overflowWidgetsSettings.hoverWidgetMaxHeight, ContentHoverWidget._lastDimensions.height);
+		const width = Math.max(this._editor.getLayoutInfo().width * 0.66, overflowWidgetsSettings.hoverWidgetMaxWidth, ContentHoverWidget._lastDimensions.width);
 		this._setHoverWidgetMaxDimensions(width, height);
 	}
 
