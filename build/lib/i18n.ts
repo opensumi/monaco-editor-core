@@ -455,7 +455,7 @@ function processCoreBundleFormat(fileHeader: string, languages: Language[], json
 
 			const modules = bundleSection[bundle];
 			const contents: string[] = [
-				// fileHeader,
+				fileHeader,
 				// `define("${bundle}.nls.${language.id}", {`
 				'{',
 			];

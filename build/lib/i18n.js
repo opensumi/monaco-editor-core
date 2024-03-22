@@ -379,7 +379,7 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
         Object.keys(bundleSection).forEach((bundle) => {
             const modules = bundleSection[bundle];
             const contents = [
-                // fileHeader,
+                fileHeader,
                 // `define("${bundle}.nls.${language.id}", {`
                 '{',
             ];
