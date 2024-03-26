@@ -1922,7 +1922,6 @@ declare namespace monaco.editor {
 		_textModelResolvedOptionsBrand: void;
 		readonly tabSize: number;
 		readonly indentSize: number;
-		readonly _indentSizeIsTabSize: boolean;
 		readonly insertSpaces: boolean;
 		readonly defaultEOL: DefaultEndOfLine;
 		readonly trimAutoWhitespace: boolean;
