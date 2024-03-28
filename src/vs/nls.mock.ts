@@ -65,12 +65,14 @@ export function localize(data: ILocalizeInfo | string, message: string, ...args:
 	}
 
 	if (typeof data === 'string') {
+		let message: string | undefined;
 		if (CURRENT_LOCALE_DATA && CURRENT_LOCALE_DATA[data]) {
 			const dataBundle = CURRENT_LOCALE_DATA[data];
-
-			const [defaultMessage, ...otherArgs] = args;
-			return _format(dataBundle[message as unknown as number] || defaultMessage, otherArgs);
+			message = dataBundle[message as unknown as number];
 		}
+
+		const [defaultMessage, ...otherArgs] = args;
+		return _format(message || defaultMessage, otherArgs);
 	}
 
 	return _format(message, args);
