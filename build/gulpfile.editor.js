@@ -88,6 +88,8 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
 // Disable mangling for the editor, as it complicates debugging & quite a few users rely on private/protected fields.
 const compileEditorAMDTask = task.define('compile-editor-amd', compilation.compileTask('out-editor-src', 'out-editor-build', true, { disableMangle: true }));
 
+const compileEditorESMTaskPipeline = task.define('compile-editor-esm', compilation.compileTask('out-editor-esm', 'out-monaco-editor-core/esm', true, { disableMangle: true, transformConstEnum: 1 }));
+
 const optimizeEditorAMDTask = task.define('optimize-editor-amd', optimize.optimizeTask(
 	{
 		out: 'out-editor',
@@ -120,6 +122,8 @@ const createESMSourcesAndResourcesTask = task.define('extract-editor-esm', () =>
 		ignores: [
 			'inlineEntryPoint:0.ts',
 			'inlineEntryPoint:1.ts',
+			'inlineEntryPoint.0.ts',
+			'inlineEntryPoint.1.ts',
 			'vs/loader.js',
 			'vs/base/worker/workerMain.ts',
 			'vs/nls.ts',
@@ -136,28 +140,17 @@ const compileEditorESMTask = task.define('compile-editor-esm', () => {
 	console.log(`Launching the TS compiler at ${path.join(__dirname, '../out-editor-esm')}...`);
 	let result;
 	if (process.platform === 'win32') {
-		result = cp.spawnSync(`..\\node_modules\\.bin\\tspc.cmd`, {
+		result = cp.spawnSync(`..\\node_modules\\.bin\\tsc.cmd`, {
 			cwd: path.join(__dirname, '../out-editor-esm')
 		});
 	} else {
-		result = cp.spawnSync(`node`, [`../node_modules/.bin/tspc`], {
+		result = cp.spawnSync(`node`, [`../node_modules/.bin/tsc`], {
 			cwd: path.join(__dirname, '../out-editor-esm')
 		});
 	}
 
 	console.log(result.stdout.toString());
 	console.log(result.stderr.toString());
-
-	// cause here have a type resolve error, so we should ignore the error
-	// vs/editor/common/model/bracketPairsTextModelPart/bracketPairsTree/ast.ts(9,28): error TS2307: Cannot find module '../..' or its corresponding type declarations.
-	// vs/editor/common/model/bracketPairsTextModelPart/bracketPairsTree/bracketPairsTree.ts(9,28): error TS2307: Cannot find module '../..' or its corresponding type declarations.
-	// in the transpiled code, there is no type, so it is ok to ignore the error
-	const errors = result.stdout.toString().trim().split('\n');
-
-	if (errors.length === 2 && errors.every(line => line.includes('Cannot find module'))) {
-		console.log('The TS Compilation failed, but it is expected');
-		return;
-	}
 
 	if (FAIL_ON_PURPOSE || result.status !== 0) {
 		console.log(`The TS Compilation failed, preparing analysis folder...`);
@@ -425,7 +418,7 @@ gulp.task('editor-distro',
 			),
 			task.series(
 				createESMSourcesAndResourcesTask,
-				compileEditorESMTask,
+				compileEditorESMTaskPipeline,
 				appendJSToESMImportsTask,
 			)
 		),
