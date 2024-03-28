@@ -80,7 +80,7 @@ export function localize(data: ILocalizeInfo | string, message: string, ...args:
 
 export function localize2(data: ILocalizeInfo | string, message: string, ...args: any[]): ILocalizedString {
 	// eslint-disable-next-line local/code-no-unexternalized-strings
-	const res = localize(data, message, args);
+	const res = localize(data, message, ...args);
 	return {
 		original: res,
 		value: res
