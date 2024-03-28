@@ -7,7 +7,7 @@
 export const isESM = false;
 // ESM-comment-end
 // ESM-uncomment-begin
-// export const isESM = true;
+// export const isESM = false;
 // ESM-uncomment-end
 
 export abstract class LoaderStats {

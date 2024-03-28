@@ -16,6 +16,7 @@ import { IDimension } from 'vs/editor/common/core/dimension';
 import { PositionAffinity } from 'vs/editor/common/model';
 import { IPosition, Position } from 'vs/editor/common/core/position';
 import { IViewModel } from 'vs/editor/common/viewModel';
+import { overflowWidgetsSettings } from 'vs/base/browser/settings';
 
 export class ViewContentWidgets extends ViewPart {
 
@@ -291,7 +292,7 @@ class Widget {
 		this._cachedDomNodeOffsetHeight = -1;
 	}
 
-	private _layoutBoxInViewport(anchor: AnchorCoordinate, width: number, height: number, ctx: RenderingContext): IBoxLayoutResult {
+	private _layoutBoxInViewport(anchor: AnchorCoordinate, width: number, _height: number, ctx: RenderingContext): IBoxLayoutResult {
 		// Our visible box is split horizontally by the current line => 2 boxes
 
 		// a) the box above the line
@@ -301,6 +302,19 @@ class Widget {
 		// b) the box under the line
 		const underLineTop = anchor.top + anchor.height;
 		const heightAvailableUnderLine = ctx.viewportHeight - underLineTop;
+
+		// allow-any-unicode-next-line
+		// 这里传入的 height 为 0 会导致下面计算 contentWidget 定位时整体向下偏移了一行
+		// allow-any-unicode-next-line
+		// 由于获取的是缓存的 domNode 的 clientHeight 可能为 0， domNode 渲染时机暂时不好修改，所以如果高度为 0 的话，在这里重新获取一次高度
+		let height = _height;
+		if (height === 0) {
+			const domNode = this.domNode.domNode;
+			const clientRect = domNode.getBoundingClientRect();
+			this._cachedDomNodeOffsetWidth = Math.round(clientRect.width);
+			this._cachedDomNodeOffsetHeight = Math.round(clientRect.height);
+			height = this._cachedDomNodeOffsetHeight;
+		}
 
 		const aboveTop = aboveLineTop - height;
 		const fitsAbove = (heightAvailableAboveLine >= height);
@@ -361,8 +375,8 @@ class Widget {
 		const [left, absoluteAboveLeft] = this._layoutHorizontalSegmentInPage(windowSize, domNodePosition, anchor.left - ctx.scrollLeft + this._contentLeft, width);
 
 		// Leave some clearance to the top/bottom
-		const TOP_PADDING = 22;
-		const BOTTOM_PADDING = 22;
+		const TOP_PADDING = overflowWidgetsSettings.topPadding;
+		const BOTTOM_PADDING = overflowWidgetsSettings.bottomPadding;
 
 		const fitsAbove = (absoluteAboveTop >= TOP_PADDING);
 		const fitsBelow = (absoluteBelowTop + height <= windowSize.height - BOTTOM_PADDING);
