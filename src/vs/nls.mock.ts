@@ -56,7 +56,7 @@ export function localize(data: ILocalizeInfo | string, message: string, ...args:
 		if (factory) {
 			defaultLocale = factory();
 			// allow-any-unicode-next-line
-			// 由于目前仅支持中/英文，所以如果locale 为 'zh-cn'，则表示已经设置了中文，否则仅使用默认值，无需加载语言包
+			// 由于目前仅支持中/英文，所以如果 locale 为 'zh-cn'，则表示已经设置了中文，locale 不设置的话，直接用传入的默认值
 			if (defaultLocale?.toLowerCase() === 'zh-cn') {
 				CURRENT_LOCALE_DATA = zhCnBundle;
 			}
@@ -65,14 +65,13 @@ export function localize(data: ILocalizeInfo | string, message: string, ...args:
 	}
 
 	if (typeof data === 'string') {
-		let message: string | undefined;
+		let template: string | undefined;
 		if (CURRENT_LOCALE_DATA && CURRENT_LOCALE_DATA[data]) {
-			const dataBundle = CURRENT_LOCALE_DATA[data];
-			message = dataBundle[message as unknown as number];
+			template = CURRENT_LOCALE_DATA[data][message as unknown as number];
 		}
 
 		const [defaultMessage, ...otherArgs] = args;
-		return _format(message || defaultMessage, otherArgs);
+		return _format(template || defaultMessage, otherArgs);
 	}
 
 	return _format(message, args);
