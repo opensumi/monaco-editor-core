@@ -395,7 +395,7 @@ class FastRenderedViewLine implements IRenderedViewLine {
 			const horizontalOffset = this._characterMapping.getHorizontalOffset(this._characterMapping.length);
 			return Math.round(this._charWidth * horizontalOffset);
 		}
-		if (this._cachedWidth === -1) {
+		if (this._cachedWidth <= 0) {
 			this._cachedWidth = this._getReadingTarget(this.domNode).offsetWidth;
 			context?.markDidDomLayout();
 		}
@@ -529,7 +529,7 @@ class RenderedViewLine implements IRenderedViewLine {
 		if (!this.domNode) {
 			return 0;
 		}
-		if (this._cachedWidth === -1) {
+		if (this._cachedWidth <= 0) {
 			this._cachedWidth = this._getReadingTarget(this.domNode).offsetWidth;
 			context?.markDidDomLayout();
 		}

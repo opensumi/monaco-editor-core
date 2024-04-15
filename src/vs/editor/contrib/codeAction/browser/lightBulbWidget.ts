@@ -20,7 +20,7 @@ import * as nls from 'vs/nls';
 import { ICommandService } from 'vs/platform/commands/common/commands';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 
-namespace LightBulbState {
+export namespace LightBulbState {
 
 	export const enum Type {
 		Hidden,
@@ -47,22 +47,22 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 
 	public static readonly ID = 'editor.contrib.lightbulbWidget';
 
-	private static readonly _posPref = [ContentWidgetPositionPreference.EXACT];
+	protected static readonly _posPref = [ContentWidgetPositionPreference.EXACT];
 
-	private readonly _domNode: HTMLElement;
+	protected readonly _domNode: HTMLElement;
 
-	private readonly _onClick = this._register(new Emitter<{ readonly x: number; readonly y: number; readonly actions: CodeActionSet; readonly trigger: CodeActionTrigger }>());
+	protected readonly _onClick = this._register(new Emitter<{ readonly x: number; readonly y: number; readonly actions: CodeActionSet; readonly trigger: CodeActionTrigger }>());
 	public readonly onClick = this._onClick.event;
 
-	private _state: LightBulbState.State = LightBulbState.Hidden;
-	private _iconClasses: string[] = [];
+	protected _state: LightBulbState.State = LightBulbState.Hidden;
+	protected _iconClasses: string[] = [];
 
-	private _preferredKbLabel?: string;
-	private _quickFixKbLabel?: string;
+	protected _preferredKbLabel?: string;
+	protected _quickFixKbLabel?: string;
 
 	constructor(
-		private readonly _editor: ICodeEditor,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		protected readonly _editor: ICodeEditor,
+		@IKeybindingService protected readonly _keybindingService: IKeybindingService,
 		@ICommandService commandService: ICommandService,
 	) {
 		super();
@@ -201,14 +201,14 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		this._editor.layoutContentWidget(this);
 	}
 
-	private get state(): LightBulbState.State { return this._state; }
+	protected get state(): LightBulbState.State { return this._state; }
 
-	private set state(value) {
+	protected set state(value) {
 		this._state = value;
 		this._updateLightBulbTitleAndIcon();
 	}
 
-	private _updateLightBulbTitleAndIcon(): void {
+	protected _updateLightBulbTitleAndIcon(): void {
 		this._domNode.classList.remove(...this._iconClasses);
 		this._iconClasses = [];
 		if (this.state.type !== LightBulbState.Type.Showing) {
@@ -237,7 +237,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		this._domNode.classList.add(...this._iconClasses);
 	}
 
-	private _updateLightbulbTitle(autoFix: boolean, autoRun: boolean): void {
+	protected _updateLightbulbTitle(autoFix: boolean, autoRun: boolean): void {
 		if (this.state.type !== LightBulbState.Type.Showing) {
 			return;
 		}
@@ -252,7 +252,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		}
 	}
 
-	private set title(value: string) {
+	protected set title(value: string) {
 		this._domNode.title = value;
 	}
 }

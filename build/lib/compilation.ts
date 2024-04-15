@@ -48,6 +48,7 @@ function createCompile(src: string, build: boolean, emitError: boolean, transpil
 
 	const projectPath = path.join(__dirname, '../../', src, 'tsconfig.json');
 	const overrideOptions = { ...getTypeScriptCompilerOptions(src), inlineSources: Boolean(build) };
+
 	if (!build) {
 		overrideOptions.inlineSourceMap = true;
 	}
@@ -114,7 +115,7 @@ export function transpileTask(src: string, out: string, swc: boolean): task.Stre
 	return task;
 }
 
-export function compileTask(src: string, out: string, build: boolean, options: { disableMangle?: boolean } = {}): task.StreamTask {
+export function compileTask(src: string, out: string, build: boolean, options: { disableMangle?: boolean; transformConstEnum?: boolean } = {}): task.StreamTask {
 
 	const task = () => {
 
@@ -156,6 +157,7 @@ export function compileTask(src: string, out: string, build: boolean, options: {
 			.pipe(mangleStream)
 			.pipe(generator.stream)
 			.pipe(compile())
+			.pipe(options?.transformConstEnum ? transformConstEnum() : es.through())
 			.pipe(gulp.dest(out));
 	};
 
@@ -340,3 +342,12 @@ export const watchApiProposalNamesTask = task.define('watch-api-proposal-names',
 		.pipe(util.debounce(task))
 		.pipe(gulp.dest('src'));
 });
+
+function transformConstEnum() {
+	return es.map((file: File, cb: any) => {
+		if (/\.ts$/.test(file.path)) {
+			file.contents = Buffer.from(file.contents.toString().replace(/const enum/g, 'enum'));
+		}
+		cb(null, file);
+	});
+}

@@ -134,8 +134,11 @@ function createESMSourcesAndResources2(options) {
         }
         if (file === 'tsconfig.json') {
             const tsConfig = JSON.parse(fs.readFileSync(path.join(SRC_FOLDER, file)).toString());
-            tsConfig.compilerOptions.module = 'es6';
+            tsConfig.compilerOptions.module = 'commonjs';
             tsConfig.compilerOptions.outDir = path.join(path.relative(OUT_FOLDER, OUT_RESOURCES_FOLDER), 'vs').replace(/\\/g, '/');
+            tsConfig.compilerOptions.preserveConstEnums = true;
+            tsConfig.compilerOptions.declaration = true;
+            tsConfig.compilerOptions.noEmitOnError = false;
             write(getDestAbsoluteFilePath(file), JSON.stringify(tsConfig, null, '\t'));
             continue;
         }
@@ -153,11 +156,17 @@ function createESMSourcesAndResources2(options) {
                 const pos = info.importedFiles[i].pos;
                 const end = info.importedFiles[i].end;
                 let importedFilepath;
+                let importedIsAFile = false;
                 if (/^vs\/css!/.test(importedFilename)) {
                     importedFilepath = importedFilename.substr('vs/css!'.length) + '.css';
                 }
                 else {
                     importedFilepath = importedFilename;
+                }
+                // try to resolve the imported file path
+                const filePath = path.join(SRC_FOLDER, importedFilepath);
+                if (fs.existsSync(filePath + '.ts')) {
+                    importedIsAFile = true;
                 }
                 if (/(^\.\/)|(^\.\.\/)/.test(importedFilepath)) {
                     importedFilepath = path.join(path.dirname(file), importedFilepath);
@@ -170,7 +179,14 @@ function createESMSourcesAndResources2(options) {
                     relativePath = '../../' + path.basename(path.dirname(path.dirname(file)));
                 }
                 else {
-                    relativePath = path.relative(path.dirname(file), importedFilepath);
+                    if (importedIsAFile) {
+                        importedFilepath = importedFilepath + '.ts';
+                        relativePath = path.relative(path.dirname(file), importedFilepath);
+                        relativePath = relativePath.replace(/\.ts$/, '');
+                    }
+                    else {
+                        relativePath = path.relative(path.dirname(file), importedFilepath);
+                    }
                 }
                 relativePath = relativePath.replace(/\\/g, '/');
                 if (!/(^\.\/)|(^\.\.\/)/.test(relativePath)) {

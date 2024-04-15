@@ -132,6 +132,7 @@ function compileTask(src, out, build, options = {}) {
             .pipe(mangleStream)
             .pipe(generator.stream)
             .pipe(compile())
+            .pipe(options?.transformConstEnum ? transformConstEnum() : es.through())
             .pipe(gulp.dest(out));
     };
     task.taskName = `compile-${path.basename(src)}`;
@@ -291,4 +292,12 @@ exports.watchApiProposalNamesTask = task.define('watch-api-proposal-names', () =
         .pipe(util.debounce(task))
         .pipe(gulp.dest('src'));
 });
+function transformConstEnum() {
+    return es.map((file, cb) => {
+        if (/\.ts$/.test(file.path)) {
+            file.contents = Buffer.from(file.contents.toString().replace(/const enum/g, 'enum'));
+        }
+        cb(null, file);
+    });
+}
 //# sourceMappingURL=compilation.js.map

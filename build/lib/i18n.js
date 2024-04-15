@@ -19,6 +19,9 @@ const l10n_dev_1 = require("@vscode/l10n-dev");
 function log(message, ...rest) {
     fancyLog(ansiColors.green('[i18n]'), message, ...rest);
 }
+function consumeUnusedVar(...args) {
+    void args;
+}
 exports.defaultLanguages = [
     { id: 'zh-tw', folderName: 'cht', translationId: 'zh-hant' },
     { id: 'zh-cn', folderName: 'chs', translationId: 'zh-hans' },
@@ -263,9 +266,9 @@ function escapeCharacters(value) {
     for (let i = 0; i < value.length; i++) {
         const ch = value.charAt(i);
         switch (ch) {
-            case '\'':
-                result.push('\\\'');
-                break;
+            // case '\'':
+            // 	result.push('\\\'');
+            // 	break;
             case '"':
                 result.push('\\"');
                 break;
@@ -294,6 +297,7 @@ function escapeCharacters(value) {
     return result.join('');
 }
 function processCoreBundleFormat(fileHeader, languages, json, emitter) {
+    consumeUnusedVar(fileHeader);
     const keysSection = json.keys;
     const messageSection = json.messages;
     const bundleSection = json.bundles;
@@ -318,10 +322,18 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
             }
         });
     });
-    const languageDirectory = path.join(__dirname, '..', '..', '..', 'vscode-loc', 'i18n');
+    let languageDirectory = path.join(__dirname, '..', '..', '..', 'vscode-loc', 'i18n');
     if (!fs.existsSync(languageDirectory)) {
         log(`No VS Code localization repository found. Looking at ${languageDirectory}`);
-        log(`To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.`);
+        languageDirectory = path.join(__dirname, '..', '..', 'vscode-loc', 'i18n');
+        log(`Now looking at ${languageDirectory}`);
+        if (!fs.existsSync(languageDirectory)) {
+            log(`No VS Code localization repository found. Looking at ${languageDirectory}`);
+            log(`To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.`);
+        }
+    }
+    if (languageDirectory) {
+        log(`Found VS Code localization repository at ${languageDirectory}`);
     }
     const sortedLanguages = sortLanguages(languages);
     sortedLanguages.forEach((language) => {
@@ -374,8 +386,7 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
         Object.keys(bundleSection).forEach((bundle) => {
             const modules = bundleSection[bundle];
             const contents = [
-                fileHeader,
-                `define("${bundle}.nls.${language.id}", {`
+                '{',
             ];
             modules.forEach((module, index) => {
                 contents.push(`\t"${module}": [`);
@@ -385,12 +396,12 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
                     return;
                 }
                 messages.forEach((message, index) => {
-                    contents.push(`\t\t"${escapeCharacters(message)}${index < messages.length ? '",' : '"'}`);
+                    contents.push(`\t\t"${escapeCharacters(message)}${index < messages.length - 1 ? '",' : '"'}`);
                 });
                 contents.push(index < modules.length - 1 ? '\t],' : '\t]');
             });
-            contents.push('});');
-            emitter.queue(new File({ path: bundle + '.nls.' + language.id + '.js', contents: Buffer.from(contents.join('\n'), 'utf-8') }));
+            contents.push('}');
+            emitter.queue(new File({ path: bundle + '.nls.' + language.id + '.json', contents: Buffer.from(contents.join('\n'), 'utf-8') }));
         });
     });
     Object.keys(statistics).forEach(key => {
@@ -403,6 +414,20 @@ function processCoreBundleFormat(fileHeader, languages, json, emitter) {
             log(`\tNo translations found for language ${language.id}. Using default language instead.`);
         }
     });
+}
+const commonHeader1 = `/*---------------------------------------------------------\n`;
+const commonHeader2 = `* Copyright (c) Microsoft Corporation. All rights reserved.\n`;
+const commonHeader3 = `*--------------------------------------------------------*/`;
+// transform nls.js to nls.json
+function toJsonNlsFile(content, fileHeader) {
+    return content
+        .replace(fileHeader, '')
+        .replace(commonHeader1, '')
+        .replace(commonHeader2, '')
+        .replace(commonHeader3, '')
+        .replace(`define("vs/editor/editor.main.nls", {`, '{')
+        .replace('});', '}')
+        .trim();
 }
 function processNlsFiles(opts) {
     return (0, event_stream_1.through)(function (file) {
@@ -420,7 +445,15 @@ function processNlsFiles(opts) {
                 processCoreBundleFormat(opts.fileHeader, opts.languages, json, this);
             }
         }
-        this.queue(file);
+        if (file.path.includes('editor.main.nls.js')) {
+            this.queue(new File({
+                path: file.path.replace('.js', '.json'),
+                contents: Buffer.from(toJsonNlsFile(file.contents.toString(), opts.fileHeader)),
+            }));
+        }
+        else {
+            this.queue(file);
+        }
     });
 }
 exports.processNlsFiles = processNlsFiles;

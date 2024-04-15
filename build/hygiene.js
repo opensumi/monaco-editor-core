@@ -130,6 +130,10 @@ function hygiene(some, linting = true) {
 					const original = result.src.replace(/\r\n/gm, '\n');
 					const formatted = result.dest.replace(/\r\n/gm, '\n');
 
+					if (process.env.WRITE_FAIL) {
+						fs.writeFileSync(file.path, formatted, 'utf8');
+					}
+
 					if (original !== formatted) {
 						console.error(
 							`File not formatted. Run the 'Format Document' command to fix it:`,
@@ -173,8 +177,8 @@ function hygiene(some, linting = true) {
 		.pipe(unicodeFilterStream.restore)
 		.pipe(filter(indentationFilter))
 		.pipe(indentation)
-		.pipe(filter(copyrightFilter))
-		.pipe(copyrights);
+		.pipe(filter(copyrightFilter));
+		// .pipe(copyrights);
 
 	const streams = [
 		result.pipe(filter(tsFormattingFilter)).pipe(formatting)

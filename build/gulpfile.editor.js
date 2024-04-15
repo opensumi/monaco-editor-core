@@ -78,7 +78,7 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
 			apiusages,
 			extrausages
 		],
-		shakeLevel: 2, // 0-Files, 1-InnerFile, 2-ClassMembers
+		shakeLevel: 0, // 0-Files, 1-InnerFile, 2-ClassMembers
 		importIgnorePattern: /(^vs\/css!)/,
 		destRoot: path.join(root, 'out-editor-src'),
 		redirects: []
@@ -87,6 +87,8 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
 
 // Disable mangling for the editor, as it complicates debugging & quite a few users rely on private/protected fields.
 const compileEditorAMDTask = task.define('compile-editor-amd', compilation.compileTask('out-editor-src', 'out-editor-build', true, { disableMangle: true }));
+
+const compileEditorESMTaskPipeline = task.define('compile-editor-esm', compilation.compileTask('out-editor-esm', 'out-monaco-editor-core/esm', true, { disableMangle: true, transformConstEnum: 1 }));
 
 const optimizeEditorAMDTask = task.define('optimize-editor-amd', optimize.optimizeTask(
 	{
@@ -120,8 +122,11 @@ const createESMSourcesAndResourcesTask = task.define('extract-editor-esm', () =>
 		ignores: [
 			'inlineEntryPoint:0.ts',
 			'inlineEntryPoint:1.ts',
+			'inlineEntryPoint.0.ts',
+			'inlineEntryPoint.1.ts',
 			'vs/loader.js',
 			'vs/base/worker/workerMain.ts',
+			'vs/nls.ts',
 		],
 		renames: {
 			'vs/nls.mock.ts': 'vs/nls.ts'
@@ -332,7 +337,7 @@ const finalEditorResourcesTask = task.define('final-editor-resources', () => {
 		// version.txt
 		gulp.src('build/monaco/version.txt')
 			.pipe(es.through(function (data) {
-				data.contents = Buffer.from(`monaco-editor-core: https://github.com/microsoft/vscode/tree/${sha1}`);
+				data.contents = Buffer.from(`monaco-editor-core: https://github.com/opensumi/monaco-editor-core/tree/${sha1}`);
 				this.emit('data', data);
 			}))
 			.pipe(gulp.dest('out-monaco-editor-core')),
@@ -408,12 +413,13 @@ gulp.task('editor-distro',
 			task.series(
 				compileEditorAMDTask,
 				optimizeEditorAMDTask,
-				minifyEditorAMDTask
+				// disable minify
+				// minifyEditorAMDTask
 			),
 			task.series(
 				createESMSourcesAndResourcesTask,
-				compileEditorESMTask,
-				appendJSToESMImportsTask
+				compileEditorESMTaskPipeline,
+				appendJSToESMImportsTask,
 			)
 		),
 		finalEditorResourcesTask
