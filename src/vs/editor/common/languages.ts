@@ -29,9 +29,8 @@ import { IMarkerData } from '../../platform/markers/common/markers.js';
 import { IModelTokensChangedEvent } from './textModelEvents.js';
 import type { Parser } from '@vscode/tree-sitter-wasm';
 
-/**
- * @internal
- */
+export { HierarchicalKind } from '../../base/common/hierarchicalKind.js';
+
 export interface ILanguageIdCodec {
 	encodeLanguageId(languageId: string): LanguageId;
 	decodeLanguageId(languageId: LanguageId): string;
@@ -897,9 +896,6 @@ export interface DocumentPasteEdit {
 	additionalEdit?: WorkspaceEdit;
 }
 
-/**
- * @internal
- */
 export enum DocumentPasteTriggerKind {
 	Automatic = 0,
 	PasteAs = 1,
@@ -1857,9 +1853,6 @@ export enum CommentThreadState {
 	Resolved = 1
 }
 
-/**
- * @internal
- */
 export enum CommentThreadApplicability {
 	Current = 0,
 	Outdated = 1

@@ -39,6 +39,8 @@ import { IKeybindingService } from '../../../platform/keybinding/common/keybindi
 import { IMarker, IMarkerData, IMarkerService } from '../../../platform/markers/common/markers.js';
 import { IOpenerService } from '../../../platform/opener/common/opener.js';
 import { MultiDiffEditorWidget } from '../../browser/widget/multiDiffEditor/multiDiffEditorWidget.js';
+import { OffsetRange } from '../../common/core/offsetRange.js';
+import { TokenArray, TokenArrayBuilder, TokenInfo } from '../../common/tokens/tokenArray.js';
 
 /**
  * Create a new editor under `domElement`.
@@ -565,6 +567,7 @@ export function createMonacoEditorAPI(): typeof monaco.editor {
 		InjectedTextCursorStops: standaloneEnums.InjectedTextCursorStops,
 		PositionAffinity: standaloneEnums.PositionAffinity,
 		ShowLightbulbIconMode: standaloneEnums.ShowLightbulbIconMode,
+		MenuId: <any>MenuId,
 
 		// classes
 		ConfigurationChangedEvent: <any>ConfigurationChangedEvent,
@@ -574,8 +577,11 @@ export function createMonacoEditorAPI(): typeof monaco.editor {
 		FindMatch: <any>FindMatch,
 		ApplyUpdateResult: <any>ApplyUpdateResult,
 		EditorZoom: <any>EditorZoom,
-
 		createMultiFileDiffEditor: <any>createMultiFileDiffEditor,
+		OffsetRange: OffsetRange,
+		TokenArray: <any>TokenArray,
+		TokenInfo: <any>TokenInfo,
+		TokenArrayBuilder: <any>TokenArrayBuilder,
 
 		// vars
 		EditorType: EditorType,

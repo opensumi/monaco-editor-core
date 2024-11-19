@@ -104,6 +104,7 @@ export interface ILocalizedString {
 export interface ICommandMetadata {
 	readonly description: ILocalizedString | string;
 }
+#include(vs/platform/actions/common/actions): MenuId
 #include(vs/platform/contextkey/common/contextkey): IContextKey, ContextKeyValue
 #include(vs/editor/standalone/browser/standaloneServices): IEditorOverrideServices
 #include(vs/platform/markers/common/markers): IMarker, IMarkerData, IRelatedInformation
@@ -114,6 +115,7 @@ export interface ICommandMetadata {
 #include(vs/editor/common/core/wordHelper): IWordAtPosition
 #include(vs/editor/common/diff/legacyLinesDiffComputer): IChange, ICharChange, ILineChange
 #include(vs/editor/common/core/dimension): IDimension
+#include(vs/editor/common/core/offsetRange): OffsetRange, IOffsetRange
 #includeAll(vs/editor/common/editorCommon): IScrollEvent
 #includeAll(vs/editor/common/textModelEvents):
 #includeAll(vs/editor/common/config/editorOptions;IConfigurationPropertySchema=>any;ComputeOptionsMemory):BaseEditorOption,ComputedEditorOption,EditorFontLigatures,EditorLayoutInfoComputer,EditorLayoutInfoComputerEnv
@@ -121,10 +123,10 @@ export interface ICommandMetadata {
 #includeAll(vs/editor/common/cursorEvents):
 #includeAll(vs/editor/browser/editorBrowser;IMouseWheelEvent=>any;editorCommon.=>;InjectedText=>any;ServicesAccessor=>any;IViewModel=>any;IDiffComputationResult=>any;IContextKeyService=>any;IBoundarySashes=>any):IOverviewRuler
 #include(vs/editor/common/config/fontInfo;IValidatedEditorOptions=>any): FontInfo, BareFontInfo
-#includeAll(vs/editor/common/model;StandardTokenType=>any;IBracketPairsTextModelPart=>any;ITokenizationTextModelPart=>any;IGuidesTextModelPart=>any;LanguageIdentifier=>any;ContiguousMultilineTokens=>any;SparseMultilineTokens=>any;InternalModelContentChangeEvent=>any;MultilineTokens=>any;MultilineTokens2=>any;LineTokens=>any;SearchData=>any;LanguageId=>any;FormattingOptions=>languages.FormattingOptions;ModelRawContentChangedEvent=>any;ApplyEditsResult=>any;ValidAnnotatedEditOperation=>any;TextChange=> any;ModelInjectedTextChangedEvent=>any;PositionNormalizationAffinity=>any;IndentGuide=>any;ILanguageSelection=>languages.ILanguageSelection;UndoRedoGroup=>any): IScrollEvent,TextChange
+#includeAll(vs/editor/common/model;StandardTokenType=>any;IBracketPairsTextModelPart=>any;ITokenizationTextModelPart=>any;IGuidesTextModelPart=>any;LanguageIdentifier=>any;ContiguousMultilineTokens=>any;SparseMultilineTokens=>any;InternalModelContentChangeEvent=>any;MultilineTokens=>any;MultilineTokens2=>any;LineTokens=>any;SearchData=>any;FormattingOptions=>languages.FormattingOptions;ModelRawContentChangedEvent=>any;ApplyEditsResult=>any;ValidAnnotatedEditOperation=>any;TextChange=> any;ModelInjectedTextChangedEvent=>any;PositionNormalizationAffinity=>any;IndentGuide=>any;ILanguageSelection=>languages.ILanguageSelection;UndoRedoGroup=>any): IScrollEvent,TextChange
 #include(vs/platform/accessibility/common/accessibility): AccessibilitySupport
 #include(vs/editor/common/viewModel): IEditorWhitespace
-
+#includeAll(vs/editor/common/tokens/tokenArray):
 #include(vs/editor/common/config/editorZoom): EditorZoom, IEditorZoom
 
 //compatibility:
@@ -135,11 +137,14 @@ export type IModel = ITextModel;
 declare namespace monaco.languages {
 
 #include(vs/base/common/glob): IRelativePattern
+#include(vs/base/common/hierarchicalKind): HierarchicalKind
+#include(vs/base/common/dataTransfer): IDataTransferItem, IReadonlyVSDataTransfer, IDataTransferFile
 #include(vs/editor/common/languageSelector): LanguageSelector, LanguageFilter
 #includeAll(vs/editor/standalone/browser/standaloneLanguages;modes.=>;languages.=>;editorCommon.=>editor.;model.=>editor.;IMarkerData=>editor.IMarkerData):
 #includeAll(vs/editor/common/languages/languageConfiguration):
-#includeAll(vs/editor/common/languages;IMarkerData=>editor.IMarkerData;ISingleEditOperation=>editor.ISingleEditOperation;model.=>editor.;CommentMode=>any;ExtensionIdentifier=>any;ITokenizationSupportFactory=>any;CommentThreadState=>any;CommentThreadCollapsibleState=>any;CommentThreadState=>any;ContiguousMultilineTokens=>any;ThemeIcon=>editor.ThemeIcon;VSBuffer=>any):ITokenPresentation,ILanguageIdCodec,ITokenizationRegistry,ITokenizationSupport,ILazyTokenizationSupport,ITokenizationSupportFactory,CodeActionContext,Token,DocumentPasteEditProvider,DocumentOnDropEditProvider
-#include(vs/editor/common/languages/language): ILanguageExtensionPoint,ILanguageIcon,ILanguageSelection
+#include(vs/editor/common/encodedTokenAttributes): LanguageId
+#includeAll(vs/editor/common/languages/language): ILanguageService
+#includeAll(vs/editor/common/languages;IMarkerData=>editor.IMarkerData;ISingleEditOperation=>editor.ISingleEditOperation;model.=>editor.;CommentMode=>any;ExtensionIdentifier=>any;ITokenizationSupportFactory=>any;CommentThreadState=>any;CommentThreadCollapsibleState=>any;CommentThreadState=>any;ContiguousMultilineTokens=>any;ThemeIcon=>editor.ThemeIcon;VSBuffer=>any):ITokenPresentation,ITokenizationRegistry,ITokenizationSupport,ILazyTokenizationSupport,ITokenizationSupportFactory,CodeActionContext,Token,DocumentPasteEditProvider,DocumentOnDropEditProvider,ITreeSitterTokenizationSupport
 #includeAll(vs/editor/standalone/common/monarch/monarchTypes):
 export type InlineValue = InlineValueText | InlineValueVariableLookup | InlineValueExpression;
 }

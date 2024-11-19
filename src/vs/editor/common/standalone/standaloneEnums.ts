@@ -20,6 +20,11 @@ export enum CodeActionTriggerType {
 	Auto = 2
 }
 
+export enum CommentThreadApplicability {
+	Current = 0,
+	Outdated = 1
+}
+
 export enum CompletionItemInsertTextRule {
 	None = 0,
 	/**
@@ -159,6 +164,11 @@ export enum DocumentHighlightKind {
 	 * Write-access of a symbol, like writing to a variable.
 	 */
 	Write = 2
+}
+
+export enum DocumentPasteTriggerKind {
+	Automatic = 0,
+	PasteAs = 1
 }
 
 /**
@@ -639,6 +649,13 @@ export enum KeyCode {
 	 * Please do not depend on this value!
 	 */
 	MAX_VALUE = 132
+}
+/**
+ * Open ended enum at runtime
+ */
+export enum LanguageId {
+	Null = 0,
+	PlainText = 1
 }
 
 export enum MarkerSeverity {

@@ -388,7 +388,6 @@ gulp.task('editor-distro',
 			),
 			task.series(
 				createESMSourcesAndResourcesTask,
-				appendJSToESMImportsTask,
 				compileEditorEsmTask
 			)
 		),

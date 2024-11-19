@@ -812,9 +812,13 @@ export function createMonacoLanguagesAPI(): typeof monaco.languages {
 		NewSymbolNameTriggerKind: standaloneEnums.NewSymbolNameTriggerKind,
 		PartialAcceptTriggerKind: standaloneEnums.PartialAcceptTriggerKind,
 		HoverVerbosityAction: standaloneEnums.HoverVerbosityAction,
+		LanguageId: standaloneEnums.LanguageId,
+		DocumentPasteTriggerKind: standaloneEnums.DocumentPasteTriggerKind,
+		CommentThreadApplicability: standaloneEnums.CommentThreadApplicability,
 
 		// classes
 		FoldingRangeKind: languages.FoldingRangeKind,
 		SelectedSuggestionInfo: <any>languages.SelectedSuggestionInfo,
+		HierarchicalKind: languages.HierarchicalKind,
 	};
 }
