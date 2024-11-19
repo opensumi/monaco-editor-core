@@ -1465,6 +1465,207 @@ declare namespace monaco.editor {
 		readonly description: ILocalizedString | string;
 	}
 
+	export class MenuId {
+		private static readonly _instances;
+		static readonly CommandPalette: MenuId;
+		static readonly DebugBreakpointsContext: MenuId;
+		static readonly DebugCallStackContext: MenuId;
+		static readonly DebugConsoleContext: MenuId;
+		static readonly DebugVariablesContext: MenuId;
+		static readonly NotebookVariablesContext: MenuId;
+		static readonly DebugHoverContext: MenuId;
+		static readonly DebugWatchContext: MenuId;
+		static readonly DebugToolBar: MenuId;
+		static readonly DebugToolBarStop: MenuId;
+		static readonly DebugCallStackToolbar: MenuId;
+		static readonly DebugCreateConfiguration: MenuId;
+		static readonly EditorContext: MenuId;
+		static readonly SimpleEditorContext: MenuId;
+		static readonly EditorContent: MenuId;
+		static readonly EditorLineNumberContext: MenuId;
+		static readonly EditorContextCopy: MenuId;
+		static readonly EditorContextPeek: MenuId;
+		static readonly EditorContextShare: MenuId;
+		static readonly EditorTitle: MenuId;
+		static readonly EditorTitleRun: MenuId;
+		static readonly EditorTitleContext: MenuId;
+		static readonly EditorTitleContextShare: MenuId;
+		static readonly EmptyEditorGroup: MenuId;
+		static readonly EmptyEditorGroupContext: MenuId;
+		static readonly EditorTabsBarContext: MenuId;
+		static readonly EditorTabsBarShowTabsSubmenu: MenuId;
+		static readonly EditorTabsBarShowTabsZenModeSubmenu: MenuId;
+		static readonly EditorActionsPositionSubmenu: MenuId;
+		static readonly ExplorerContext: MenuId;
+		static readonly ExplorerContextShare: MenuId;
+		static readonly ExtensionContext: MenuId;
+		static readonly ExtensionEditorContextMenu: MenuId;
+		static readonly GlobalActivity: MenuId;
+		static readonly CommandCenter: MenuId;
+		static readonly CommandCenterCenter: MenuId;
+		static readonly LayoutControlMenuSubmenu: MenuId;
+		static readonly LayoutControlMenu: MenuId;
+		static readonly MenubarMainMenu: MenuId;
+		static readonly MenubarAppearanceMenu: MenuId;
+		static readonly MenubarDebugMenu: MenuId;
+		static readonly MenubarEditMenu: MenuId;
+		static readonly MenubarCopy: MenuId;
+		static readonly MenubarFileMenu: MenuId;
+		static readonly MenubarGoMenu: MenuId;
+		static readonly MenubarHelpMenu: MenuId;
+		static readonly MenubarLayoutMenu: MenuId;
+		static readonly MenubarNewBreakpointMenu: MenuId;
+		static readonly PanelAlignmentMenu: MenuId;
+		static readonly PanelPositionMenu: MenuId;
+		static readonly ActivityBarPositionMenu: MenuId;
+		static readonly MenubarPreferencesMenu: MenuId;
+		static readonly MenubarRecentMenu: MenuId;
+		static readonly MenubarSelectionMenu: MenuId;
+		static readonly MenubarShare: MenuId;
+		static readonly MenubarSwitchEditorMenu: MenuId;
+		static readonly MenubarSwitchGroupMenu: MenuId;
+		static readonly MenubarTerminalMenu: MenuId;
+		static readonly MenubarViewMenu: MenuId;
+		static readonly MenubarHomeMenu: MenuId;
+		static readonly OpenEditorsContext: MenuId;
+		static readonly OpenEditorsContextShare: MenuId;
+		static readonly ProblemsPanelContext: MenuId;
+		static readonly SCMInputBox: MenuId;
+		static readonly SCMChangesContext: MenuId;
+		static readonly SCMChangeContext: MenuId;
+		static readonly SCMResourceContext: MenuId;
+		static readonly SCMResourceContextShare: MenuId;
+		static readonly SCMResourceFolderContext: MenuId;
+		static readonly SCMResourceGroupContext: MenuId;
+		static readonly SCMSourceControl: MenuId;
+		static readonly SCMSourceControlInline: MenuId;
+		static readonly SCMSourceControlTitle: MenuId;
+		static readonly SCMHistoryTitle: MenuId;
+		static readonly SCMTitle: MenuId;
+		static readonly SearchContext: MenuId;
+		static readonly SearchActionMenu: MenuId;
+		static readonly StatusBarWindowIndicatorMenu: MenuId;
+		static readonly StatusBarRemoteIndicatorMenu: MenuId;
+		static readonly StickyScrollContext: MenuId;
+		static readonly TestItem: MenuId;
+		static readonly TestItemGutter: MenuId;
+		static readonly TestProfilesContext: MenuId;
+		static readonly TestMessageContext: MenuId;
+		static readonly TestMessageContent: MenuId;
+		static readonly TestPeekElement: MenuId;
+		static readonly TestPeekTitle: MenuId;
+		static readonly TestCallStack: MenuId;
+		static readonly TouchBarContext: MenuId;
+		static readonly TitleBarContext: MenuId;
+		static readonly TitleBarTitleContext: MenuId;
+		static readonly TunnelContext: MenuId;
+		static readonly TunnelPrivacy: MenuId;
+		static readonly TunnelProtocol: MenuId;
+		static readonly TunnelPortInline: MenuId;
+		static readonly TunnelTitle: MenuId;
+		static readonly TunnelLocalAddressInline: MenuId;
+		static readonly TunnelOriginInline: MenuId;
+		static readonly ViewItemContext: MenuId;
+		static readonly ViewContainerTitle: MenuId;
+		static readonly ViewContainerTitleContext: MenuId;
+		static readonly ViewTitle: MenuId;
+		static readonly ViewTitleContext: MenuId;
+		static readonly CommentEditorActions: MenuId;
+		static readonly CommentThreadTitle: MenuId;
+		static readonly CommentThreadActions: MenuId;
+		static readonly CommentThreadAdditionalActions: MenuId;
+		static readonly CommentThreadTitleContext: MenuId;
+		static readonly CommentThreadCommentContext: MenuId;
+		static readonly CommentTitle: MenuId;
+		static readonly CommentActions: MenuId;
+		static readonly CommentsViewThreadActions: MenuId;
+		static readonly InteractiveToolbar: MenuId;
+		static readonly InteractiveCellTitle: MenuId;
+		static readonly InteractiveCellDelete: MenuId;
+		static readonly InteractiveCellExecute: MenuId;
+		static readonly InteractiveInputExecute: MenuId;
+		static readonly InteractiveInputConfig: MenuId;
+		static readonly ReplInputExecute: MenuId;
+		static readonly IssueReporter: MenuId;
+		static readonly NotebookToolbar: MenuId;
+		static readonly NotebookStickyScrollContext: MenuId;
+		static readonly NotebookCellTitle: MenuId;
+		static readonly NotebookCellDelete: MenuId;
+		static readonly NotebookCellInsert: MenuId;
+		static readonly NotebookCellBetween: MenuId;
+		static readonly NotebookCellListTop: MenuId;
+		static readonly NotebookCellExecute: MenuId;
+		static readonly NotebookCellExecuteGoTo: MenuId;
+		static readonly NotebookCellExecutePrimary: MenuId;
+		static readonly NotebookDiffCellInputTitle: MenuId;
+		static readonly NotebookDiffDocumentMetadata: MenuId;
+		static readonly NotebookDiffCellMetadataTitle: MenuId;
+		static readonly NotebookDiffCellOutputsTitle: MenuId;
+		static readonly NotebookOutputToolbar: MenuId;
+		static readonly NotebookOutlineFilter: MenuId;
+		static readonly NotebookOutlineActionMenu: MenuId;
+		static readonly NotebookEditorLayoutConfigure: MenuId;
+		static readonly NotebookKernelSource: MenuId;
+		static readonly BulkEditTitle: MenuId;
+		static readonly BulkEditContext: MenuId;
+		static readonly TimelineItemContext: MenuId;
+		static readonly TimelineTitle: MenuId;
+		static readonly TimelineTitleContext: MenuId;
+		static readonly TimelineFilterSubMenu: MenuId;
+		static readonly AccountsContext: MenuId;
+		static readonly SidebarTitle: MenuId;
+		static readonly PanelTitle: MenuId;
+		static readonly AuxiliaryBarTitle: MenuId;
+		static readonly AuxiliaryBarHeader: MenuId;
+		static readonly TerminalInstanceContext: MenuId;
+		static readonly TerminalEditorInstanceContext: MenuId;
+		static readonly TerminalNewDropdownContext: MenuId;
+		static readonly TerminalTabContext: MenuId;
+		static readonly TerminalTabEmptyAreaContext: MenuId;
+		static readonly TerminalStickyScrollContext: MenuId;
+		static readonly WebviewContext: MenuId;
+		static readonly InlineCompletionsActions: MenuId;
+		static readonly InlineEditsActions: MenuId;
+		static readonly NewFile: MenuId;
+		static readonly MergeInput1Toolbar: MenuId;
+		static readonly MergeInput2Toolbar: MenuId;
+		static readonly MergeBaseToolbar: MenuId;
+		static readonly MergeInputResultToolbar: MenuId;
+		static readonly InlineSuggestionToolbar: MenuId;
+		static readonly InlineEditToolbar: MenuId;
+		static readonly ChatContext: MenuId;
+		static readonly ChatCodeBlock: MenuId;
+		static readonly ChatCompareBlock: MenuId;
+		static readonly ChatMessageTitle: MenuId;
+		static readonly ChatMessageFooter: MenuId;
+		static readonly ChatExecute: MenuId;
+		static readonly ChatExecuteSecondary: MenuId;
+		static readonly ChatInput: MenuId;
+		static readonly ChatInputSide: MenuId;
+		static readonly ChatEditingWidgetToolbar: MenuId;
+		static readonly ChatEditingWidgetModifiedFilesToolbar: MenuId;
+		static readonly ChatInlineResourceAnchorContext: MenuId;
+		static readonly ChatInlineSymbolAnchorContext: MenuId;
+		static readonly ChatEditingCodeBlockContext: MenuId;
+		static readonly ChatCommandCenter: MenuId;
+		static readonly ChatAttachmentsContext: MenuId;
+		static readonly AccessibleView: MenuId;
+		static readonly MultiDiffEditorFileToolbar: MenuId;
+		static readonly DiffEditorHunkToolbar: MenuId;
+		static readonly DiffEditorSelectionToolbar: MenuId;
+		/**
+		 * Create or reuse a `MenuId` with the given identifier
+		 */
+		static for(identifier: string): MenuId;
+		readonly id: string;
+		/**
+		 * Create a new `MenuId` with the unique identifier. Will throw if a menu
+		 * with the identifier already exists, use `MenuId.for(ident)` or a unique
+		 * identifier
+		 */
+		constructor(identifier: string);
+	}
+
 	export interface IContextKey<T extends ContextKeyValue = ContextKeyValue> {
 		set(value: T): void;
 		reset(): void;
@@ -2451,6 +2652,66 @@ declare namespace monaco.editor {
 	}
 
 	/**
+	 * A range of offsets (0-based).
+	*/
+	export class OffsetRange implements IOffsetRange {
+		readonly start: number;
+		readonly endExclusive: number;
+		static addRange(range: OffsetRange, sortedRanges: OffsetRange[]): void;
+		static tryCreate(start: number, endExclusive: number): OffsetRange | undefined;
+		static ofLength(length: number): OffsetRange;
+		static ofStartAndLength(start: number, length: number): OffsetRange;
+		static emptyAt(offset: number): OffsetRange;
+		constructor(start: number, endExclusive: number);
+		get isEmpty(): boolean;
+		delta(offset: number): OffsetRange;
+		deltaStart(offset: number): OffsetRange;
+		deltaEnd(offset: number): OffsetRange;
+		get length(): number;
+		toString(): string;
+		equals(other: OffsetRange): boolean;
+		containsRange(other: OffsetRange): boolean;
+		contains(offset: number): boolean;
+		/**
+		 * for all numbers n: range1.contains(n) or range2.contains(n) => range1.join(range2).contains(n)
+		 * The joined range is the smallest range that contains both ranges.
+		 */
+		join(other: OffsetRange): OffsetRange;
+		/**
+		 * for all numbers n: range1.contains(n) and range2.contains(n) <=> range1.intersect(range2).contains(n)
+		 *
+		 * The resulting range is empty if the ranges do not intersect, but touch.
+		 * If the ranges don't even touch, the result is undefined.
+		 */
+		intersect(other: OffsetRange): OffsetRange | undefined;
+		intersectionLength(range: OffsetRange): number;
+		intersects(other: OffsetRange): boolean;
+		intersectsOrTouches(other: OffsetRange): boolean;
+		isBefore(other: OffsetRange): boolean;
+		isAfter(other: OffsetRange): boolean;
+		slice<T>(arr: T[]): T[];
+		substring(str: string): string;
+		/**
+		 * Returns the given value if it is contained in this instance, otherwise the closest value that is contained.
+		 * The range must not be empty.
+		 */
+		clip(value: number): number;
+		/**
+		 * Returns `r := value + k * length` such that `r` is contained in this range.
+		 * The range must not be empty.
+		 *
+		 * E.g. `[5, 10).clipCyclic(10) === 5`, `[5, 10).clipCyclic(11) === 6` and `[5, 10).clipCyclic(4) === 9`.
+		 */
+		clipCyclic(value: number): number;
+		map<T>(f: (offset: number) => T): T[];
+		forEach(f: (offset: number) => void): void;
+	}
+	export interface IOffsetRange {
+		readonly start: number;
+		readonly endExclusive: number;
+	}
+
+	/**
 	 * A builder and helper for edit operations for a command.
 	 */
 	export interface IEditOperationBuilder {
@@ -2557,6 +2818,15 @@ declare namespace monaco.editor {
 		readonly contentHeight: number;
 		readonly contentWidthChanged: boolean;
 		readonly contentHeightChanged: boolean;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface ITriggerEditorOperationEvent {
+		source: string | null | undefined;
+		handlerId: string;
+		payload: any;
 	}
 
 	export interface INewScrollPosition {
@@ -3111,16 +3381,6 @@ declare namespace monaco.editor {
 		replacePrevCharCnt: number;
 		replaceNextCharCnt: number;
 		positionDelta: number;
-	}
-
-	/**
-	 * @internal
-	 */
-	export interface PastePayload {
-		text: string;
-		pasteOnNewLine: boolean;
-		multicursorText: string[] | null;
-		mode: string | null;
 	}
 
 	/**
@@ -4453,6 +4713,51 @@ declare namespace monaco.editor {
 		readonly minimapCanvasInnerHeight: number;
 		readonly minimapCanvasOuterWidth: number;
 		readonly minimapCanvasOuterHeight: number;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IEditorLayoutComputerInput {
+		readonly outerWidth: number;
+		readonly outerHeight: number;
+		readonly isDominatedByLongLines: boolean;
+		readonly lineHeight: number;
+		readonly lineNumbersDigitCount: number;
+		readonly typicalHalfwidthCharacterWidth: number;
+		readonly maxDigitWidth: number;
+		readonly pixelRatio: number;
+		readonly glyphMargin: boolean;
+		readonly lineDecorationsWidth: string | number;
+		readonly folding: boolean;
+		readonly minimap: Readonly<Required<IEditorMinimapOptions>>;
+		readonly scrollbar: InternalEditorScrollbarOptions;
+		readonly lineNumbers: InternalEditorRenderLineNumbersOptions;
+		readonly lineNumbersMinChars: number;
+		readonly scrollBeyondLastLine: boolean;
+		readonly wordWrap: 'wordWrapColumn' | 'on' | 'off' | 'bounded';
+		readonly wordWrapColumn: number;
+		readonly wordWrapMinified: boolean;
+		readonly accessibilitySupport: AccessibilitySupport;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface IMinimapLayoutInput {
+		readonly outerWidth: number;
+		readonly outerHeight: number;
+		readonly lineHeight: number;
+		readonly typicalHalfwidthCharacterWidth: number;
+		readonly pixelRatio: number;
+		readonly scrollBeyondLastLine: boolean;
+		readonly paddingTop: number;
+		readonly paddingBottom: number;
+		readonly minimap: Readonly<Required<IEditorMinimapOptions>>;
+		readonly verticalScrollbarWidth: number;
+		readonly viewLineCount: number;
+		readonly remainingWidth: number;
+		readonly isViewportWrapping: boolean;
 	}
 
 	export enum ShowLightbulbIconMode {
@@ -6038,6 +6343,17 @@ declare namespace monaco.editor {
 	}
 
 	/**
+	 * @internal
+	 */
+	export interface PastePayload {
+		text: string;
+		pasteOnNewLine: boolean;
+		multicursorText: string[] | null;
+		mode: string | null;
+		clipboardEvent?: ClipboardEvent;
+	}
+
+	/**
 	 * Editor aria options.
 	 * @internal
 	 */
@@ -6071,6 +6387,11 @@ declare namespace monaco.editor {
 		 * @internal
 		 */
 		readonly isSimpleWidget: boolean;
+		/**
+		 * The context menu ID that should be used to lookup context menu actions.
+		 * @internal
+		 */
+		readonly contextMenuId: MenuId;
 		/**
 		 * The editor's scoped context key service.
 		 * @internal
@@ -6273,6 +6594,11 @@ declare namespace monaco.editor {
 		 * @event
 		 */
 		readonly onDidChangeHiddenAreas: IEvent<void>;
+		/**
+		 * An event emitted before an editor
+		 * @internal
+		 */
+		readonly onWillTriggerEditorOperationEvent: IEvent<ITriggerEditorOperationEvent>;
 		/**
 		 * Some editor operations fire multiple events at once.
 		 * To allow users to react to multiple events fired by a single operation,
@@ -6865,7 +7191,29 @@ declare namespace monaco.editor {
 	 */
 	export enum GlyphMarginLane {
 		Left = 1,
-		Right = 2
+		Center = 2,
+		Right = 3
+	}
+
+	export interface IGlyphMarginLanesModel {
+		/**
+		 * The number of lanes that should be rendered in the editor.
+		 */
+		readonly requiredLanes: number;
+		/**
+		 * Gets the lanes that should be rendered starting at a given line number.
+		 */
+		getLanesAtLine(lineNumber: number): GlyphMarginLane[];
+		/**
+		 * Resets the model and ensures it can contain at least `maxLine` lines.
+		 */
+		reset(maxLine: number): void;
+		/**
+		 * Registers that a lane should be visible at the Range in the model.
+		 * @param persist - if true, notes that the lane should always be visible,
+		 * even on lines where there's no specific request for that lane.
+		 */
+		push(lane: GlyphMarginLane, range: Range, persist?: boolean): void;
 	}
 
 	/**
@@ -6874,6 +7222,14 @@ declare namespace monaco.editor {
 	export enum MinimapPosition {
 		Inline = 1,
 		Gutter = 2
+	}
+
+	/**
+	 * Section header style.
+	 */
+	export enum MinimapSectionHeaderStyle {
+		Normal = 1,
+		Underlined = 2
 	}
 
 	export interface IDecorationOptions {
@@ -6894,6 +7250,11 @@ declare namespace monaco.editor {
 		 * The position in the glyph margin.
 		 */
 		position: GlyphMarginLane;
+		/**
+		 * Whether the glyph margin lane in {@link position} should be rendered even
+		 * outside of this decoration's range.
+		 */
+		persistLane?: boolean;
 	}
 
 	/**
@@ -6914,6 +7275,14 @@ declare namespace monaco.editor {
 		 * The position in the minimap.
 		 */
 		position: MinimapPosition;
+		/**
+		 * If the decoration is for a section header, which header style.
+		 */
+		sectionHeaderStyle?: MinimapSectionHeaderStyle | null;
+		/**
+		 * If the decoration is for a section header, the header text.
+		 */
+		sectionHeaderText?: string | null;
 	}
 
 	/**
@@ -6955,6 +7324,10 @@ declare namespace monaco.editor {
 		 */
 		hoverMessage?: IMarkdownString | IMarkdownString[] | null;
 		/**
+		 * Array of MarkdownString to render as the line number message.
+		 */
+		lineNumberHoverMessage?: IMarkdownString | IMarkdownString[] | null;
+		/**
 		 * Should the decoration expand to encompass a whole line.
 		 */
 		isWholeLine?: boolean;
@@ -6994,6 +7367,14 @@ declare namespace monaco.editor {
 		 * If set, the decoration will be rendered in the lines decorations with this CSS class name.
 		 */
 		linesDecorationsClassName?: string | null;
+		/**
+		 * Controls the tooltip text of the line decoration.
+		 */
+		linesDecorationsTooltip?: string | null;
+		/**
+		 * If set, the decoration will be rendered on the line number.
+		 */
+		lineNumberClassName?: string | null;
 		/**
 		 * If set, the decoration will be rendered in the lines decorations with this CSS class name, but only for the first line in case of line wrapping.
 		 */
@@ -7048,6 +7429,10 @@ declare namespace monaco.editor {
 		 * Sets the text to inject. Must be a single line.
 		 */
 		readonly content: string;
+		/**
+		 * @internal
+		*/
+		readonly tokens?: TokenArray | null;
 		/**
 		 * If set, the decoration will be rendered inline with the text with this CSS class name.
 		 */
@@ -7252,7 +7637,7 @@ declare namespace monaco.editor {
 		/**
 		 * @internal
 		 */
-		textChange: any;
+		textChange:  any;
 	}
 
 	/**
@@ -7813,11 +8198,11 @@ declare namespace monaco.editor {
 		/**
 		 * @internal
 		 */
-		_applyUndo(changes: any[], eol: EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: Selection[] | null): void;
+		_applyUndo(changes:  any[], eol: EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: Selection[] | null): void;
 		/**
 		 * @internal
 		 */
-		_applyRedo(changes: any[], eol: EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: Selection[] | null): void;
+		_applyRedo(changes:  any[], eol: EndOfLineSequence, resultingAlternativeVersionId: number, resultingSelection: Selection[] | null): void;
 		/**
 		 * Undo edit operations until the previous undo/redo point.
 		 * The inverse edit operations will be pushed on the redo stack.
@@ -8028,9 +8413,15 @@ declare namespace monaco.editor {
 		getLineCharCode(lineNumber: number, index: number): number;
 		getCharCode(offset: number): number;
 		getLineLength(lineNumber: number): number;
+		getLineMinColumn(lineNumber: number): number;
+		getLineMaxColumn(lineNumber: number): number;
 		getLineFirstNonWhitespaceColumn(lineNumber: number): number;
 		getLineLastNonWhitespaceColumn(lineNumber: number): number;
 		findMatchesLineByLine(searchRange: Range, searchData: any, captureMatches: boolean, limitResultCount: number): FindMatch[];
+		/**
+		 * Get nearest chunk of text after `offset` in the text buffer.
+		 */
+		getNearestChunk(offset: number): string;
 	}
 
 	/**
@@ -8064,6 +8455,38 @@ declare namespace monaco.editor {
 		readonly height: number;
 	}
 
+	/**
+	 * This class represents a sequence of tokens.
+	 * Conceptually, each token has a length and a metadata number.
+	 * A token array might be used to annotate a string with metadata.
+	 * Use {@link TokenArrayBuilder} to efficiently create a token array.
+	 *
+	 * TODO: Make this class more efficient (e.g. by using a Int32Array).
+	*/
+	export class TokenArray {
+		private readonly _tokenInfo;
+		static create(tokenInfo: TokenInfo[]): TokenArray;
+		private constructor();
+		forEach(cb: (range: OffsetRange, tokenInfo: TokenInfo) => void): void;
+		slice(range: OffsetRange): TokenArray;
+	}
+
+	export type TokenMetadata = number;
+
+	export class TokenInfo {
+		readonly length: number;
+		readonly metadata: TokenMetadata;
+		constructor(length: number, metadata: TokenMetadata);
+	}
+
+	/**
+	 * TODO: Make this class more efficient (e.g. by using a Int32Array).
+	*/
+	export class TokenArrayBuilder {
+		private readonly _tokens;
+		add(length: number, metadata: TokenMetadata): void;
+		build(): TokenArray;
+	}
 
 	export const EditorZoom: IEditorZoom;
 
@@ -8093,6 +8516,57 @@ declare namespace monaco.languages {
 		 * the file glob pattern will match on `index.js`.
 		 */
 		readonly pattern: string;
+	}
+	export class HierarchicalKind {
+		readonly value: string;
+		static readonly sep = '.';
+		static readonly None: HierarchicalKind;
+		static readonly Empty: HierarchicalKind;
+		constructor(value: string);
+		equals(other: HierarchicalKind): boolean;
+		contains(other: HierarchicalKind): boolean;
+		intersects(other: HierarchicalKind): boolean;
+		append(...parts: string[]): HierarchicalKind;
+	}
+
+	export interface IDataTransferItem {
+		asString(): Thenable<string>;
+		asFile(): IDataTransferFile | undefined;
+		value: any;
+	}
+
+	export interface IReadonlyVSDataTransfer extends Iterable<readonly [string, IDataTransferItem]> {
+		/**
+		 * Get the total number of entries in this data transfer.
+		 */
+		get size(): number;
+		/**
+		 * Check if this data transfer contains data for `mimeType`.
+		 *
+		 * This uses exact matching and does not support wildcards.
+		 */
+		has(mimeType: string): boolean;
+		/**
+		 * Check if this data transfer contains data matching `pattern`.
+		 *
+		 * This allows matching for wildcards, such as `image/*`.
+		 *
+		 * Use the special `files` mime type to match any file in the data transfer.
+		 */
+		matches(pattern: string): boolean;
+		/**
+		 * Retrieve the first entry for `mimeType`.
+		 *
+		 * Note that if you want to find all entries for a given mime type, use {@link IReadonlyVSDataTransfer.entries} instead.
+		 */
+		get(mimeType: string): IDataTransferItem | undefined;
+	}
+
+	export interface IDataTransferFile {
+		readonly id: string;
+		readonly name: string;
+		readonly uri?: Uri;
+		data(): Promise<Uint8Array>;
 	}
 
 	export type LanguageSelector = string | LanguageFilter | ReadonlyArray<string | LanguageFilter>;
@@ -8714,6 +9188,48 @@ declare namespace monaco.languages {
 		 */
 		indentation: string;
 	}
+	/**
+	 * Open ended enum at runtime
+	 */
+	export enum LanguageId {
+		Null = 0,
+		PlainText = 1
+	}
+
+	export interface ILanguageExtensionPoint {
+		id: string;
+		extensions?: string[];
+		filenames?: string[];
+		filenamePatterns?: string[];
+		firstLine?: string;
+		aliases?: string[];
+		mimetypes?: string[];
+		configuration?: Uri;
+		/**
+		 * @internal
+		 */
+		icon?: ILanguageIcon;
+	}
+
+	export interface ILanguageSelection {
+		readonly languageId: string;
+		readonly onDidChange: IEvent<string>;
+	}
+
+	export interface ILanguageNameIdPair {
+		readonly languageName: string;
+		readonly languageId: string;
+	}
+
+	export interface ILanguageIcon {
+		readonly light: Uri;
+		readonly dark: Uri;
+	}
+
+	export interface ILanguageIdCodec {
+		encodeLanguageId(languageId: string): LanguageId;
+		decodeLanguageId(languageId: LanguageId): string;
+	}
 
 	/**
 	 * @internal
@@ -9171,6 +9687,11 @@ declare namespace monaco.languages {
 		 */
 		readonly triggerKind: InlineCompletionTriggerKind;
 		readonly selectedSuggestionInfo: SelectedSuggestionInfo | undefined;
+		/**
+		 * @experimental
+		 * @internal
+		*/
+		readonly userPrompt?: string | undefined;
 		readonly includeInlineEdits: boolean;
 		readonly includeInlineCompletions: boolean;
 	}
@@ -9244,6 +9765,11 @@ declare namespace monaco.languages {
 	export interface InlineCompletionsProvider<T extends InlineCompletions = InlineCompletions> {
 		provideInlineCompletions(model: editor.ITextModel, position: Position, context: InlineCompletionContext, token: CancellationToken): ProviderResult<T>;
 		/**
+		 * @experimental
+		 * @internal
+		*/
+		provideInlineEditsForRange?(model: editor.ITextModel, range: Range, context: InlineCompletionContext, token: CancellationToken): ProviderResult<T>;
+		/**
 		 * Will be called when an item is shown.
 		 * @param updatedInsertText Is useful to understand bracket completion.
 		*/
@@ -9299,6 +9825,7 @@ declare namespace monaco.languages {
 	 */
 	export interface CodeActionProvider {
 		displayName?: string;
+		extensionId?: string;
 		/**
 		 * Provide commands for the given document and range.
 		 */
@@ -9325,14 +9852,35 @@ declare namespace monaco.languages {
 	 * @internal
 	 */
 	export interface DocumentPasteEdit {
-		readonly label: string;
-		readonly detail: string;
+		readonly title: string;
+		readonly kind: HierarchicalKind;
 		readonly handledMimeType?: string;
 		readonly yieldTo?: readonly DropYieldTo[];
 		insertText: string | {
 			readonly snippet: string;
 		};
 		additionalEdit?: WorkspaceEdit;
+	}
+
+	export enum DocumentPasteTriggerKind {
+		Automatic = 0,
+		PasteAs = 1
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface DocumentPasteContext {
+		readonly only?: HierarchicalKind;
+		readonly triggerKind: DocumentPasteTriggerKind;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface DocumentPasteEditsSession {
+		edits: readonly DocumentPasteEdit[];
+		dispose(): void;
 	}
 
 	/**
@@ -10055,14 +10603,153 @@ declare namespace monaco.languages {
 		arguments?: any[];
 	}
 
+	/**
+	 * @internal
+	 */
+	export interface CommentThreadTemplate {
+		controllerHandle: number;
+		label: string;
+		acceptInputCommand?: Command;
+		additionalCommands?: Command[];
+		deleteCommand?: Command;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentInfo<T = IRange> {
+		extensionId?: string;
+		threads: CommentThread<T>[];
+		pendingCommentThreads?: PendingCommentThread[];
+		commentingRanges: CommentingRanges;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentingRangeResourceHint {
+		schemes: readonly string[];
+	}
+
+	export enum CommentThreadApplicability {
+		Current = 0,
+		Outdated = 1
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentWidget {
+		commentThread: CommentThread;
+		comment?: Comment;
+		input: string;
+		onDidChangeInput: IEvent<string>;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentInput {
+		value: string;
+		uri: Uri;
+	}
+
 	export interface CommentThreadRevealOptions {
 		preserveFocus: boolean;
 		focusReply: boolean;
 	}
 
+	/**
+	 * @internal
+	 */
+	export interface CommentThread<T = IRange> {
+		isDocumentCommentThread(): this is CommentThread<IRange>;
+		commentThreadHandle: number;
+		controllerHandle: number;
+		extensionId?: string;
+		threadId: string;
+		resource: string | null;
+		range: T | undefined;
+		label: string | undefined;
+		contextValue: string | undefined;
+		comments: ReadonlyArray<Comment> | undefined;
+		onDidChangeComments: IEvent<readonly Comment[] | undefined>;
+		collapsibleState?: any;
+		initialCollapsibleState?: any;
+		onDidChangeInitialCollapsibleState: IEvent<any | undefined>;
+		state?: any;
+		applicability?: CommentThreadApplicability;
+		canReply: boolean;
+		input?: CommentInput;
+		onDidChangeInput: IEvent<CommentInput | undefined>;
+		onDidChangeLabel: IEvent<string | undefined>;
+		onDidChangeCollapsibleState: IEvent<any | undefined>;
+		onDidChangeState: IEvent<any | undefined>;
+		onDidChangeCanReply: IEvent<boolean>;
+		isDisposed: boolean;
+		isTemplate: boolean;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface AddedCommentThread<T = IRange> extends CommentThread<T> {
+		editorId?: string;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentingRanges {
+		readonly resource: Uri;
+		ranges: IRange[];
+		fileComments: boolean;
+	}
+
 	export interface CommentAuthorInformation {
 		name: string;
 		iconPath?: UriComponents;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentReaction {
+		readonly label?: string;
+		readonly iconPath?: UriComponents;
+		readonly count?: number;
+		readonly hasReacted?: boolean;
+		readonly canEdit?: boolean;
+		readonly reactors?: readonly string[];
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface CommentOptions {
+		/**
+		 * An optional string to show on the comment input box when it's collapsed.
+		 */
+		prompt?: string;
+		/**
+		 * An optional string to show as placeholder in the comment input box when it's focused.
+		 */
+		placeHolder?: string;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface Comment {
+		readonly uniqueIdInThread: number;
+		readonly body: string | IMarkdownString;
+		readonly userName: string;
+		readonly userIconPath?: UriComponents;
+		readonly contextValue?: string;
+		readonly commentReactions?: CommentReaction[];
+		readonly label?: string;
+		readonly mode?: any;
+		readonly timestamp?: string;
 	}
 
 	export interface PendingCommentThread {
@@ -10089,7 +10776,7 @@ declare namespace monaco.languages {
 		/**
 		 * Added comment threads.
 		 */
-		readonly added: CommentThread<T>[];
+		readonly added: AddedCommentThread<T>[];
 		/**
 		 * Removed comment threads.
 		 */
@@ -10193,7 +10880,7 @@ declare namespace monaco.languages {
 	}
 
 	export type DropYieldTo = {
-		readonly providerId: string;
+		readonly kind: HierarchicalKind;
 	} | {
 		readonly mimeType: string;
 	};
@@ -10201,14 +10888,33 @@ declare namespace monaco.languages {
 	/**
 	 * @internal
 	 */
-	export interface DocumentOnDropEdit {
-		readonly label: string;
+	export interface DocumentDropEdit {
+		readonly title: string;
+		readonly kind: HierarchicalKind | undefined;
 		readonly handledMimeType?: string;
 		readonly yieldTo?: readonly DropYieldTo[];
 		insertText: string | {
 			readonly snippet: string;
 		};
 		additionalEdit?: WorkspaceEdit;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface DocumentDropEditsSession {
+		edits: readonly DocumentDropEdit[];
+		dispose(): void;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface DocumentDropEditProvider {
+		readonly id?: string;
+		readonly dropMimeTypes?: readonly string[];
+		provideDocumentDropEdits(model: editor.ITextModel, position: IPosition, dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): ProviderResult<DocumentDropEditsSession>;
+		resolveDocumentDropEdit?(edit: DocumentDropEdit, token: CancellationToken): Promise<DocumentDropEdit>;
 	}
 
 	export interface DocumentContextItem {
@@ -10220,9 +10926,34 @@ declare namespace monaco.languages {
 	export interface MappedEditsContext {
 		/** The outer array is sorted by priority - from highest to lowest. The inner arrays contain elements of the same priority. */
 		readonly documents: DocumentContextItem[][];
+		/**
+		 * @internal
+		 */
+		readonly conversation?: (ConversationRequest | ConversationResponse)[];
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface ConversationRequest {
+		readonly type: 'request';
+		readonly message: string;
+	}
+
+	/**
+	 * @internal
+	 */
+	export interface ConversationResponse {
+		readonly type: 'response';
+		readonly message: string;
+		readonly references?: DocumentContextItem[];
 	}
 
 	export interface MappedEditsProvider {
+		/**
+		 * @internal
+		 */
+		readonly displayName: string;
 		/**
 		 * Provider maps code blocks from the chat into a workspace edit.
 		 *
@@ -10259,31 +10990,6 @@ declare namespace monaco.languages {
 		displayName?: string;
 		provideInlineEdit(model: editor.ITextModel, context: IInlineEditContext, token: CancellationToken): ProviderResult<T>;
 		freeInlineEdit(edit: T): void;
-	}
-
-	export interface ILanguageExtensionPoint {
-		id: string;
-		extensions?: string[];
-		filenames?: string[];
-		filenamePatterns?: string[];
-		firstLine?: string;
-		aliases?: string[];
-		mimetypes?: string[];
-		configuration?: Uri;
-		/**
-		 * @internal
-		 */
-		icon?: ILanguageIcon;
-	}
-
-	export interface ILanguageIcon {
-		readonly light: Uri;
-		readonly dark: Uri;
-	}
-
-	export interface ILanguageSelection {
-		readonly languageId: string;
-		readonly onDidChange: IEvent<string>;
 	}
 	/**
 	 * A Monarch language definition
@@ -10478,34 +11184,18 @@ declare namespace monaco.worker {
 	}
 
 	/**
+	 * Range of a word inside a model.
 	 * @internal
 	 */
-	export interface IRawModelData {
-		url: string;
-		versionId: number;
-		lines: string[];
-		EOL: string;
-	}
-
-	/**
-	 * @internal
-	 */
-	export interface ICommonModel extends ILinkComputerTarget, IDocumentColorComputerTarget, IMirrorModel {
-		uri: Uri;
-		version: number;
-		eol: string;
-		getValue(): string;
-		getLinesContent(): string[];
-		getLineCount(): number;
-		getLineContent(lineNumber: number): string;
-		getLineWords(lineNumber: number, wordDefinition: RegExp): IWordAtPosition[];
-		words(wordDefinition: RegExp): Iterable<string>;
-		getWordUntilPosition(position: IPosition, wordDefinition: RegExp): IWordAtPosition;
-		getValueInRange(range: IRange): string;
-		getWordAtPosition(position: IPosition, wordDefinition: RegExp): Range | null;
-		offsetAt(position: IPosition): number;
-		positionAt(offset: number): IPosition;
-		findMatches(regex: RegExp): RegExpMatchArray[];
+	export interface IWordRange {
+		/**
+		 * The index where the word starts.
+		 */
+		readonly start: number;
+		/**
+		 * The index where the word ends.
+		 */
+		readonly end: number;
 	}
 
 	/**

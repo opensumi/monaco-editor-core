@@ -31,9 +31,8 @@ import type { Parser } from '@vscode/tree-sitter-wasm';
 import { ITextModel } from './model.js';
 import { TokenUpdate } from './model/tokenStore.js';
 
-/**
- * @internal
- */
+export { HierarchicalKind } from '../../base/common/hierarchicalKind.js';
+
 export interface ILanguageIdCodec {
 	encodeLanguageId(languageId: string): LanguageId;
 	decodeLanguageId(languageId: LanguageId): string;
@@ -928,9 +927,6 @@ export interface DocumentPasteEdit {
 	additionalEdit?: WorkspaceEdit;
 }
 
-/**
- * @internal
- */
 export enum DocumentPasteTriggerKind {
 	Automatic = 0,
 	PasteAs = 1,
@@ -1934,9 +1930,6 @@ export enum CommentThreadState {
 	Resolved = 1
 }
 
-/**
- * @internal
- */
 export enum CommentThreadApplicability {
 	Current = 0,
 	Outdated = 1
