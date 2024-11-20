@@ -87,8 +87,8 @@ const extractEditorSrcTask = task.define('extract-editor-src', () => {
 
 // Disable mangling for the editor, as it complicates debugging & quite a few users rely on private/protected fields.
 // Disable NLS task to remove english strings to preserve backwards compatibility when we removed the `vs/nls!` AMD plugin.
-const compileEditorAMDTask = task.define('compile-editor-amd', compilation.compileTask('out-editor-src', 'out-editor-build', true, { disableMangle: true, preserveEnglish: true }, false));
-const compileEditorEsmTask = task.define('compile-editor-esm-core', compilation.compileTask('out-editor-esm', 'out-monaco-editor-core/esm', true, { disableMangle: true }, true, 1 /** CommonJS */));
+const compileEditorAMDTask = task.define('compile-editor-amd', compilation.compileTask('out-editor-src', 'out-editor-build', true, { disableMangle: true, preserveEnglish: true, extractConstEnum: true }, false));
+const compileEditorEsmTask = task.define('compile-editor-esm-core', compilation.compileTask('out-editor-esm', 'out-monaco-editor-core/esm', true, { disableMangle: true, extractConstEnum: true }, true, 1 /** CommonJS */));
 
 const bundleEditorAMDTask = task.define('bundle-editor-amd', optimize.bundleTask(
 	{
@@ -125,7 +125,6 @@ const createESMSourcesAndResourcesTask = task.define('extract-editor-esm', () =>
 			'inlineEntryPoint.1.js.map',
 			'inlineEntryPoint.0.d.ts',
 			'inlineEntryPoint.1.d.ts',
-			'vs/nls.ts',
 			'vs/loader.js',
 			'vs/base/worker/workerMain.ts',
 		],

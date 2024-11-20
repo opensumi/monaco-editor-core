@@ -206,8 +206,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 						mode = 1;
 						continue;
 					}
-					// if (/\/\/ ESM-uncomment-begin/.test(line)) {
-					if (/\/\/ CJS-comment-begin/.test(line)) {
+					if (/\/\/ ESM-uncomment-begin/.test(line)) {
 						mode = 2;
 						continue;
 					}
@@ -224,8 +223,7 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
 				}
 
 				if (mode === 2) {
-					// if (/\/\/ ESM-uncomment-end/.test(line)) {
-					if (/\/\/ CJS-comment-end/.test(line)) {
+					if (/\/\/ ESM-uncomment-end/.test(line)) {
 						mode = 0;
 						continue;
 					}

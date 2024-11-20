@@ -3,8 +3,52 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+/* ---------------------------------------------------------------------------------------------
+ * 本文件用于为 esm 版本的 monaco-editor 提供 nls 多语言支持
+ * 不适用于其他版本 (dev/min)
+ *---------------------------------------------------------------------------------------------*/
+// @ts-ignore
+const zhCnBundle = require('../../dev/vs/editor/editor.main.nls.zh-cn.json');
+let defaultLocale: string | undefined;
+let CURRENT_LOCALE_DATA: { [prop: string]: string[] } | null = null;
+// 标准语种代码，目前仅支持中、英文
+export type LocaleType = 'zh-CN' | 'en-US';
+let initialized = false;
+export function setLocale(locale: LocaleType): void {
+	defaultLocale = locale;
+}
+export enum PreferenceScope {
+	Default,
+	User,
+}
+const KAITIAN_LANGUAGE_KEY = 'general.language';
+/**
+ * 提供手动设置语言的方法 #setLocale
+ * 如果在第一次调用 localize 前没有设置过 locale，则会走这里 fallback 的逻辑
+ */
+function initialLocaleBundle() {
+	// @ts-ignore
+	if (!global.localStorage || !self.localStorage) {
+		return;
+	}
+	if (!defaultLocale) {
+		if (localStorage[`${PreferenceScope.User}:${KAITIAN_LANGUAGE_KEY}`]) {
+			defaultLocale = localStorage[`${PreferenceScope.User}:${KAITIAN_LANGUAGE_KEY}`];
+		} else if (localStorage[`${PreferenceScope.Default}:${KAITIAN_LANGUAGE_KEY}`]) {
+			defaultLocale = localStorage[`${PreferenceScope.Default}:${KAITIAN_LANGUAGE_KEY}`];
+		} else {
+			defaultLocale = 'zh-CN';
+		}
+	}
+	// 由于目前仅支持中/英文，所以如果locale 为 'zh-cn'，则表示已经设置了中文，否则仅使用默认值，无需加载语言包
+	if (defaultLocale?.toLowerCase() === 'zh-cn') {
+		CURRENT_LOCALE_DATA = zhCnBundle;
+	}
+	initialized = true;
+}
+
 // eslint-disable-next-line local/code-import-patterns
-import { getNLSLanguage, getNLSMessages } from './nls.messages.js';
+import { getNLSLanguage } from './nls.messages.js';
 // eslint-disable-next-line local/code-import-patterns
 export { getNLSLanguage, getNLSMessages } from './nls.messages.js';
 
@@ -27,8 +71,8 @@ function _format(message: string, args: (string | number | boolean | undefined |
 		result = message;
 	} else {
 		result = message.replace(/\{(\d+)\}/g, (match, rest) => {
-			const index = rest[0];
-			const arg = args[index];
+			let index = rest[0];
+			let arg = args[index];
 			let result = match;
 			if (typeof arg === 'string') {
 				result = arg;
@@ -47,106 +91,43 @@ function _format(message: string, args: (string | number | boolean | undefined |
 	return result;
 }
 
-/**
- * Marks a string to be localized. Returns the localized string.
- *
- * @param info The {@linkcode ILocalizeInfo} which describes the id and comments associated with the localized string.
- * @param message The string to localize
- * @param args The arguments to the string
- *
- * @note `message` can contain `{n}` notation where it is replaced by the nth value in `...args`
- * @example `localize({ key: 'sayHello', comment: ['Welcomes user'] }, 'hello {0}', name)`
- *
- * @returns string The localized string.
- */
-export function localize(info: ILocalizeInfo, message: string, ...args: (string | number | boolean | undefined | null)[]): string;
-
-/**
- * Marks a string to be localized. Returns the localized string.
- *
- * @param key The key to use for localizing the string
- * @param message The string to localize
- * @param args The arguments to the string
- *
- * @note `message` can contain `{n}` notation where it is replaced by the nth value in `...args`
- * @example For example, `localize('sayHello', 'hello {0}', name)`
- *
- * @returns string The localized string.
- */
-export function localize(key: string, message: string, ...args: (string | number | boolean | undefined | null)[]): string;
-
-/**
- * @skipMangle
- */
-export function localize(data: ILocalizeInfo | string /* | number when built */, message: string /* | null when built */, ...args: (string | number | boolean | undefined | null)[]): string {
-	if (typeof data === 'number') {
-		return _format(lookupMessage(data, message), args);
-	}
-	return _format(message, args);
+export function loadLocaleBundle(bundle: { [prop: string]: string[] }) {
+	CURRENT_LOCALE_DATA = bundle;
 }
 
 /**
- * Only used when built: Looks up the message in the global NLS table.
- * This table is being made available as a global through bootstrapping
- * depending on the target context.
+ * 这里的类型注释本质是为了让编译时类型校验能通过
+ * @param data
+ * @param message
+ *
+ * 在编译后，localize 调用方式为
+ * localize('path/to/file', index, defaultMessage, ...args);
  */
-function lookupMessage(index: number, fallback: string | null): string {
-	const message = getNLSMessages()?.[index];
-	if (typeof message !== 'string') {
-		if (typeof fallback === 'string') {
-			return fallback;
+export function localize(data: string | ILocalizeInfo, message: string, ...args: any[]): string;
+export function localize(path: string | ILocalizeInfo, index: number | string, ...args: any[]): string {
+	// 第一次调用 localize 时如果没有默认语言，或语言包尚未初始化，则走初始化逻辑
+	if (!defaultLocale || !initialized) {
+		initialLocaleBundle();
+	}
+	if (typeof path === 'string') {
+		if (!CURRENT_LOCALE_DATA || !CURRENT_LOCALE_DATA[path]) {
+			const [defaultMessage, ...otherArgs] = args;
+			return _format(defaultMessage, otherArgs);
 		}
-		throw new Error(`!!! NLS MISSING: ${index} !!!`);
+		const dataBundle = CURRENT_LOCALE_DATA[path];
+		const [defaultMessage, ...otherArgs] = args;
+		return _format(dataBundle[index as unknown as number] || defaultMessage, otherArgs);
 	}
-	return message;
+	return _format(index as unknown as string, args);
 }
 
-/**
- * Marks a string to be localized. Returns an {@linkcode ILocalizedString}
- * which contains the localized string and the original string.
- *
- * @param info The {@linkcode ILocalizeInfo} which describes the id and comments associated with the localized string.
- * @param message The string to localize
- * @param args The arguments to the string
- *
- * @note `message` can contain `{n}` notation where it is replaced by the nth value in `...args`
- * @example `localize2({ key: 'sayHello', comment: ['Welcomes user'] }, 'hello {0}', name)`
- *
- * @returns ILocalizedString which contains the localized string and the original string.
- */
-export function localize2(info: ILocalizeInfo, message: string, ...args: (string | number | boolean | undefined | null)[]): ILocalizedString;
 
-/**
- * Marks a string to be localized. Returns an {@linkcode ILocalizedString}
- * which contains the localized string and the original string.
- *
- * @param key The key to use for localizing the string
- * @param message The string to localize
- * @param args The arguments to the string
- *
- * @note `message` can contain `{n}` notation where it is replaced by the nth value in `...args`
- * @example `localize('sayHello', 'hello {0}', name)`
- *
- * @returns ILocalizedString which contains the localized string and the original string.
- */
-export function localize2(key: string, message: string, ...args: (string | number | boolean | undefined | null)[]): ILocalizedString;
-
-/**
- * @skipMangle
- */
-export function localize2(data: ILocalizeInfo | string /* | number when built */, originalMessage: string, ...args: (string | number | boolean | undefined | null)[]): ILocalizedString {
-	let message: string;
-	if (typeof data === 'number') {
-		message = lookupMessage(data, originalMessage);
-	} else {
-		message = originalMessage;
-	}
-
-	const value = _format(message, args);
-
+export function localize2(data: string | ILocalizeInfo, message: string, ...args: any[]): ILocalizedString;
+export function localize2(path: string | ILocalizeInfo, index: number | string, ...args: any[]): ILocalizedString {
+	const res = localize(path, index as string, args);
 	return {
-		value,
-		original: originalMessage === message ? value : _format(originalMessage, args)
+		original: res,
+		value: res
 	};
 }
 

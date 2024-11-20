@@ -210,8 +210,7 @@ function createESMSourcesAndResources2(options) {
                         mode = 1;
                         continue;
                     }
-                    // if (/\/\/ ESM-uncomment-begin/.test(line)) {
-                    if (/\/\/ CJS-comment-begin/.test(line)) {
+                    if (/\/\/ ESM-uncomment-begin/.test(line)) {
                         mode = 2;
                         continue;
                     }
@@ -226,8 +225,7 @@ function createESMSourcesAndResources2(options) {
                     continue;
                 }
                 if (mode === 2) {
-                    // if (/\/\/ ESM-uncomment-end/.test(line)) {
-                    if (/\/\/ CJS-comment-end/.test(line)) {
+                    if (/\/\/ ESM-uncomment-end/.test(line)) {
                         mode = 0;
                         continue;
                     }
