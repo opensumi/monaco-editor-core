@@ -11,6 +11,7 @@ const File = require("vinyl");
 const sm = require("source-map");
 const path = require("path");
 const sort = require("gulp-sort");
+const i18n_1 = require("./i18n");
 var CollectStepResult;
 (function (CollectStepResult) {
     CollectStepResult[CollectStepResult["Yes"] = 0] = "Yes";
@@ -75,26 +76,32 @@ function nls(options) {
                 base,
                 path: `${base}/nls.metadata.json`
             }),
-            new File({
-                contents: Buffer.from(JSON.stringify(_nls.allNLSMessages)),
-                base,
-                path: `${base}/nls.messages.json`
-            }),
+            // new File({
+            // 	contents: Buffer.from(JSON.stringify(_nls.allNLSMessages)),
+            // 	base,
+            // 	path: `${base}/nls.messages.json`
+            // }),
             new File({
                 contents: Buffer.from(JSON.stringify(_nls.allNLSModulesAndKeys)),
                 base,
                 path: `${base}/nls.keys.json`
             }),
-            new File({
-                contents: Buffer.from(`/*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
- *--------------------------------------------------------*/
-globalThis._VSCODE_NLS_MESSAGES=${JSON.stringify(_nls.allNLSMessages)};`),
-                base,
-                path: `${base}/nls.messages.js`
-            })
+            // 				new File({
+            // 					contents: Buffer.from(`/*---------------------------------------------------------
+            //  * Copyright (C) Microsoft Corporation. All rights reserved.
+            //  *--------------------------------------------------------*/
+            // globalThis._VSCODE_NLS_MESSAGES=${JSON.stringify(_nls.allNLSMessages)};`),
+            // 					base,
+            // 					path: `${base}/nls.messages.js`
+            // 				})
         ]) {
             this.emit('data', file);
+        }
+        if (i18n_1.NLSKeysFormat.is(_nls.allNLSModulesAndKeys)) {
+            const nlsFiles = (0, i18n_1.processAllNlsFiles)(base, i18n_1.defaultLanguages, _nls.allNLSModulesAndKeys);
+            for (const file of nlsFiles) {
+                this.emit('data', file);
+            }
         }
         this.emit('end');
     }));
@@ -109,7 +116,6 @@ var _nls;
     _nls.moduleToNLSMessages = {};
     _nls.allNLSMessages = [];
     _nls.allNLSModulesAndKeys = [];
-    let allNLSMessagesIndex = 0;
     function fileFrom(file, contents, path = file.path) {
         return new File({
             contents: Buffer.from(contents),
@@ -352,13 +358,14 @@ var _nls;
             const end = lcFrom(smc.generatedPositionFor(positionFrom(c.range.end)));
             return { span: { start, end }, content: c.content };
         };
+        let i = 0;
         const localizePatches = lazy(localizeCalls)
             .map(lc => (options.preserveEnglish ? [
             { range: lc.pathSpan, content: lc.path },
-            { range: lc.keySpan, content: `${allNLSMessagesIndex++}` } // localize('key', "message") => localize(<index>, "message")
+            { range: lc.keySpan, content: `${i++}` }, // localize('key', "message") => localize(<index>, "message")
         ] : [
             { range: lc.pathSpan, content: lc.path },
-            { range: lc.keySpan, content: `${allNLSMessagesIndex++}` }, // localize('key', "message") => localize(<index>, null)
+            { range: lc.keySpan, content: `${i++}` }, // localize('key', "message") => localize(<index>, null)
             { range: lc.valueSpan, content: lc.value }
         ]))
             .flatten()
@@ -366,7 +373,7 @@ var _nls;
         const localize2Patches = lazy(localize2Calls)
             .map(lc => ([
             { range: lc.pathSpan, content: lc.path },
-            { range: lc.keySpan, content: `${allNLSMessagesIndex++}` }, // localize2('key', "message") => localize(<index>, "message")
+            { range: lc.keySpan, content: `${i++}` }, // localize2('key', "message") => localize(<index>, "message")
             { range: lc.valueSpan, content: lc.value },
         ]))
             .flatten()
