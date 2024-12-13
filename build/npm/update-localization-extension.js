@@ -15,7 +15,6 @@ let rimraf = require('rimraf');
 let minimist = require('minimist');
 
 function update(options) {
-	console.log("🚀 ~ update ~ options:", options)
 	let idOrPath = options._;
 	if (!idOrPath) {
 		throw new Error('Argument must be the location of the localization extension.');

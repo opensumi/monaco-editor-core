@@ -7,7 +7,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EXTERNAL_EXTENSIONS = exports.XLF = exports.Line = exports.extraLanguages = exports.defaultLanguages = void 0;
+exports.EXTERNAL_EXTENSIONS = exports.XLF = exports.Line = exports.NLSKeysFormat = exports.extraLanguages = exports.defaultLanguages = void 0;
+exports.processAllNlsFiles = processAllNlsFiles;
 exports.processNlsFiles = processNlsFiles;
 exports.getResource = getResource;
 exports.createXlfFilesForCoreBundle = createXlfFilesForCoreBundle;
@@ -77,7 +78,7 @@ var NLSKeysFormat;
         return Array.isArray(candidate) && Array.isArray(candidate[1]);
     }
     NLSKeysFormat.is = is;
-})(NLSKeysFormat || (NLSKeysFormat = {}));
+})(NLSKeysFormat || (exports.NLSKeysFormat = NLSKeysFormat = {}));
 class Line {
     buffer = [];
     constructor(indent = 0) {
@@ -279,6 +280,46 @@ function stripComments(content) {
         }
     });
     return result;
+}
+// 编译所有语言包
+function processAllNlsFiles(base, languages, json) {
+    const languageDirectory = path.join(REPO_ROOT_PATH, '..', 'vscode-loc', 'i18n');
+    if (!fs.existsSync(languageDirectory)) {
+        log(`No VS Code localization repository found. Looking at ${languageDirectory}`);
+        log(`To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.`);
+    }
+    const sortedLanguages = sortLanguages(languages);
+    const files = [];
+    sortedLanguages.forEach((language) => {
+        if (process.env['VSCODE_BUILD_VERBOSE']) {
+            log(`Generating nls bundles for: ${language.id}`);
+        }
+        const languageFolderName = language.translationId || language.id;
+        const i18nFile = path.join(languageDirectory, `vscode-language-pack-${languageFolderName}`, 'translations', 'main.i18n.json');
+        let allMessages;
+        if (fs.existsSync(i18nFile)) {
+            const content = stripComments(fs.readFileSync(i18nFile, 'utf8'));
+            allMessages = JSON.parse(content);
+        }
+        let nlsIndex = 0;
+        const nlsResult = {};
+        for (const [moduleId, nlsKeys] of json) {
+            const moduleTranslations = allMessages?.contents[moduleId];
+            for (const nlsKey of nlsKeys) {
+                if (!nlsResult[moduleId]) {
+                    nlsResult[moduleId] = [];
+                }
+                nlsResult[moduleId].push(moduleTranslations?.[nlsKey]);
+                nlsIndex++;
+            }
+        }
+        files.push(new File({
+            contents: Buffer.from(JSON.stringify(nlsResult)),
+            base,
+            path: `${base}/nls.messages.${language.id}.json`
+        }));
+    });
+    return files;
 }
 function processCoreBundleFormat(base, fileHeader, languages, json, emitter) {
     const languageDirectory = path_1.default.join(REPO_ROOT_PATH, '..', 'vscode-loc', 'i18n');

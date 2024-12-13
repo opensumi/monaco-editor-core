@@ -93,9 +93,9 @@ module BundledFormat {
 	}
 }
 
-type NLSKeysFormat = [string /* module ID */, string[] /* keys */];
+export type NLSKeysFormat = [string /* module ID */, string[] /* keys */];
 
-module NLSKeysFormat {
+export module NLSKeysFormat {
 	export function is(value: any): value is NLSKeysFormat {
 		if (value === undefined) {
 			return false;
@@ -342,6 +342,53 @@ function stripComments(content: string): string {
 		}
 	});
 	return result;
+}
+
+// 编译所有语言包
+export function processAllNlsFiles(base: string, languages: Language[], json: NLSKeysFormat) {
+	const languageDirectory = path.join(REPO_ROOT_PATH, '..', 'vscode-loc', 'i18n');
+	if (!fs.existsSync(languageDirectory)) {
+		log(`No VS Code localization repository found. Looking at ${languageDirectory}`);
+		log(`To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.`);
+	}
+	const sortedLanguages = sortLanguages(languages);
+	const files: File[] = [];
+
+	sortedLanguages.forEach((language) => {
+		if (process.env['VSCODE_BUILD_VERBOSE']) {
+			log(`Generating nls bundles for: ${language.id}`);
+		}
+
+		const languageFolderName = language.translationId || language.id;
+		const i18nFile = path.join(languageDirectory, `vscode-language-pack-${languageFolderName}`, 'translations', 'main.i18n.json');
+		let allMessages: I18nFormat | undefined;
+		if (fs.existsSync(i18nFile)) {
+			const content = stripComments(fs.readFileSync(i18nFile, 'utf8'));
+			allMessages = JSON.parse(content);
+		}
+
+		let nlsIndex = 0;
+		const nlsResult: { [key in string]: (string | undefined)[] } = {};
+		for (const [moduleId, nlsKeys] of json) {
+			const moduleTranslations = allMessages?.contents[moduleId];
+			for (const nlsKey of nlsKeys) {
+				if (!nlsResult[moduleId]) {
+					nlsResult[moduleId] = [];
+				}
+
+				nlsResult[moduleId].push(moduleTranslations?.[nlsKey]);
+				nlsIndex++;
+			}
+		}
+
+		files.push(new File({
+			contents: Buffer.from(JSON.stringify(nlsResult)),
+			base,
+			path: `${base}/nls.messages.${language.id}.json`
+		}));
+	});
+
+	return files;
 }
 
 function processCoreBundleFormat(base: string, fileHeader: string, languages: Language[], json: NLSKeysFormat, emitter: ThroughStream) {

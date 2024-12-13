@@ -7,21 +7,27 @@
  * 本文件用于为 esm 版本的 monaco-editor 提供 nls 多语言支持
  * 不适用于其他版本 (dev/min)
  *---------------------------------------------------------------------------------------------*/
+// eslint-disable-next-line local/code-import-patterns
+import { getNLSLanguage } from './nls.messages.js';
+// eslint-disable-next-line local/code-import-patterns
+export { getNLSLanguage, getNLSMessages } from './nls.messages.js';
+
 // @ts-ignore
-const zhCnBundle = require('../../dev/vs/editor/editor.main.nls.zh-cn.json');
+const zhCnBundle = require('../nls.messages.zh-cn.json');
+
 let defaultLocale: string | undefined;
 let CURRENT_LOCALE_DATA: { [prop: string]: string[] } | null = null;
+let initialized = false;
+const KAITIAN_LANGUAGE_KEY = 'general.language';
 // 标准语种代码，目前仅支持中、英文
 export type LocaleType = 'zh-CN' | 'en-US';
-let initialized = false;
-export function setLocale(locale: LocaleType): void {
-	defaultLocale = locale;
-}
 export enum PreferenceScope {
 	Default,
 	User,
 }
-const KAITIAN_LANGUAGE_KEY = 'general.language';
+export const setLocale = (locale: LocaleType): void => {
+	defaultLocale = locale;
+}
 /**
  * 提供手动设置语言的方法 #setLocale
  * 如果在第一次调用 localize 前没有设置过 locale，则会走这里 fallback 的逻辑
@@ -33,11 +39,11 @@ function initialLocaleBundle() {
 	}
 	if (!defaultLocale) {
 		if (localStorage[`${PreferenceScope.User}:${KAITIAN_LANGUAGE_KEY}`]) {
-			defaultLocale = localStorage[`${PreferenceScope.User}:${KAITIAN_LANGUAGE_KEY}`];
+			setLocale(localStorage[`${PreferenceScope.User}:${KAITIAN_LANGUAGE_KEY}`])
 		} else if (localStorage[`${PreferenceScope.Default}:${KAITIAN_LANGUAGE_KEY}`]) {
-			defaultLocale = localStorage[`${PreferenceScope.Default}:${KAITIAN_LANGUAGE_KEY}`];
+			setLocale(localStorage[`${PreferenceScope.Default}:${KAITIAN_LANGUAGE_KEY}`]);
 		} else {
-			defaultLocale = 'zh-CN';
+			setLocale('zh-CN')
 		}
 	}
 	// 由于目前仅支持中/英文，所以如果locale 为 'zh-cn'，则表示已经设置了中文，否则仅使用默认值，无需加载语言包
@@ -46,11 +52,6 @@ function initialLocaleBundle() {
 	}
 	initialized = true;
 }
-
-// eslint-disable-next-line local/code-import-patterns
-import { getNLSLanguage } from './nls.messages.js';
-// eslint-disable-next-line local/code-import-patterns
-export { getNLSLanguage, getNLSMessages } from './nls.messages.js';
 
 const isPseudo = getNLSLanguage() === 'pseudo' || (typeof document !== 'undefined' && document.location && typeof document.location.hash === 'string' && document.location.hash.indexOf('pseudo=true') >= 0);
 
@@ -124,7 +125,7 @@ export function localize(path: string | ILocalizeInfo, index: number | string, .
 
 export function localize2(data: string | ILocalizeInfo, message: string, ...args: any[]): ILocalizedString;
 export function localize2(path: string | ILocalizeInfo, index: number | string, ...args: any[]): ILocalizedString {
-	const res = localize(path, index as string, args);
+	const res = localize(path, index as string, ...args);
 	return {
 		original: res,
 		value: res
