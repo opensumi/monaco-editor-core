@@ -16,7 +16,6 @@ import { IDimension } from '../../../common/core/dimension.js';
 import { PositionAffinity } from '../../../common/model.js';
 import { IPosition, Position } from '../../../common/core/position.js';
 import { IViewModel } from '../../../common/viewModel.js';
-import { overflowWidgetsSettings } from '../../../../base/browser/settings.js';
 
 /**
  * This view part is responsible for rendering the content widgets, which are
@@ -307,9 +306,6 @@ class Widget {
 
 	private _layoutBoxInViewport(anchor: AnchorCoordinate, width: number, height: number, ctx: RenderingContext): IBoxLayoutResult {
 		// Our visible box is split horizontally by the current line => 2 boxes
-		// 这里获取 domNode 的 clientHeight 可能为 0，会导致下面计算 contentWidget 定位时整体向下偏移了一行
-		// 由于获取的是缓存的 height，且 domNode 渲染时机暂时不好修改，所以如果高度为0的话，在这里重新获取一次高度
-		const contentHeight = height === 0 ? this.domNode.domNode.clientHeight : height;
 
 		// a) the box above the line
 		const aboveLineTop = anchor.top;
@@ -319,10 +315,10 @@ class Widget {
 		const underLineTop = anchor.top + anchor.height;
 		const heightAvailableUnderLine = ctx.viewportHeight - underLineTop;
 
-		const aboveTop = aboveLineTop - contentHeight;
-		const fitsAbove = (heightAvailableAboveLine >= contentHeight);
+		const aboveTop = aboveLineTop - height;
+		const fitsAbove = (heightAvailableAboveLine >= height);
 		const belowTop = underLineTop;
-		const fitsBelow = (heightAvailableUnderLine >= contentHeight);
+		const fitsBelow = (heightAvailableUnderLine >= height);
 
 		// And its left
 		let left = anchor.left;
@@ -378,8 +374,8 @@ class Widget {
 		const [left, absoluteAboveLeft] = this._layoutHorizontalSegmentInPage(windowSize, domNodePosition, anchor.left - ctx.scrollLeft + this._contentLeft, width);
 
 		// Leave some clearance to the top/bottom
-		const TOP_PADDING = overflowWidgetsSettings.topPadding;
-		const BOTTOM_PADDING = overflowWidgetsSettings.bottomPadding;
+		const TOP_PADDING = 22;
+		const BOTTOM_PADDING = 22;
 
 		const fitsAbove = (absoluteAboveTop >= TOP_PADDING);
 		const fitsBelow = (absoluteBelowTop + height <= windowSize.height - BOTTOM_PADDING);
