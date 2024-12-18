@@ -570,14 +570,13 @@ export class SimpleWorkerServer implements IWorkerServer {
 		}
 
 		const url = FileAccess.asBrowserUri(`${moduleId}.js` as AppResourcePath).toString(true);
-		console.log("🚀 ~ SimpleWorkerServer ~ initialize ~ url:", url)
-		// return import(`${url}`).then((module: { create: IRequestHandlerFactory }) => {
-		// 	this._requestHandler = module.create(this);
+		return import(`${url}`).then((module: { create: IRequestHandlerFactory }) => {
+			this._requestHandler = module.create(this);
 
-		// 	if (!this._requestHandler) {
-		// 		throw new Error(`No RequestHandler!`);
-		// 	}
-		// });
+			if (!this._requestHandler) {
+				throw new Error(`No RequestHandler!`);
+			}
+		});
 	}
 }
 

@@ -559,8 +559,7 @@ export class EditorSimpleWorker extends BaseEditorSimpleWorker {
 			};
 
 			const url = FileAccess.asBrowserUri(`${moduleId}.js` as AppResourcePath).toString(true);
-			console.log("🚀 ~ EditorSimpleWorker ~ returnnewPromise ~ url:", url)
-			// import(`${url}`).then(onModuleCallback).catch(reject);
+			import(`${url}`).then(onModuleCallback).catch(reject);
 		});
 	}
 
