@@ -570,7 +570,10 @@ export class SimpleWorkerServer implements IWorkerServer {
 		}
 
 		const url = FileAccess.asBrowserUri(`${moduleId}.js` as AppResourcePath).toString(true);
-		return import(`${url}`).then((module: { create: IRequestHandlerFactory }) => {
+		return import(
+			/* webpackInclude: /\.js$/ */
+			`${url}`
+		).then((module: { create: IRequestHandlerFactory }) => {
 			this._requestHandler = module.create(this);
 
 			if (!this._requestHandler) {

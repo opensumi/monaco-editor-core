@@ -559,7 +559,10 @@ export class EditorSimpleWorker extends BaseEditorSimpleWorker {
 			};
 
 			const url = FileAccess.asBrowserUri(`${moduleId}.js` as AppResourcePath).toString(true);
-			import(`${url}`).then(onModuleCallback).catch(reject);
+			import(
+				/* webpackInclude: /\.js$/ */
+				`${url}`
+			).then(onModuleCallback).catch(reject);
 		});
 	}
 
