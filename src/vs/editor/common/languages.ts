@@ -29,9 +29,8 @@ import { IMarkerData } from '../../platform/markers/common/markers.js';
 import { IModelTokensChangedEvent } from './textModelEvents.js';
 import type { Parser } from '@vscode/tree-sitter-wasm';
 
-/**
- * @internal
- */
+export { HierarchicalKind } from '../../base/common/hierarchicalKind.js';
+
 export interface ILanguageIdCodec {
 	encodeLanguageId(languageId: string): LanguageId;
 	decodeLanguageId(languageId: LanguageId): string;
@@ -95,9 +94,6 @@ export interface ITreeSitterTokenizationSupport {
 	onDidChangeTokens: Event<{ textModel: model.ITextModel; changes: IModelTokensChangedEvent }>;
 }
 
-/**
- * @internal
- */
 export interface ITokenizationSupport {
 	/**
 	 * If true, the background tokenizer will only be used to verify tokens against the default background tokenizer.
@@ -659,7 +655,7 @@ export interface CompletionItemProvider {
 	 *
 	 * @internal
 	 */
-	_debugDisplayName: string;
+	_debugDisplayName?: string;
 
 	triggerCharacters?: string[];
 	/**
@@ -900,9 +896,6 @@ export interface DocumentPasteEdit {
 	additionalEdit?: WorkspaceEdit;
 }
 
-/**
- * @internal
- */
 export enum DocumentPasteTriggerKind {
 	Automatic = 0,
 	PasteAs = 1,
@@ -1860,9 +1853,6 @@ export enum CommentThreadState {
 	Resolved = 1
 }
 
-/**
- * @internal
- */
 export enum CommentThreadApplicability {
 	Current = 0,
 	Outdated = 1
@@ -2244,9 +2234,6 @@ export enum ExternalUriOpenerPriority {
 	Preferred = 3,
 }
 
-/**
- * @internal
- */
 export type DropYieldTo = { readonly kind: HierarchicalKind } | { readonly mimeType: string };
 
 /**

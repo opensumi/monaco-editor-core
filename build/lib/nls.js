@@ -11,6 +11,7 @@ const File = require("vinyl");
 const sm = require("source-map");
 const path = require("path");
 const sort = require("gulp-sort");
+const i18n_1 = require("./i18n");
 var CollectStepResult;
 (function (CollectStepResult) {
     CollectStepResult[CollectStepResult["Yes"] = 0] = "Yes";
@@ -75,26 +76,32 @@ function nls(options) {
                 base,
                 path: `${base}/nls.metadata.json`
             }),
-            new File({
-                contents: Buffer.from(JSON.stringify(_nls.allNLSMessages)),
-                base,
-                path: `${base}/nls.messages.json`
-            }),
+            // new File({
+            // 	contents: Buffer.from(JSON.stringify(_nls.allNLSMessages)),
+            // 	base,
+            // 	path: `${base}/nls.messages.json`
+            // }),
             new File({
                 contents: Buffer.from(JSON.stringify(_nls.allNLSModulesAndKeys)),
                 base,
                 path: `${base}/nls.keys.json`
             }),
-            new File({
-                contents: Buffer.from(`/*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
- *--------------------------------------------------------*/
-globalThis._VSCODE_NLS_MESSAGES=${JSON.stringify(_nls.allNLSMessages)};`),
-                base,
-                path: `${base}/nls.messages.js`
-            })
+            // 				new File({
+            // 					contents: Buffer.from(`/*---------------------------------------------------------
+            //  * Copyright (C) Microsoft Corporation. All rights reserved.
+            //  *--------------------------------------------------------*/
+            // globalThis._VSCODE_NLS_MESSAGES=${JSON.stringify(_nls.allNLSMessages)};`),
+            // 					base,
+            // 					path: `${base}/nls.messages.js`
+            // 				})
         ]) {
             this.emit('data', file);
+        }
+        if (i18n_1.NLSKeysFormat.is(_nls.allNLSModulesAndKeys)) {
+            const nlsFiles = (0, i18n_1.processAllNlsFiles)(base, i18n_1.defaultLanguages, _nls.allNLSModulesAndKeys);
+            for (const file of nlsFiles) {
+                this.emit('data', file);
+            }
         }
         this.emit('end');
     }));
@@ -109,7 +116,6 @@ var _nls;
     _nls.moduleToNLSMessages = {};
     _nls.allNLSMessages = [];
     _nls.allNLSModulesAndKeys = [];
-    let allNLSMessagesIndex = 0;
     function fileFrom(file, contents, path = file.path) {
         return new File({
             contents: Buffer.from(contents),
@@ -157,7 +163,7 @@ var _nls;
         }
         return node.kind === ts.SyntaxKind.CallExpression ? CollectStepResult.YesAndRecurse : CollectStepResult.NoAndRecurse;
     }
-    function analyze(ts, contents, functionName, options = {}) {
+    function analyze(ts, moduleId, contents, functionName, options = {}) {
         const filename = 'file.ts';
         const serviceHost = new SingleFileServiceHost(ts, Object.assign(clone(options), { noResolve: true }), filename, contents);
         const service = ts.createLanguageService(serviceHost);
@@ -224,7 +230,9 @@ var _nls;
             .filter(a => a.length > 1)
             .sort((a, b) => a[0].getStart() - b[0].getStart())
             .map(a => ({
-            keySpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getStart()), end: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getEnd()) },
+            pathSpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getStart()), end: ts.getLineAndCharacterOfPosition(sourceFile, a[0].getEnd()) },
+            path: `"${moduleId}",`,
+            keySpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getStart() - 1), end: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getStart() - 1) },
             key: a[0].getText(),
             valueSpan: { start: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getStart()), end: ts.getLineAndCharacterOfPosition(sourceFile, a[1].getEnd()) },
             value: a[1].getText()
@@ -233,6 +241,7 @@ var _nls;
             localizeCalls: localizeCalls.toArray()
         };
     }
+    _nls.analyze = analyze;
     class TextModel {
         lines;
         lineEndings;
@@ -333,9 +342,9 @@ var _nls;
         // eslint-disable-next-line no-eval
         return eval(`(${sourceExpression})`);
     }
-    function patch(ts, typescript, javascript, sourcemap, options) {
-        const { localizeCalls } = analyze(ts, typescript, 'localize');
-        const { localizeCalls: localize2Calls } = analyze(ts, typescript, 'localize2');
+    function patch(ts, moduleId, typescript, javascript, sourcemap, options) {
+        const { localizeCalls } = analyze(ts, moduleId, typescript, 'localize');
+        const { localizeCalls: localize2Calls } = analyze(ts, moduleId, typescript, 'localize2');
         if (localizeCalls.length === 0 && localize2Calls.length === 0) {
             return { javascript, sourcemap };
         }
@@ -349,18 +358,25 @@ var _nls;
             const end = lcFrom(smc.generatedPositionFor(positionFrom(c.range.end)));
             return { span: { start, end }, content: c.content };
         };
+        let i = 0;
         const localizePatches = lazy(localizeCalls)
             .map(lc => (options.preserveEnglish ? [
-            { range: lc.keySpan, content: `${allNLSMessagesIndex++}` } // localize('key', "message") => localize(<index>, "message")
+            { range: lc.pathSpan, content: lc.path },
+            { range: lc.keySpan, content: `${i++}` }, // localize('key', "message") => localize(<index>, "message")
         ] : [
-            { range: lc.keySpan, content: `${allNLSMessagesIndex++}` }, // localize('key', "message") => localize(<index>, null)
-            { range: lc.valueSpan, content: 'null' }
+            { range: lc.pathSpan, content: lc.path },
+            { range: lc.keySpan, content: `${i++}` }, // localize('key', "message") => localize(<index>, null)
+            { range: lc.valueSpan, content: lc.value }
         ]))
             .flatten()
             .map(toPatch);
         const localize2Patches = lazy(localize2Calls)
-            .map(lc => ({ range: lc.keySpan, content: `${allNLSMessagesIndex++}` } // localize2('key', "message") => localize(<index>, "message")
-        ))
+            .map(lc => ([
+            { range: lc.pathSpan, content: lc.path },
+            { range: lc.keySpan, content: `${i++}` }, // localize2('key', "message") => localize(<index>, "message")
+            { range: lc.valueSpan, content: lc.value },
+        ]))
+            .flatten()
             .map(toPatch);
         // Sort patches by their start position
         const patches = localizePatches.concat(localize2Patches).toArray().sort((a, b) => {
@@ -384,13 +400,14 @@ var _nls;
         sourcemap = patchSourcemap(patches, sourcemap, smc);
         return { javascript, sourcemap, nlsKeys, nlsMessages };
     }
+    _nls.patch = patch;
     function patchFile(javascriptFile, typescript, options) {
         const ts = require('typescript');
         // hack?
         const moduleId = javascriptFile.relative
             .replace(/\.js$/, '')
             .replace(/\\/g, '/');
-        const { javascript, sourcemap, nlsKeys, nlsMessages } = patch(ts, typescript, javascriptFile.contents.toString(), javascriptFile.sourceMap, options);
+        const { javascript, sourcemap, nlsKeys, nlsMessages } = patch(ts, moduleId, typescript, javascriptFile.contents.toString(), javascriptFile.sourceMap, options);
         const result = fileFrom(javascriptFile, javascript);
         result.sourceMap = sourcemap;
         if (nlsKeys) {
