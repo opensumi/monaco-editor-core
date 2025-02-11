@@ -7,7 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.downloadExplorerAppx = downloadExplorerAppx;
+exports.downloadExplorerAppx = void 0;
 const fs_1 = __importDefault(require("fs"));
 const debug_1 = __importDefault(require("debug"));
 const extract_zip_1 = __importDefault(require("extract-zip"));
@@ -39,6 +39,7 @@ async function downloadExplorerAppx(outDir, quality = 'stable', targetArch = 'x6
     d(`unpacking from ${fileName}`);
     await (0, extract_zip_1.default)(artifact, { dir: fs_1.default.realpathSync(outDir) });
 }
+exports.downloadExplorerAppx = downloadExplorerAppx;
 async function main(outputDir) {
     const arch = process.env['VSCODE_ARCH'];
     if (!outputDir) {

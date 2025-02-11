@@ -7,9 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchUrls = fetchUrls;
-exports.fetchUrl = fetchUrl;
-exports.fetchGithub = fetchGithub;
+exports.fetchGithub = exports.fetchUrl = exports.fetchUrls = void 0;
 const event_stream_1 = __importDefault(require("event-stream"));
 const vinyl_1 = __importDefault(require("vinyl"));
 const fancy_log_1 = __importDefault(require("fancy-log"));
@@ -35,6 +33,7 @@ function fetchUrls(urls, options) {
         });
     }));
 }
+exports.fetchUrls = fetchUrls;
 async function fetchUrl(url, options, retries = 10, retryDelay = 1000) {
     const verbose = !!options.verbose || !!process.env['CI'] || !!process.env['BUILD_ARTIFACTSTAGINGDIRECTORY'];
     try {
@@ -98,6 +97,7 @@ async function fetchUrl(url, options, retries = 10, retryDelay = 1000) {
         throw e;
     }
 }
+exports.fetchUrl = fetchUrl;
 const ghApiHeaders = {
     Accept: 'application/vnd.github.v3+json',
     'User-Agent': 'VSCode Build',
@@ -138,4 +138,5 @@ function fetchGithub(repo, options) {
         }
     }));
 }
+exports.fetchGithub = fetchGithub;
 //# sourceMappingURL=fetch.js.map

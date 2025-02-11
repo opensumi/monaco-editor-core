@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAccessToken = getAccessToken;
+exports.getAccessToken = void 0;
 const msal_node_1 = require("@azure/msal-node");
 function e(name) {
     const result = process.env[name];
@@ -31,6 +31,7 @@ async function getAccessToken(endpoint, tenantId, clientId, idToken) {
         refreshAfterTimestamp: result.refreshOn?.getTime()
     };
 }
+exports.getAccessToken = getAccessToken;
 async function main() {
     const cosmosDBAccessToken = await getAccessToken(e('AZURE_DOCUMENTDB_ENDPOINT'), e('AZURE_TENANT_ID'), e('AZURE_CLIENT_ID'), e('AZURE_ID_TOKEN'));
     const blobServiceAccessToken = await getAccessToken(`https://${e('VSCODE_STAGING_BLOB_STORAGE_ACCOUNT_NAME')}.blob.core.windows.net/`, process.env['AZURE_TENANT_ID'], process.env['AZURE_CLIENT_ID'], process.env['AZURE_ID_TOKEN']);

@@ -7,25 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.incremental = incremental;
-exports.debounce = debounce;
-exports.fixWin32DirectoryPermissions = fixWin32DirectoryPermissions;
-exports.setExecutableBit = setExecutableBit;
-exports.toFileUri = toFileUri;
-exports.skipDirectories = skipDirectories;
-exports.cleanNodeModules = cleanNodeModules;
-exports.loadSourcemaps = loadSourcemaps;
-exports.stripSourceMappingURL = stripSourceMappingURL;
-exports.$if = $if;
-exports.appendOwnPathSourceURL = appendOwnPathSourceURL;
-exports.rewriteSourceMappingURL = rewriteSourceMappingURL;
-exports.rimraf = rimraf;
-exports.rreddir = rreddir;
-exports.ensureDir = ensureDir;
-exports.rebase = rebase;
-exports.filter = filter;
-exports.streamToPromise = streamToPromise;
-exports.getElectronVersion = getElectronVersion;
+exports.getElectronVersion = exports.streamToPromise = exports.filter = exports.rebase = exports.ensureDir = exports.rreddir = exports.rimraf = exports.rewriteSourceMappingURL = exports.appendOwnPathSourceURL = exports.$if = exports.stripSourceMappingURL = exports.loadSourcemaps = exports.cleanNodeModules = exports.skipDirectories = exports.toFileUri = exports.setExecutableBit = exports.fixWin32DirectoryPermissions = exports.debounce = exports.incremental = void 0;
 const event_stream_1 = __importDefault(require("event-stream"));
 const debounce_1 = __importDefault(require("debounce"));
 const gulp_filter_1 = __importDefault(require("gulp-filter"));
@@ -33,6 +15,7 @@ const gulp_rename_1 = __importDefault(require("gulp-rename"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const rimraf_1 = __importDefault(require("rimraf"));
+const vinyl_1 = __importDefault(require("vinyl"));
 const url_1 = require("url");
 const ternary_stream_1 = __importDefault(require("ternary-stream"));
 const root = path_1.default.dirname(path_1.default.dirname(__dirname));
@@ -74,6 +57,7 @@ function incremental(streamProvider, initial, supportsCancellation) {
     });
     return event_stream_1.default.duplex(input, output);
 }
+exports.incremental = incremental;
 function debounce(task, duration = 500) {
     const input = event_stream_1.default.through();
     const output = event_stream_1.default.through();
@@ -102,6 +86,7 @@ function debounce(task, duration = 500) {
     });
     return event_stream_1.default.duplex(input, output);
 }
+exports.debounce = debounce;
 function fixWin32DirectoryPermissions() {
     if (!/win32/.test(process.platform)) {
         return event_stream_1.default.through();
@@ -113,6 +98,7 @@ function fixWin32DirectoryPermissions() {
         return f;
     });
 }
+exports.fixWin32DirectoryPermissions = fixWin32DirectoryPermissions;
 function setExecutableBit(pattern) {
     const setBit = event_stream_1.default.mapSync(f => {
         if (!f.stat) {
@@ -132,6 +118,7 @@ function setExecutableBit(pattern) {
         .pipe(filter.restore);
     return event_stream_1.default.duplex(input, output);
 }
+exports.setExecutableBit = setExecutableBit;
 function toFileUri(filePath) {
     const match = filePath.match(/^([a-z])\:(.*)$/i);
     if (match) {
@@ -139,6 +126,7 @@ function toFileUri(filePath) {
     }
     return 'file://' + filePath.replace(/\\/g, '/');
 }
+exports.toFileUri = toFileUri;
 function skipDirectories() {
     return event_stream_1.default.mapSync(f => {
         if (!f.isDirectory()) {
@@ -146,6 +134,7 @@ function skipDirectories() {
         }
     });
 }
+exports.skipDirectories = skipDirectories;
 function cleanNodeModules(rulePath) {
     const rules = fs_1.default.readFileSync(rulePath, 'utf8')
         .split(/\r?\n/g)
@@ -157,6 +146,7 @@ function cleanNodeModules(rulePath) {
     const output = event_stream_1.default.merge(input.pipe((0, gulp_filter_1.default)(['**', ...excludes])), input.pipe((0, gulp_filter_1.default)(includes)));
     return event_stream_1.default.duplex(input, output);
 }
+exports.cleanNodeModules = cleanNodeModules;
 function loadSourcemaps() {
     const input = event_stream_1.default.through();
     const output = input
@@ -198,6 +188,7 @@ function loadSourcemaps() {
     }));
     return event_stream_1.default.duplex(input, output);
 }
+exports.loadSourcemaps = loadSourcemaps;
 function stripSourceMappingURL() {
     const input = event_stream_1.default.through();
     const output = input
@@ -208,6 +199,7 @@ function stripSourceMappingURL() {
     }));
     return event_stream_1.default.duplex(input, output);
 }
+exports.stripSourceMappingURL = stripSourceMappingURL;
 /** Splits items in the stream based on the predicate, sending them to onTrue if true, or onFalse otherwise */
 function $if(test, onTrue, onFalse = event_stream_1.default.through()) {
     if (typeof test === 'boolean') {
@@ -215,6 +207,7 @@ function $if(test, onTrue, onFalse = event_stream_1.default.through()) {
     }
     return (0, ternary_stream_1.default)(test, onTrue, onFalse);
 }
+exports.$if = $if;
 /** Operator that appends the js files' original path a sourceURL, so debug locations map */
 function appendOwnPathSourceURL() {
     const input = event_stream_1.default.through();
@@ -228,6 +221,7 @@ function appendOwnPathSourceURL() {
     }));
     return event_stream_1.default.duplex(input, output);
 }
+exports.appendOwnPathSourceURL = appendOwnPathSourceURL;
 function rewriteSourceMappingURL(sourceMappingURLBase) {
     const input = event_stream_1.default.through();
     const output = input
@@ -239,6 +233,7 @@ function rewriteSourceMappingURL(sourceMappingURLBase) {
     }));
     return event_stream_1.default.duplex(input, output);
 }
+exports.rewriteSourceMappingURL = rewriteSourceMappingURL;
 function rimraf(dir) {
     const result = () => new Promise((c, e) => {
         let retries = 0;
@@ -258,6 +253,7 @@ function rimraf(dir) {
     result.taskName = `clean-${path_1.default.basename(dir).toLowerCase()}`;
     return result;
 }
+exports.rimraf = rimraf;
 function _rreaddir(dirPath, prepend, result) {
     const entries = fs_1.default.readdirSync(dirPath, { withFileTypes: true });
     for (const entry of entries) {
@@ -274,6 +270,7 @@ function rreddir(dirPath) {
     _rreaddir(dirPath, '', result);
     return result;
 }
+exports.rreddir = rreddir;
 function ensureDir(dirPath) {
     if (fs_1.default.existsSync(dirPath)) {
         return;
@@ -281,12 +278,14 @@ function ensureDir(dirPath) {
     ensureDir(path_1.default.dirname(dirPath));
     fs_1.default.mkdirSync(dirPath);
 }
+exports.ensureDir = ensureDir;
 function rebase(count) {
     return (0, gulp_rename_1.default)(f => {
         const parts = f.dirname ? f.dirname.split(/[\/\\]/) : [];
         f.dirname = parts.slice(count).join(path_1.default.sep);
     });
 }
+exports.rebase = rebase;
 function filter(fn) {
     const result = event_stream_1.default.through(function (data) {
         if (fn(data)) {
@@ -299,16 +298,19 @@ function filter(fn) {
     result.restore = event_stream_1.default.through();
     return result;
 }
+exports.filter = filter;
 function streamToPromise(stream) {
     return new Promise((c, e) => {
         stream.on('error', err => e(err));
         stream.on('end', () => c());
     });
 }
+exports.streamToPromise = streamToPromise;
 function getElectronVersion() {
     const npmrc = fs_1.default.readFileSync(path_1.default.join(root, '.npmrc'), 'utf8');
     const electronVersion = /^target="(.*)"$/m.exec(npmrc)[1];
     const msBuildId = /^ms_build_id="(.*)"$/m.exec(npmrc)[1];
     return { electronVersion, msBuildId };
 }
+exports.getElectronVersion = getElectronVersion;
 //# sourceMappingURL=util.js.map

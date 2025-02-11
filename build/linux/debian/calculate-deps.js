@@ -7,7 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generatePackageDeps = generatePackageDeps;
+exports.generatePackageDeps = void 0;
 const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 const os_1 = require("os");
@@ -20,6 +20,7 @@ function generatePackageDeps(files, arch, chromiumSysroot, vscodeSysroot) {
     dependencies.push(additionalDepsSet);
     return dependencies;
 }
+exports.generatePackageDeps = generatePackageDeps;
 // Based on https://source.chromium.org/chromium/chromium/src/+/main:chrome/installer/linux/debian/calculate_package_deps.py.
 function calculatePackageDeps(binaryPath, arch, chromiumSysroot, vscodeSysroot) {
     try {

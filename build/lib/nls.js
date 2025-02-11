@@ -7,21 +7,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.nls = nls;
+exports.nls = void 0;
 const lazy_js_1 = __importDefault(require("lazy.js"));
 const event_stream_1 = require("event-stream");
-<<<<<<< HEAD
 const vinyl_1 = __importDefault(require("vinyl"));
 const source_map_1 = __importDefault(require("source-map"));
 const path_1 = __importDefault(require("path"));
 const gulp_sort_1 = __importDefault(require("gulp-sort"));
-=======
-const File = require("vinyl");
-const sm = require("source-map");
-const path = require("path");
-const sort = require("gulp-sort");
 const i18n_1 = require("./i18n");
->>>>>>> c56bab7e6a5 (fix: nls bundle)
 var CollectStepResult;
 (function (CollectStepResult) {
     CollectStepResult[CollectStepResult["Yes"] = 0] = "Yes";
@@ -86,35 +79,16 @@ function nls(options) {
                 base,
                 path: `${base}/nls.metadata.json`
             }),
-<<<<<<< HEAD
-            new vinyl_1.default({
-                contents: Buffer.from(JSON.stringify(_nls.allNLSMessages)),
-                base,
-                path: `${base}/nls.messages.json`
-            }),
-            new vinyl_1.default({
-=======
             // new File({
             // 	contents: Buffer.from(JSON.stringify(_nls.allNLSMessages)),
             // 	base,
             // 	path: `${base}/nls.messages.json`
             // }),
-            new File({
->>>>>>> c56bab7e6a5 (fix: nls bundle)
+            new vinyl_1.default({
                 contents: Buffer.from(JSON.stringify(_nls.allNLSModulesAndKeys)),
                 base,
                 path: `${base}/nls.keys.json`
             }),
-<<<<<<< HEAD
-            new vinyl_1.default({
-                contents: Buffer.from(`/*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
- *--------------------------------------------------------*/
-globalThis._VSCODE_NLS_MESSAGES=${JSON.stringify(_nls.allNLSMessages)};`),
-                base,
-                path: `${base}/nls.messages.js`
-            })
-=======
             // 				new File({
             // 					contents: Buffer.from(`/*---------------------------------------------------------
             //  * Copyright (C) Microsoft Corporation. All rights reserved.
@@ -123,7 +97,6 @@ globalThis._VSCODE_NLS_MESSAGES=${JSON.stringify(_nls.allNLSMessages)};`),
             // 					base,
             // 					path: `${base}/nls.messages.js`
             // 				})
->>>>>>> c56bab7e6a5 (fix: nls bundle)
         ]) {
             this.emit('data', file);
         }
@@ -137,6 +110,7 @@ globalThis._VSCODE_NLS_MESSAGES=${JSON.stringify(_nls.allNLSMessages)};`),
     }));
     return (0, event_stream_1.duplex)(input, output);
 }
+exports.nls = nls;
 function isImportNode(ts, node) {
     return node.kind === ts.SyntaxKind.ImportDeclaration || node.kind === ts.SyntaxKind.ImportEqualsDeclaration;
 }
@@ -388,12 +362,8 @@ var _nls;
             const end = lcFrom(smc.generatedPositionFor(positionFrom(c.range.end)));
             return { span: { start, end }, content: c.content };
         };
-<<<<<<< HEAD
-        const localizePatches = (0, lazy_js_1.default)(localizeCalls)
-=======
         let i = 0;
-        const localizePatches = lazy(localizeCalls)
->>>>>>> c56bab7e6a5 (fix: nls bundle)
+        const localizePatches = (0, lazy_js_1.default)(localizeCalls)
             .map(lc => (options.preserveEnglish ? [
             { range: lc.pathSpan, content: lc.path },
             { range: lc.keySpan, content: `${i++}` }, // localize('key', "message") => localize(<index>, "message")
@@ -404,19 +374,13 @@ var _nls;
         ]))
             .flatten()
             .map(toPatch);
-<<<<<<< HEAD
         const localize2Patches = (0, lazy_js_1.default)(localize2Calls)
-            .map(lc => ({ range: lc.keySpan, content: `${allNLSMessagesIndex++}` } // localize2('key', "message") => localize(<index>, "message")
-        ))
-=======
-        const localize2Patches = lazy(localize2Calls)
             .map(lc => ([
             { range: lc.pathSpan, content: lc.path },
             { range: lc.keySpan, content: `${i++}` }, // localize2('key', "message") => localize(<index>, "message")
             { range: lc.valueSpan, content: lc.value },
         ]))
             .flatten()
->>>>>>> 27c536e0b7f (chore: support esm nls)
             .map(toPatch);
         // Sort patches by their start position
         const patches = localizePatches.concat(localize2Patches).toArray().sort((a, b) => {

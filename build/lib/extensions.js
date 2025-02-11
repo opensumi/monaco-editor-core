@@ -19,37 +19,18 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fromMarketplace = fromMarketplace;
-exports.fromGithub = fromGithub;
-exports.packageNonNativeLocalExtensionsStream = packageNonNativeLocalExtensionsStream;
-exports.packageNativeLocalExtensionsStream = packageNativeLocalExtensionsStream;
-exports.packageAllLocalExtensionsStream = packageAllLocalExtensionsStream;
-exports.packageMarketplaceExtensionsStream = packageMarketplaceExtensionsStream;
-exports.scanBuiltinExtensions = scanBuiltinExtensions;
-exports.translatePackageJSON = translatePackageJSON;
-exports.webpackExtensions = webpackExtensions;
-exports.buildExtensionMedia = buildExtensionMedia;
+exports.buildExtensionMedia = exports.webpackExtensions = exports.translatePackageJSON = exports.scanBuiltinExtensions = exports.packageMarketplaceExtensionsStream = exports.packageAllLocalExtensionsStream = exports.packageNativeLocalExtensionsStream = exports.packageNonNativeLocalExtensionsStream = exports.fromGithub = exports.fromMarketplace = void 0;
 const event_stream_1 = __importDefault(require("event-stream"));
 const fs_1 = __importDefault(require("fs"));
 const child_process_1 = __importDefault(require("child_process"));
@@ -265,6 +246,7 @@ function fromMarketplace(serviceUrl, { name: extensionName, version, sha256, met
         .pipe(json({ __metadata: metadata }))
         .pipe(packageJsonFilter.restore);
 }
+exports.fromMarketplace = fromMarketplace;
 function fromGithub({ name, version, repo, sha256, metadata }) {
     const json = require('gulp-json-editor');
     (0, fancy_log_1.default)('Downloading extension from GH:', ansi_colors_1.default.yellow(`${name}@${version}`), '...');
@@ -283,6 +265,7 @@ function fromGithub({ name, version, repo, sha256, metadata }) {
         .pipe(json({ __metadata: metadata }))
         .pipe(packageJsonFilter.restore);
 }
+exports.fromGithub = fromGithub;
 /**
  * All extensions that are known to have some native component and thus must be built on the
  * platform that is being built.
@@ -343,6 +326,7 @@ function isWebExtension(manifest) {
 function packageNonNativeLocalExtensionsStream(forWeb, disableMangle) {
     return doPackageLocalExtensionsStream(forWeb, disableMangle, false);
 }
+exports.packageNonNativeLocalExtensionsStream = packageNonNativeLocalExtensionsStream;
 /**
  * Package local extensions that are known to have native dependencies. Mutually exclusive to {@link packageNonNativeLocalExtensionsStream}.
  * @note it's possible that the extension does not have native dependencies for the current platform, especially if building for the web,
@@ -355,6 +339,7 @@ function packageNonNativeLocalExtensionsStream(forWeb, disableMangle) {
 function packageNativeLocalExtensionsStream(forWeb, disableMangle) {
     return doPackageLocalExtensionsStream(forWeb, disableMangle, true);
 }
+exports.packageNativeLocalExtensionsStream = packageNativeLocalExtensionsStream;
 /**
  * Package all the local extensions... both those that are known to have native dependencies and those that are not.
  * @param forWeb build the extensions that have web targets
@@ -367,6 +352,7 @@ function packageAllLocalExtensionsStream(forWeb, disableMangle) {
         packageNativeLocalExtensionsStream(forWeb, disableMangle)
     ]);
 }
+exports.packageAllLocalExtensionsStream = packageAllLocalExtensionsStream;
 /**
  * @param forWeb build the extensions that have web targets
  * @param disableMangle disable the mangler
@@ -422,6 +408,7 @@ function packageMarketplaceExtensionsStream(forWeb) {
     return (marketplaceExtensionsStream
         .pipe(util2.setExecutableBit(['**/*.sh'])));
 }
+exports.packageMarketplaceExtensionsStream = packageMarketplaceExtensionsStream;
 function scanBuiltinExtensions(extensionsRoot, exclude = []) {
     const scannedExtensions = [];
     try {
@@ -457,6 +444,7 @@ function scanBuiltinExtensions(extensionsRoot, exclude = []) {
         return scannedExtensions;
     }
 }
+exports.scanBuiltinExtensions = scanBuiltinExtensions;
 function translatePackageJSON(packageJSON, packageNLSPath) {
     const CharCode_PC = '%'.charCodeAt(0);
     const packageNls = JSON.parse(fs_1.default.readFileSync(packageNLSPath).toString());
@@ -480,6 +468,7 @@ function translatePackageJSON(packageJSON, packageNLSPath) {
     translate(packageJSON);
     return packageJSON;
 }
+exports.translatePackageJSON = translatePackageJSON;
 const extensionsPath = path_1.default.join(root, 'extensions');
 // Additional projects to run esbuild on. These typically build code for webviews
 const esbuildMediaScripts = [
@@ -553,6 +542,7 @@ async function webpackExtensions(taskName, isWatch, webpackConfigLocations) {
         }
     });
 }
+exports.webpackExtensions = webpackExtensions;
 async function esbuildExtensions(taskName, isWatch, scripts) {
     function reporter(stdError, script) {
         const matches = (stdError || '').match(/\> (.+): error: (.+)?/g);
@@ -590,4 +580,5 @@ async function buildExtensionMedia(isWatch, outputRoot) {
         outputRoot: outputRoot ? path_1.default.join(root, outputRoot, path_1.default.dirname(p)) : undefined
     })));
 }
+exports.buildExtensionMedia = buildExtensionMedia;
 //# sourceMappingURL=extensions.js.map

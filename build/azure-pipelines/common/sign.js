@@ -7,8 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Temp = void 0;
-exports.main = main;
+exports.main = exports.Temp = void 0;
 const child_process_1 = __importDefault(require("child_process"));
 const fs_1 = __importDefault(require("fs"));
 const crypto_1 = __importDefault(require("crypto"));
@@ -199,6 +198,7 @@ function main([esrpCliPath, type, folderPath, pattern]) {
         process.exit(1);
     }
 }
+exports.main = main;
 if (require.main === module) {
     main(process.argv.slice(2));
     process.exit(0);

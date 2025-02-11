@@ -10,6 +10,7 @@ import File from 'vinyl';
 import sm from 'source-map';
 import path from 'path';
 import sort from 'gulp-sort';
+import { defaultLanguages, NLSKeysFormat, processAllNlsFiles } from './i18n';
 
 declare class FileSourceMap extends File {
 	public sourceMap: sm.RawSourceMap;

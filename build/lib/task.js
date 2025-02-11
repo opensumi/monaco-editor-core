@@ -7,9 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.series = series;
-exports.parallel = parallel;
-exports.define = define;
+exports.define = exports.parallel = exports.series = void 0;
 const fancy_log_1 = __importDefault(require("fancy-log"));
 const ansi_colors_1 = __importDefault(require("ansi-colors"));
 function _isPromise(p) {
@@ -72,6 +70,7 @@ function series(...tasks) {
     result._tasks = tasks;
     return result;
 }
+exports.series = series;
 function parallel(...tasks) {
     const result = async () => {
         await Promise.all(tasks.map(t => _execute(t)));
@@ -79,6 +78,7 @@ function parallel(...tasks) {
     result._tasks = tasks;
     return result;
 }
+exports.parallel = parallel;
 function define(name, task) {
     if (task._tasks) {
         // This is a composite task
@@ -97,4 +97,5 @@ function define(name, task) {
     task.displayName = name;
     return task;
 }
+exports.define = define;
 //# sourceMappingURL=task.js.map

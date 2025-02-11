@@ -498,7 +498,7 @@ async function withLease(client, fn) {
                             (0, node_timers_1.clearInterval)(interval);
                             e(new Error('Failed to renew lease ' + err));
                         });
-                    }, 30_000);
+                    }, 30000);
                 });
                 const result = await Promise.race([fn(), refresher]);
                 abortController.abort();
@@ -663,7 +663,7 @@ async function main() {
             operations.push({ name: artifact.name, operation });
             resultPromise = Promise.allSettled(operations.map(o => o.operation));
         }
-        await new Promise(c => setTimeout(c, 10_000));
+        await new Promise(c => setTimeout(c, 10000));
     }
     console.log(`Found all ${done.size + processing.size} artifacts, waiting for ${processing.size} artifacts to finish publishing...`);
     const artifactsInProgress = operations.filter(o => processing.has(o.name));

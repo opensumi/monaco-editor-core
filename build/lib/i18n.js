@@ -7,15 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EXTERNAL_EXTENSIONS = exports.XLF = exports.Line = exports.NLSKeysFormat = exports.extraLanguages = exports.defaultLanguages = void 0;
-exports.processAllNlsFiles = processAllNlsFiles;
-exports.processNlsFiles = processNlsFiles;
-exports.getResource = getResource;
-exports.createXlfFilesForCoreBundle = createXlfFilesForCoreBundle;
-exports.createXlfFilesForExtensions = createXlfFilesForExtensions;
-exports.createXlfFilesForIsl = createXlfFilesForIsl;
-exports.prepareI18nPackFiles = prepareI18nPackFiles;
-exports.prepareIslFiles = prepareIslFiles;
+exports.prepareIslFiles = exports.prepareI18nPackFiles = exports.createXlfFilesForIsl = exports.createXlfFilesForExtensions = exports.EXTERNAL_EXTENSIONS = exports.createXlfFilesForCoreBundle = exports.getResource = exports.processNlsFiles = exports.processAllNlsFiles = exports.XLF = exports.Line = exports.NLSKeysFormat = exports.extraLanguages = exports.defaultLanguages = void 0;
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const event_stream_1 = require("event-stream");
@@ -283,8 +275,8 @@ function stripComments(content) {
 }
 // 编译所有语言包
 function processAllNlsFiles(base, languages, json) {
-    const languageDirectory = path.join(REPO_ROOT_PATH, '..', 'vscode-loc', 'i18n');
-    if (!fs.existsSync(languageDirectory)) {
+    const languageDirectory = path_1.default.join(REPO_ROOT_PATH, '..', 'vscode-loc', 'i18n');
+    if (!fs_1.default.existsSync(languageDirectory)) {
         log(`No VS Code localization repository found. Looking at ${languageDirectory}`);
         log(`To bundle translations please check out the vscode-loc repository as a sibling of the vscode repository.`);
     }
@@ -295,10 +287,10 @@ function processAllNlsFiles(base, languages, json) {
             log(`Generating nls bundles for: ${language.id}`);
         }
         const languageFolderName = language.translationId || language.id;
-        const i18nFile = path.join(languageDirectory, `vscode-language-pack-${languageFolderName}`, 'translations', 'main.i18n.json');
+        const i18nFile = path_1.default.join(languageDirectory, `vscode-language-pack-${languageFolderName}`, 'translations', 'main.i18n.json');
         let allMessages;
-        if (fs.existsSync(i18nFile)) {
-            const content = stripComments(fs.readFileSync(i18nFile, 'utf8'));
+        if (fs_1.default.existsSync(i18nFile)) {
+            const content = stripComments(fs_1.default.readFileSync(i18nFile, 'utf8'));
             allMessages = JSON.parse(content);
         }
         let nlsIndex = 0;
@@ -313,7 +305,7 @@ function processAllNlsFiles(base, languages, json) {
                 nlsIndex++;
             }
         }
-        files.push(new File({
+        files.push(new vinyl_1.default({
             contents: Buffer.from(JSON.stringify(nlsResult)),
             base,
             path: `${base}/nls.messages.${language.id}.json`
@@ -321,6 +313,7 @@ function processAllNlsFiles(base, languages, json) {
     });
     return files;
 }
+exports.processAllNlsFiles = processAllNlsFiles;
 function processCoreBundleFormat(base, fileHeader, languages, json, emitter) {
     const languageDirectory = path_1.default.join(REPO_ROOT_PATH, '..', 'vscode-loc', 'i18n');
     if (!fs_1.default.existsSync(languageDirectory)) {
@@ -374,6 +367,7 @@ function processNlsFiles(opts) {
         this.queue(file);
     });
 }
+exports.processNlsFiles = processNlsFiles;
 const editorProject = 'vscode-editor', workbenchProject = 'vscode-workbench', extensionsProject = 'vscode-extensions', setupProject = 'vscode-setup', serverProject = 'vscode-server';
 function getResource(sourceFile) {
     let resource;
@@ -408,6 +402,7 @@ function getResource(sourceFile) {
     }
     throw new Error(`Could not identify the XLF bundle for ${sourceFile}`);
 }
+exports.getResource = getResource;
 function createXlfFilesForCoreBundle() {
     return (0, event_stream_1.through)(function (file) {
         const basename = path_1.default.basename(file.path);
@@ -455,6 +450,7 @@ function createXlfFilesForCoreBundle() {
         }
     });
 }
+exports.createXlfFilesForCoreBundle = createXlfFilesForCoreBundle;
 function createL10nBundleForExtension(extensionFolderName, prefixWithBuildFolder) {
     const prefix = prefixWithBuildFolder ? '.build/' : '';
     return gulp_1.default
@@ -601,6 +597,7 @@ function createXlfFilesForExtensions() {
         }
     });
 }
+exports.createXlfFilesForExtensions = createXlfFilesForExtensions;
 function createXlfFilesForIsl() {
     return (0, event_stream_1.through)(function (file) {
         let projectName, resourceFile;
@@ -651,6 +648,7 @@ function createXlfFilesForIsl() {
         this.queue(xlfFile);
     });
 }
+exports.createXlfFilesForIsl = createXlfFilesForIsl;
 function createI18nFile(name, messages) {
     const result = Object.create(null);
     result[''] = [
@@ -739,6 +737,7 @@ function prepareI18nPackFiles(resultingTranslationPaths) {
         });
     });
 }
+exports.prepareI18nPackFiles = prepareI18nPackFiles;
 function prepareIslFiles(language, innoSetupConfig) {
     const parsePromises = [];
     return (0, event_stream_1.through)(function (xlf) {
@@ -761,6 +760,7 @@ function prepareIslFiles(language, innoSetupConfig) {
         });
     });
 }
+exports.prepareIslFiles = prepareIslFiles;
 function createIslFile(name, messages, language, innoSetup) {
     const content = [];
     let originalContent;

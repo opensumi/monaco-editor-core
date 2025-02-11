@@ -10,6 +10,7 @@
 		"**/*.ts"
 	],
 	"exclude": [
-		"lib/eslint-plugin-vscode/**/*"
+		"lib/eslint-plugin-vscode/**/*",
+		"azure-pipelines/**/*",
 	]
 }

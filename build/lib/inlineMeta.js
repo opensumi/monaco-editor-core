@@ -7,7 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.inlineMeta = inlineMeta;
+exports.inlineMeta = void 0;
 const event_stream_1 = __importDefault(require("event-stream"));
 const path_1 = require("path");
 const packageJsonMarkerId = 'BUILD_INSERT_PACKAGE_CONFIGURATION';
@@ -40,6 +40,7 @@ function inlineMeta(result, ctx) {
         this.emit('data', file);
     }));
 }
+exports.inlineMeta = inlineMeta;
 function matchesFile(file, ctx) {
     for (const targetPath of ctx.targetPaths) {
         if (file.basename === (0, path_1.basename)(targetPath)) { // TODO would be nicer to figure out root relative path to not match on false positives

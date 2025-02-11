@@ -7,8 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.downloadLibcxxHeaders = downloadLibcxxHeaders;
-exports.downloadLibcxxObjects = downloadLibcxxObjects;
+exports.downloadLibcxxObjects = exports.downloadLibcxxHeaders = void 0;
 // Can be removed once https://github.com/electron/electron-rebuild/pull/703 is available.
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -33,6 +32,7 @@ async function downloadLibcxxHeaders(outDir, electronVersion, lib_name) {
     d(`unpacking ${lib_name}_headers from ${headers}`);
     await (0, extract_zip_1.default)(headers, { dir: outDir });
 }
+exports.downloadLibcxxHeaders = downloadLibcxxHeaders;
 async function downloadLibcxxObjects(outDir, electronVersion, targetArch = 'x64') {
     if (await fs_1.default.existsSync(path_1.default.resolve(outDir, 'libc++.a'))) {
         return;
@@ -50,6 +50,7 @@ async function downloadLibcxxObjects(outDir, electronVersion, targetArch = 'x64'
     d(`unpacking libcxx-objects from ${objects}`);
     await (0, extract_zip_1.default)(objects, { dir: outDir });
 }
+exports.downloadLibcxxObjects = downloadLibcxxObjects;
 async function main() {
     const libcxxObjectsDirPath = process.env['VSCODE_LIBCXX_OBJECTS_DIR'];
     const libcxxHeadersDownloadDir = process.env['VSCODE_LIBCXX_HEADERS_DIR'];

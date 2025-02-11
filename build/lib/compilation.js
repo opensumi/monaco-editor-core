@@ -19,31 +19,18 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.watchApiProposalNamesTask = exports.compileApiProposalNamesTask = void 0;
-exports.transpileTask = transpileTask;
-exports.compileTask = compileTask;
-exports.watchTask = watchTask;
+exports.watchApiProposalNamesTask = exports.compileApiProposalNamesTask = exports.watchTask = exports.compileTask = exports.transpileTask = void 0;
 const event_stream_1 = __importDefault(require("event-stream"));
 const fs_1 = __importDefault(require("fs"));
 const gulp_1 = __importDefault(require("gulp"));
@@ -63,13 +50,8 @@ const ts = require("typescript");
 const watch = require('./watch');
 // --- gulp-tsb: compile and transpile --------------------------------
 const reporter = (0, reporter_1.createReporter)();
-<<<<<<< HEAD
-function getTypeScriptCompilerOptions(src) {
-    const rootDir = path_1.default.join(__dirname, `../../${src}`);
-=======
 function getTypeScriptCompilerOptions(src, module) {
-    const rootDir = path.join(__dirname, `../../${src}`);
->>>>>>> c0a0ae7fe46 (feat: support compile common js module)
+    const rootDir = path_1.default.join(__dirname, `../../${src}`);
     const options = {};
     options.verbose = false;
     options.sourceMap = true;
@@ -88,13 +70,8 @@ function getTypeScriptCompilerOptions(src, module) {
 function createCompile(src, { build, emitError, transpileOnly, preserveEnglish, module }) {
     const tsb = require('./tsb');
     const sourcemaps = require('gulp-sourcemaps');
-<<<<<<< HEAD
     const projectPath = path_1.default.join(__dirname, '../../', src, 'tsconfig.json');
-    const overrideOptions = { ...getTypeScriptCompilerOptions(src), inlineSources: Boolean(build) };
-=======
-    const projectPath = path.join(__dirname, '../../', src, 'tsconfig.json');
     const overrideOptions = { ...getTypeScriptCompilerOptions(src, module), inlineSources: Boolean(build) };
->>>>>>> c0a0ae7fe46 (feat: support compile common js module)
     if (!build) {
         overrideOptions.inlineSourceMap = true;
         overrideOptions.noEmitOnError = false;
@@ -149,18 +126,14 @@ function transpileTask(src, out, esbuild) {
     task.taskName = `transpile-${path_1.default.basename(src)}`;
     return task;
 }
+exports.transpileTask = transpileTask;
 function compileTask(src, out, build, options = {}) {
     const task = () => {
-        if (os_1.default.totalmem() < 4_000_000_000) {
+        if (os_1.default.totalmem() < 4000000000) {
             throw new Error('compilation requires 4GB of RAM');
         }
-<<<<<<< HEAD
-        const compile = createCompile(src, { build, emitError: true, transpileOnly: false, preserveEnglish: !!options.preserveEnglish });
-        const srcPipe = gulp_1.default.src(`${src}/**`, { base: `${src}` });
-=======
         const compile = createCompile(src, { build, emitError: false, transpileOnly: false, preserveEnglish: !!options.preserveEnglish, module: options.module });
-        const srcPipe = gulp.src(`${src}/**`, { base: `${src}` });
->>>>>>> c0a0ae7fe46 (feat: support compile common js module)
+        const srcPipe = gulp_1.default.src(`${src}/**`, { base: `${src}` });
         const generator = new MonacoGenerator(false);
         if (src === 'src') {
             generator.execute();
@@ -189,18 +162,15 @@ function compileTask(src, out, build, options = {}) {
             .pipe(mangleStream)
             .pipe(generator.stream)
             .pipe(compile())
-<<<<<<< HEAD
+            .pipe(options.extractConstEnum ? doExtractConstEnum() : event_stream_1.default.through())
             .pipe(gulp_1.default.dest(out));
-=======
-            .pipe(options.extractConstEnum ? doExtractConstEnum() : es.through())
-            .pipe(gulp.dest(out));
->>>>>>> c0a0ae7fe46 (feat: support compile common js module)
     };
     task.taskName = `compile-${path_1.default.basename(src)}`;
     return task;
 }
+exports.compileTask = compileTask;
 function doExtractConstEnum() {
-    return es.map((file, cb) => {
+    return event_stream_1.default.map((file, cb) => {
         if (/\.ts$/.test(file.path)) {
             file.contents = Buffer.from(file.contents.toString().replace(/const enum/g, 'enum'));
         }
@@ -222,6 +192,7 @@ function watchTask(out, build, srcPath = 'src') {
     task.taskName = `watch-${path_1.default.basename(out)}`;
     return task;
 }
+exports.watchTask = watchTask;
 const REPO_SRC_FOLDER = path_1.default.join(__dirname, '../../src');
 class MonacoGenerator {
     _isWatch;

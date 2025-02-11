@@ -7,8 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.writeISODate = writeISODate;
-exports.readISODate = readISODate;
+exports.readISODate = exports.writeISODate = void 0;
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const root = path_1.default.join(__dirname, '..', '..');
@@ -28,8 +27,10 @@ function writeISODate(outDir) {
     result.taskName = 'build-date-file';
     return result;
 }
+exports.writeISODate = writeISODate;
 function readISODate(outDir) {
     const outDirectory = path_1.default.join(root, outDir);
     return fs_1.default.readFileSync(path_1.default.join(outDirectory, 'date'), 'utf8');
 }
+exports.readISODate = readISODate;
 //# sourceMappingURL=date.js.map
