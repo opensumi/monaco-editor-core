@@ -579,9 +579,6 @@ export function createMonacoEditorAPI(): typeof monaco.editor {
 		EditorZoom: <any>EditorZoom,
 		createMultiFileDiffEditor: <any>createMultiFileDiffEditor,
 		OffsetRange: OffsetRange,
-		TokenArray: <any>TokenArray,
-		TokenInfo: <any>TokenInfo,
-		TokenArrayBuilder: <any>TokenArrayBuilder,
 
 		// vars
 		EditorType: EditorType,

@@ -156,7 +156,7 @@ module _nls {
 		key: string;
 		valueSpan: ISpan;
 		value: string;
-		pathSpan: ISpan,
+		pathSpan: ISpan;
 		path: string;
 	}
 
