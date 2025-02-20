@@ -40,7 +40,7 @@ import { IMarker, IMarkerData, IMarkerService } from '../../../platform/markers/
 import { IOpenerService } from '../../../platform/opener/common/opener.js';
 import { MultiDiffEditorWidget } from '../../browser/widget/multiDiffEditor/multiDiffEditorWidget.js';
 import { OffsetRange } from '../../common/core/offsetRange.js';
-import { TokenArray, TokenArrayBuilder, TokenInfo } from '../../common/tokens/tokenArray.js';
+import { TokenInfo } from '../../common/tokens/tokenArray.js';
 
 /**
  * Create a new editor under `domElement`.
@@ -579,6 +579,7 @@ export function createMonacoEditorAPI(): typeof monaco.editor {
 		EditorZoom: <any>EditorZoom,
 		createMultiFileDiffEditor: <any>createMultiFileDiffEditor,
 		OffsetRange: OffsetRange,
+		TokenInfo: <any>TokenInfo,
 
 		// vars
 		EditorType: EditorType,
